@@ -22,3 +22,11 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# Glide extras
+vendor
+.glide
+*.lock
+
+# Marill specific
+marill
