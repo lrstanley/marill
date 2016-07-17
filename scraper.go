@@ -13,20 +13,32 @@ import (
 
 // Results -- struct returned by Crawl() to represent the entire crawl process
 type Results struct {
+	// Inherit the Resource struct
 	Resource
-	Body      string
+	// Body represents a string implementation of the byte array returned by
+	// http.Response
+	Body string
+	// Slice of Resource structs containing the needed resources for the given URL
 	Resources []*Resource
 }
 
 // Resource represents a single entity of many within a given crawl. These should
 // only be of type css, js, jpg, png, etc (static resources).
 type Resource struct {
-	URL           string
-	Error         error
-	Code          int
-	Proto         string
+	// URL represents the static URL requested by the original result page
+	URL string
+	// Error represents any errors that may have occurred when fetching the resource
+	Error error
+	// Code represents the numeric HTTP based status code
+	Code int
+	// Proto represents the end protocol used to fetch the page. May be http or https,
+	// depending on if any redirects occurred.
+	Proto string
+	// ContentLength represents the number of bytes in the body of the response
 	ContentLength int64
-	TLS           *tls.ConnectionState
+	// TLS represents the SSL/TLS handshake/session if the resource was loaded over
+	// SSL.
+	TLS *tls.ConnectionState
 }
 
 // getSrc crawls the body of the Results page, yielding all img/script/link resources
@@ -37,14 +49,18 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 	z := html.NewTokenizer(b)
 
 	for {
+		// loop through all tokens in the html body response
 		tt := z.Next()
 
 		switch {
 		case tt == html.ErrorToken:
+			// this assumes that there are no further tokens -- end of document
 			return
 		case tt == html.StartTagToken:
 			t := z.Token()
 
+			// the tokens that we are pulling resources from, and the attribute we are
+			// pulling from
 			allowed := map[string]string{
 				"link":   "href",
 				"script": "src",
@@ -54,6 +70,8 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 			var checkType string
 			var src string
 
+			// loop through all allowed elements, and see if the current element is
+			// allowed
 			for key := range allowed {
 				if t.Data == key {
 					isInAllowed = true
@@ -73,26 +91,47 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 				}
 			}
 
+			// this assumes that the resource is something along the lines of:
+			//   http://something.com/ -- which we don't care about
 			if len(src) == 0 || strings.HasSuffix(src, "/") {
 				continue
 			}
 
+			// add trailing slash to the end of the path
 			if len(req.URL.Path) == 0 {
 				req.URL.Path = "/"
 			}
 
+			// site was developed using relative paths. E.g:
+			//  - url: http://domain.com/sub/path and resource: ./something/main.js
+			//    would equal http://domain.com/sub/path/something/main.js
 			if strings.HasPrefix(src, "./") {
 				src = req.URL.Scheme + "://" + req.URL.Host + req.URL.Path + strings.SplitN(src, "./", 2)[1]
 			}
 
+			// site is loading resources from a remote location that supports both
+			// http and https. browsers should natively tack on the current sites
+			// protocol to the url. E.g:
+			//  - url: http://domain.com/ and resource: //other.com/some-resource.js
+			//    generates: http://other.com/some-resource.js
+			//  - url: https://domain.com/ and resource: //other.com/some-resource.js
+			//    generates: https://other.com/some-resource.js
 			if strings.HasPrefix(src, "//") {
 				src = req.URL.Scheme + ":" + src
 			}
 
+			// non-host-absolute resource. E.g. resource is loaded based on the docroot
+			// of the domain. E.g:
+			//  - url: http://domain.com/ and resource: /some-resource.js
+			//    generates: http://domain.com/some-resource.js
+			//  - url: https://domain.com/sub/resource and resource: /some-resource.js
+			//    generates: https://domain.com/some-resource.js
 			if strings.HasPrefix(src, "/") {
 				src = req.URL.Scheme + "://" + req.URL.Host + src
 			}
 
+			// ignore anything else that isn't http based. E.g. ftp://, and other svg-like
+			// data urls, as we really can't fetch those.
 			if !strings.HasPrefix(src, "http") {
 				continue
 			}
