@@ -4,9 +4,6 @@ Marill -- Automated site testing utility
 --------------------------------------------------------
 [![Build Status](https://travis-ci.org/Liamraystanley/marill.svg?branch=master)](https://travis-ci.org/Liamraystanley/marill) [![GitHub issues](https://img.shields.io/github/issues/Liamraystanley/marill.svg)](https://github.com/Liamraystanley/marill/issues) [![](https://img.shields.io/badge/status-pre--alpha-red.svg)](https://github.com/Liamraystanley/marill/commits/master)
 
-https://godoc.org/net/http
-https://godoc.org/crypto/tls#ConnectionState
-
 ##### License:
 
     LICENSE: The MIT License (MIT)
