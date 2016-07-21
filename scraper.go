@@ -141,11 +141,33 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 	}
 }
 
+// FetchResource fetches a singular resource from a page, returning a *Resource struct.
+// As we don't care much about the body of the resource, that can safely be ignored. We
+// must still close the body object, however.
+func FetchResource(url string, ip string) (res *Resource) {
+	res = &Resource{}
+	resp, err := Get(url, ip)
+	resp.Body.Close()
+
+	if err != nil {
+		res.Error = err
+		return
+	}
+
+	res.URL = url
+	res.Code = resp.StatusCode
+	res.Proto = resp.Proto
+	res.ContentLength = resp.ContentLength
+	res.TLS = resp.TLS
+
+	return
+}
+
 // Crawl manages the fetching of the main resource, as well as all child resources,
 // providing a Results struct containing the entire crawl data needed
-func Crawl(url string) (res *Results) {
+func Crawl(url string, ip string) (res *Results) {
 	res = &Results{}
-	resp, err := http.Get(url)
+	resp, err := Get(url, ip)
 
 	if err != nil {
 		res.Error = err
