@@ -20,7 +20,7 @@ func main() {
 		go func(url string) {
 			defer wg.Done()
 
-			results = append(results, Crawl(url))
+			results = append(results, Crawl(url, ""))
 		}(url)
 	}
 
