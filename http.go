@@ -2,6 +2,9 @@ package main
 
 import "net/http"
 
+// CustomClient is the state for our custom http wrapper, which houses
+// the needed data to be able to rewrite the outgoing request during
+// redirects.
 type CustomClient struct {
 	URL  string
 	IP   string
