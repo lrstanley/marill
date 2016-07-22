@@ -36,7 +36,9 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 	req.Host = c.Host
 
 	// and overwrite the host used to make the connection
-	req.URL.Host = c.IP
+	if len(c.IP) > 0 {
+		req.URL.Host = c.IP
+	}
 
 	return req
 }
