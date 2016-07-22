@@ -16,11 +16,19 @@ import (
 type Results struct {
 	// Inherit the Resource struct
 	Resource
+
 	// Body represents a string implementation of the byte array returned by
 	// http.Response
 	Body string
+
 	// Slice of Resource structs containing the needed resources for the given URL
 	Resources []*Resource
+
+	// ResourceTime shows how long it took to fetch all resources
+	ResourceTime *TimerResult
+
+	// TotalTime represents the time it took to crawl the site
+	TotalTime *TimerResult
 }
 
 // Resource represents a single entity of many within a given crawl. These should
@@ -28,21 +36,31 @@ type Results struct {
 type Resource struct {
 	// connURL is the initial URL received by input
 	connURL string
+
 	// connIP is the initial IP address received by input
 	connIP string
+
 	// URL represents the resulting static URL derived by the original result page
 	URL string
+
 	// Error represents any errors that may have occurred when fetching the resource
 	Error error
+
 	// Code represents the numeric HTTP based status code
 	Code int
+
 	// Proto represents the end protocol used to fetch the page. For example, HTTP/2.0
 	Proto string
+
 	// ContentLength represents the number of bytes in the body of the response
 	ContentLength int64
+
 	// TLS represents the SSL/TLS handshake/session if the resource was loaded over
 	// SSL.
 	TLS *tls.ConnectionState
+
+	// Time represents the time it took to complete the request
+	Time *TimerResult
 }
 
 var resourcePool sync.WaitGroup
@@ -152,7 +170,11 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 // must still close the body object, however.
 func (rsrc *Resource) FetchResource() {
 	defer resourcePool.Done()
+
+	// calculate the time it takes to a fetch the request
+	timer := NewTimer()
 	resp, err := Get(rsrc.connURL, rsrc.connIP)
+	rsrc.Time = timer.End()
 	resp.Body.Close()
 
 	if err != nil {
@@ -175,7 +197,18 @@ func (rsrc *Resource) FetchResource() {
 // providing a Results struct containing the entire crawl data needed
 func Crawl(url string, ip string) (res *Results) {
 	res = &Results{}
+
+	// calculate the total crawl time
+	crawlTimer := NewTimer()
+
+	// start timing the request
+	reqTimer := NewTimer()
+
+	// actually fetch the request
 	resp, err := Get(url, ip)
+
+	// add up the time
+	res.Time = reqTimer.End()
 
 	if err != nil {
 		res.Error = err
@@ -200,7 +233,8 @@ func Crawl(url string, ip string) (res *Results) {
 
 	fmt.Printf("[%d] [%s] %s\n", res.Code, res.Proto, res.URL)
 
-	// here we should fetch all of the other resources in a different goroutine
+	// count how long it takes to fetch resources
+	resourceTime := NewTimer()
 
 	for i := range urls {
 		resourcePool.Add(1)
@@ -211,6 +245,12 @@ func Crawl(url string, ip string) (res *Results) {
 	}
 
 	resourcePool.Wait()
+
+	// finish the resource fetch timer
+	res.ResourceTime = resourceTime.End()
+
+	// and the crawl timer
+	res.TotalTime = crawlTimer.End()
 
 	return
 }
