@@ -11,7 +11,7 @@ type CustomClient struct {
 	Host string
 }
 
-func (c *CustomClient) redirectWrap(req *http.Request, via []*http.Request) error {
+func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) error {
 	req = c.requestWrap(req)
 
 	// rewrite Referer (Referrer) if it exists, to have the proper hostname
@@ -44,7 +44,7 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 // getHandler wraps the standard net/http library, allowing us to spoof hostnames and IP addresses
 func (c *CustomClient) getHandler() (*http.Response, error) {
 	client := &http.Client{
-		CheckRedirect: c.redirectWrap,
+		CheckRedirect: c.redirectHandler,
 	}
 
 	req, err := http.NewRequest("GET", c.URL, nil)
