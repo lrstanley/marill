@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/html"
 )
@@ -25,14 +26,17 @@ type Results struct {
 // Resource represents a single entity of many within a given crawl. These should
 // only be of type css, js, jpg, png, etc (static resources).
 type Resource struct {
-	// URL represents the static URL requested by the original result page
+	// connURL is the initial URL received by input
+	connURL string
+	// connIP is the initial IP address received by input
+	connIP string
+	// URL represents the resulting static URL derived by the original result page
 	URL string
 	// Error represents any errors that may have occurred when fetching the resource
 	Error error
 	// Code represents the numeric HTTP based status code
 	Code int
-	// Proto represents the end protocol used to fetch the page. May be http or https,
-	// depending on if any redirects occurred.
+	// Proto represents the end protocol used to fetch the page. For example, HTTP/2.0
 	Proto string
 	// ContentLength represents the number of bytes in the body of the response
 	ContentLength int64
@@ -40,6 +44,8 @@ type Resource struct {
 	// SSL.
 	TLS *tls.ConnectionState
 }
+
+var resourcePool sync.WaitGroup
 
 // getSrc crawls the body of the Results page, yielding all img/script/link resources
 // so they can later be fetched.
@@ -144,21 +150,23 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 // FetchResource fetches a singular resource from a page, returning a *Resource struct.
 // As we don't care much about the body of the resource, that can safely be ignored. We
 // must still close the body object, however.
-func FetchResource(url string, ip string) (res *Resource) {
-	res = &Resource{}
-	resp, err := Get(url, ip)
+func (rsrc *Resource) FetchResource() {
+	defer resourcePool.Done()
+	resp, err := Get(rsrc.connURL, rsrc.connIP)
 	resp.Body.Close()
 
 	if err != nil {
-		res.Error = err
+		rsrc.Error = err
 		return
 	}
 
-	res.URL = url
-	res.Code = resp.StatusCode
-	res.Proto = resp.Proto
-	res.ContentLength = resp.ContentLength
-	res.TLS = resp.TLS
+	rsrc.URL = resp.Request.URL.String()
+	rsrc.Code = resp.StatusCode
+	rsrc.Proto = resp.Proto
+	rsrc.ContentLength = resp.ContentLength
+	rsrc.TLS = resp.TLS
+
+	fmt.Printf("[%d] [%s] %s\n", rsrc.Code, rsrc.Proto, rsrc.URL)
 
 	return
 }
@@ -190,9 +198,19 @@ func Crawl(url string, ip string) (res *Results) {
 		res.Body = string(bbytes[:])
 	}
 
-	fmt.Println(urls)
+	fmt.Printf("[%d] [%s] %s\n", res.Code, res.Proto, res.URL)
 
 	// here we should fetch all of the other resources in a different goroutine
+
+	for i := range urls {
+		resourcePool.Add(1)
+
+		rsrc := &Resource{connURL: urls[i], connIP: ""}
+		res.Resources = append(res.Resources, rsrc)
+		go res.Resources[i].FetchResource()
+	}
+
+	resourcePool.Wait()
 
 	return
 }
