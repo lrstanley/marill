@@ -3,3 +3,7 @@ import:
 - package: golang.org/x/net
   subpackages:
   - html
+- package: github.com/jteeuwen/go-bindata
+  version: ^3.0.7
+  subpackages:
+  - '...'
