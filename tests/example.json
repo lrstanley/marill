@@ -1,0 +1,16 @@
+[
+    {
+        "name": "Example test",
+        "type": "header",
+        "checks": [
+            ".*example string.*"
+        ]
+    },
+    {
+        "name": "Example test x2",
+        "type": "body",
+        "checks": [
+            ".*Fatal error: .*"
+        ]
+    }
+]
