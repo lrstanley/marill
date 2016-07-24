@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -40,8 +41,18 @@ type Resource struct {
 	// connIP is the initial IP address received by input
 	connIP string
 
+	// connHostname represents the original requested hostname for the resource
+	connHostname string
+
 	// URL represents the resulting static URL derived by the original result page
 	URL string
+
+	// Hostname represents the resulting hostname derived by the original returned
+	// resource
+	Hostname string
+
+	// Remote represents if the resulting resource is remote to the original domain
+	Remote string
 
 	// Error represents any errors that may have occurred when fetching the resource
 	Error error
@@ -171,7 +182,17 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 func (rsrc *Resource) FetchResource() {
 	defer resourcePool.Done()
 
-	// calculate the time it takes to a fetch the request
+	initURL, err := url.Parse(rsrc.connURL)
+
+	if err != nil {
+		rsrc.Error = err
+		return
+	}
+
+	// set the initial hostname
+	rsrc.connHostname = initURL.Host
+
+	// calculate the time it takes to fetch the request
 	timer := NewTimer()
 	resp, err := Get(rsrc.connURL, rsrc.connIP)
 	rsrc.Time = timer.End()
@@ -182,6 +203,7 @@ func (rsrc *Resource) FetchResource() {
 		return
 	}
 
+	rsrc.Hostname = resp.Request.Host
 	rsrc.URL = resp.Request.URL.String()
 	rsrc.Code = resp.StatusCode
 	rsrc.Proto = resp.Proto
