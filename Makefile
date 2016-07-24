@@ -7,7 +7,7 @@ export $(PATH)
 
 all:
 	go get -u github.com/Masterminds/glide
-	glide --verbose install
+	glide --verbose install --strip-vcs
 	# add tests to bindata.go for inclusion
 	go-bindata tests/...
 	go build -v -o ${BINARY}
