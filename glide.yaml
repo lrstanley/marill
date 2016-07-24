@@ -1,4 +1,4 @@
-package: .
+package: github.com/Liamraystanley/marill
 import:
 - package: golang.org/x/net
   subpackages:
