@@ -53,7 +53,7 @@ type Resource struct {
 	Hostname string
 
 	// Remote represents if the resulting resource is remote to the original domain
-	Remote string
+	Remote bool
 
 	// Error represents any errors that may have occurred when fetching the resource
 	Error error
@@ -177,21 +177,24 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 	}
 }
 
+func connHostname(URL string) (host string, err error) {
+	tmp, err := url.Parse(URL)
+
+	if err != nil {
+		return
+	}
+
+	host = tmp.Host
+	return
+}
+
 // FetchResource fetches a singular resource from a page, returning a *Resource struct.
 // As we don't care much about the body of the resource, that can safely be ignored. We
 // must still close the body object, however.
 func (rsrc *Resource) FetchResource() {
+	var err error
+
 	defer resourcePool.Done()
-
-	initURL, err := url.Parse(rsrc.connURL)
-
-	if err != nil {
-		rsrc.Error = err
-		return
-	}
-
-	// set the initial hostname
-	rsrc.connHostname = initURL.Host
 
 	// calculate the time it takes to fetch the request
 	timer := NewTimer()
@@ -204,12 +207,22 @@ func (rsrc *Resource) FetchResource() {
 		return
 	}
 
+	rsrc.connHostname, err = connHostname(rsrc.connURL)
+	if err != nil {
+		rsrc.Error = err
+		return
+	}
+
 	rsrc.Hostname = resp.Request.Host
 	rsrc.URL = resp.Request.URL.String()
 	rsrc.Code = resp.StatusCode
 	rsrc.Proto = resp.Proto
 	rsrc.ContentLength = resp.ContentLength
 	rsrc.TLS = resp.TLS
+
+	if rsrc.Hostname != rsrc.connHostname {
+		rsrc.Remote = true
+	}
 
 	fmt.Printf("[%d] [%s] %s\n", rsrc.Code, rsrc.Proto, rsrc.URL)
 
@@ -218,19 +231,16 @@ func (rsrc *Resource) FetchResource() {
 
 // Crawl manages the fetching of the main resource, as well as all child resources,
 // providing a Results struct containing the entire crawl data needed
-func Crawl(url string, ip string) (res *Results) {
+func Crawl(URL string, IP string) (res *Results) {
 	res = &Results{}
 
-	// calculate the total crawl time
 	crawlTimer := NewTimer()
-
-	// start timing the request
 	reqTimer := NewTimer()
 
 	// actually fetch the request
-	resp, err := Get(url, ip)
+	resp, err := Get(URL, IP)
+	defer resp.Body.Close()
 
-	// add up the time
 	res.Time = reqTimer.End()
 
 	if err != nil {
@@ -238,28 +248,38 @@ func Crawl(url string, ip string) (res *Results) {
 		return
 	}
 
-	buf, _ := ioutil.ReadAll(resp.Body)
-	b := ioutil.NopCloser(bytes.NewReader(buf))
+	res.connHostname, err = connHostname(URL)
+	if err != nil {
+		res.Error = err
+		return
+	}
 
-	defer resp.Body.Close()
-	defer b.Close()
-
-	res.URL = url
+	res.connURL = URL
+	res.connIP = IP
+	res.Hostname = resp.Request.Host
+	res.URL = URL
 	res.Code = resp.StatusCode
 	res.Proto = resp.Proto
 	res.ContentLength = resp.ContentLength
 	res.TLS = resp.TLS
 
-	urls := getSrc(b, resp.Request)
+	if res.Hostname != res.connHostname {
+		res.Remote = true
+	}
+
+	buf, _ := ioutil.ReadAll(resp.Body)
+	b := ioutil.NopCloser(bytes.NewReader(buf))
+	defer b.Close()
 
 	bbytes, err := ioutil.ReadAll(bytes.NewBuffer(buf))
 	if len(bbytes) != 0 {
 		res.Body = string(bbytes[:])
 	}
 
+	urls := getSrc(b, resp.Request)
+
 	fmt.Printf("[%d] [%s] %s\n", res.Code, res.Proto, res.URL)
 
-	// count how long it takes to fetch resources
 	resourceTime := NewTimer()
 
 	for i := range urls {
@@ -272,10 +292,7 @@ func Crawl(url string, ip string) (res *Results) {
 
 	resourcePool.Wait()
 
-	// finish the resource fetch timer
 	res.ResourceTime = resourceTime.End()
-
-	// and the crawl timer
 	res.TotalTime = crawlTimer.End()
 
 	return
