@@ -171,7 +171,7 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 
 			// ignore anything else that isn't http based. E.g. ftp://, and other svg-like
 			// data urls, as we really can't fetch those.
-			if !strings.HasPrefix(src, "http") {
+			if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
 				continue
 			}
 
