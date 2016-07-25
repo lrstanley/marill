@@ -1,6 +1,9 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+	"time"
+)
 
 // CustomClient is the state for our custom http wrapper, which houses
 // the needed data to be able to rewrite the outgoing request during
@@ -47,6 +50,7 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 func (c *CustomClient) getHandler() (*http.Response, error) {
 	client := &http.Client{
 		CheckRedirect: c.redirectHandler,
+		Timeout:       time.Duration(10) * time.Second,
 	}
 
 	req, err := http.NewRequest("GET", c.URL, nil)
