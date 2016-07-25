@@ -243,7 +243,6 @@ func Crawl(URL string, IP string) (res *Results) {
 
 	// actually fetch the request
 	resp, err := Get(URL, IP)
-	defer resp.Body.Close()
 
 	res.Time = reqTimer.End()
 
@@ -251,6 +250,8 @@ func Crawl(URL string, IP string) (res *Results) {
 		res.Error = err
 		return
 	}
+
+	defer resp.Body.Close()
 
 	res.connHostname, err = connHostname(URL)
 	if err != nil {
