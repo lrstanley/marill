@@ -95,7 +95,7 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 		case tt == html.ErrorToken:
 			// this assumes that there are no further tokens -- end of document
 			return
-		case tt == html.StartTagToken:
+		case tt == html.StartTagToken || tt == html.SelfClosingTagToken:
 			t := z.Token()
 
 			// the tokens that we are pulling resources from, and the attribute we are
