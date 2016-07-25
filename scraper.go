@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -237,7 +238,10 @@ func Crawl(url string, ip string) (res *Results) {
 		return
 	}
 
-	b := resp.Body
+	buf, _ := ioutil.ReadAll(resp.Body)
+	b := ioutil.NopCloser(bytes.NewReader(buf))
+
+	defer resp.Body.Close()
 	defer b.Close()
 
 	res.URL = url
@@ -248,7 +252,7 @@ func Crawl(url string, ip string) (res *Results) {
 
 	urls := getSrc(b, resp.Request)
 
-	bbytes, err := ioutil.ReadAll(b)
+	bbytes, err := ioutil.ReadAll(bytes.NewBuffer(buf))
 	if len(bbytes) != 0 {
 		res.Body = string(bbytes[:])
 	}
