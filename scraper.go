@@ -64,6 +64,9 @@ type Resource struct {
 	// Proto represents the end protocol used to fetch the page. For example, HTTP/2.0
 	Proto string
 
+	// Scheme represents the end scheme used to fetch the page. For example, https
+	Scheme string
+
 	// ContentLength represents the number of bytes in the body of the response
 	ContentLength int64
 
@@ -217,6 +220,7 @@ func (rsrc *Resource) FetchResource() {
 	rsrc.URL = resp.Request.URL.String()
 	rsrc.Code = resp.StatusCode
 	rsrc.Proto = resp.Proto
+	rsrc.Scheme = resp.Request.URL.Scheme
 	rsrc.ContentLength = resp.ContentLength
 	rsrc.TLS = resp.TLS
 
@@ -260,6 +264,7 @@ func Crawl(URL string, IP string) (res *Results) {
 	res.URL = URL
 	res.Code = resp.StatusCode
 	res.Proto = resp.Proto
+	res.Scheme = resp.Request.URL.Scheme
 	res.ContentLength = resp.ContentLength
 	res.TLS = resp.TLS
 
