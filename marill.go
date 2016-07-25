@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 	"sync"
@@ -20,7 +21,17 @@ func main() {
 		go func(url string) {
 			defer wg.Done()
 
-			results = append(results, Crawl(url, ""))
+			fmt.Printf("[START] Scanning %s\n", url)
+			result := Crawl(url, "")
+			results = append(results, result)
+
+			fmt.Printf("[%s] %+v\n", result.connHostname, result)
+
+			for i := range result.Resources {
+				fmt.Printf("[%s] %+v\n", result.Resources[i].connHostname, result.Resources[i])
+			}
+
+			fmt.Printf("[FINISHED] Scanned %s\n", url)
 		}(url)
 	}
 
