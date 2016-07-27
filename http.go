@@ -15,6 +15,15 @@ type CustomClient struct {
 	Host string
 }
 
+// CustomResponse is the wrapped response from http.Client.Do() which also
+// includes a timer of how long the request took, and a few other minor
+// extras.
+type CustomResponse struct {
+	*http.Response
+	Time *TimerResult
+	URL  string
+}
+
 func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) error {
 	req = c.requestWrap(req)
 
@@ -51,7 +60,7 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 }
 
 // getHandler wraps the standard net/http library, allowing us to spoof hostnames and IP addresses
-func (c *CustomClient) getHandler() (*http.Response, error) {
+func (c *CustomClient) getHandler() (*CustomResponse, error) {
 	client := &http.Client{
 		CheckRedirect: c.redirectHandler,
 		Timeout:       time.Duration(10) * time.Second,
@@ -67,14 +76,22 @@ func (c *CustomClient) getHandler() (*http.Response, error) {
 
 	req = c.requestWrap(req)
 
+	// start tracking how long the request is going to take
+	timer := NewTimer()
+
 	// actually make the request here
 	resp, err := client.Do(req)
 
-	return resp, err
+	// stop tracking the request
+	timerResults := timer.End()
+
+	wrappedResp := &CustomResponse{resp, timerResults, resp.Request.URL.String()}
+
+	return wrappedResp, err
 }
 
 // Get wraps GetHandler -- easy interface for making get requests
-func Get(url string, ip string) (*http.Response, error) {
+func Get(url string, ip string) (*CustomResponse, error) {
 	c := &CustomClient{URL: url, IP: ip}
 
 	return c.getHandler()
