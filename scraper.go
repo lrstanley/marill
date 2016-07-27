@@ -206,9 +206,7 @@ func (rsrc *Resource) FetchResource() {
 	defer resourcePool.Done()
 
 	// calculate the time it takes to fetch the request
-	timer := NewTimer()
 	resp, err := Get(rsrc.connURL, rsrc.connIP)
-	rsrc.Time = timer.End()
 	resp.Body.Close()
 
 	if err != nil {
@@ -223,12 +221,13 @@ func (rsrc *Resource) FetchResource() {
 	}
 
 	rsrc.Hostname = resp.Request.Host
-	rsrc.URL = resp.Request.URL.String()
+	rsrc.URL = resp.URL
 	rsrc.Code = resp.StatusCode
 	rsrc.Proto = resp.Proto
 	rsrc.Scheme = resp.Request.URL.Scheme
 	rsrc.ContentLength = resp.ContentLength
 	rsrc.TLS = resp.TLS
+	rsrc.Time = resp.Time
 
 	if rsrc.Hostname != rsrc.connHostname {
 		rsrc.Remote = true
@@ -245,12 +244,9 @@ func Crawl(URL string, IP string) (res *Results) {
 	res = &Results{}
 
 	crawlTimer := NewTimer()
-	reqTimer := NewTimer()
 
 	// actually fetch the request
 	resp, err := Get(URL, IP)
-
-	res.Time = reqTimer.End()
 
 	if err != nil {
 		res.Error = err
@@ -268,12 +264,13 @@ func Crawl(URL string, IP string) (res *Results) {
 	res.connURL = URL
 	res.connIP = IP
 	res.Hostname = resp.Request.Host
-	res.URL = resp.Request.URL.String()
+	res.URL = resp.URL
 	res.Code = resp.StatusCode
 	res.Proto = resp.Proto
 	res.Scheme = resp.Request.URL.Scheme
 	res.ContentLength = resp.ContentLength
 	res.TLS = resp.TLS
+	res.Time = resp.Time
 
 	if res.Hostname != res.connHostname {
 		res.Remote = true
