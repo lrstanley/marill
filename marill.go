@@ -21,17 +21,11 @@ func main() {
 		go func(url string) {
 			defer wg.Done()
 
-			fmt.Printf("[START] Scanning %s\n", url)
+			fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m------\033[0;m] \033[0;95mStarting to scan %s\033[0;m\n", url)
 			result := Crawl(url, "")
 			results = append(results, result)
 
-			fmt.Printf("[%s] %+v\n", result.connHostname, result)
-
-			for i := range result.Resources {
-				fmt.Printf("[%s] %+v\n", result.Resources[i].connHostname, result.Resources[i])
-			}
-
-			fmt.Printf("[FINISHED] Scanned %s\n", url)
+			fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m%4dms\033[0;m] \033[0;95mFinished scanning %s\033[0;m\n", result.TotalTime.Milli, url)
 		}(url)
 	}
 

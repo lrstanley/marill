@@ -233,7 +233,7 @@ func (rsrc *Resource) FetchResource() {
 		rsrc.Remote = true
 	}
 
-	fmt.Printf("[%d] [%s] %s\n", rsrc.Code, rsrc.Proto, rsrc.URL)
+	fmt.Printf("[\033[1;33m%d\033[0;m] [\033[0;32m%4dms\033[0;m] [%s] %s\n", rsrc.Code, rsrc.Time.Milli, rsrc.Proto, rsrc.URL)
 
 	return
 }
@@ -287,7 +287,7 @@ func Crawl(URL string, IP string) (res *Results) {
 
 	urls := getSrc(b, resp.Request)
 
-	fmt.Printf("[%d] [%s] %s\n", res.Code, res.Proto, res.URL)
+	fmt.Printf("[\033[1;33m%d\033[0;m] [\033[0;32m%4dms\033[0;m] [%s] %s\n", res.Code, res.Time.Milli, res.Proto, res.URL)
 
 	resourceTime := NewTimer()
 
