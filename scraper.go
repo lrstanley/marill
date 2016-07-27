@@ -80,6 +80,18 @@ type Resource struct {
 
 var resourcePool sync.WaitGroup
 
+// getAttr pulls a specific attribute from a token/element
+func getAttr(attr string, attrs []html.Attribute) (val string) {
+	for _, item := range attrs {
+		if item.Key == attr {
+			val = item.Val
+			break
+		}
+	}
+
+	return
+}
+
 // getSrc crawls the body of the Results page, yielding all img/script/link resources
 // so they can later be fetched.
 func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
@@ -98,36 +110,30 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 		case tt == html.StartTagToken || tt == html.SelfClosingTagToken:
 			t := z.Token()
 
-			// the tokens that we are pulling resources from, and the attribute we are
-			// pulling from
-			allowed := map[string]string{
-				"link":   "href",
-				"script": "src",
-				"img":    "src",
-			}
-			var isInAllowed bool
-			var checkType string
 			var src string
 
-			// loop through all allowed elements, and see if the current element is
-			// allowed
-			for key := range allowed {
-				if t.Data == key {
-					isInAllowed = true
-					checkType = allowed[key]
-					break
-				}
-			}
+			switch t.Data {
+			case "link":
+				src = getAttr("href", t.Attr)
 
-			if !isInAllowed {
+				rel := getAttr("rel", t.Attr)
+
+				if len(rel) > 0 && strings.ToLower(rel) != "stylesheet" && strings.ToLower(rel) != "shortcut icon" {
+					continue
+				}
+
+			case "script":
+				src = getAttr("src", t.Attr)
+
+			case "img":
+				src = getAttr("src", t.Attr)
+
+			default:
 				continue
 			}
 
-			for _, a := range t.Attr {
-				if a.Key == checkType {
-					src = a.Val
-					break
-				}
+			if len(src) == 0 {
+				continue
 			}
 
 			// this assumes that the resource is something along the lines of:
