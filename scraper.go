@@ -262,7 +262,7 @@ func Crawl(URL string, IP string) (res *Results) {
 	res.connURL = URL
 	res.connIP = IP
 	res.Hostname = resp.Request.Host
-	res.URL = URL
+	res.URL = resp.Request.URL.String()
 	res.Code = resp.StatusCode
 	res.Proto = resp.Proto
 	res.Scheme = resp.Request.URL.Scheme
