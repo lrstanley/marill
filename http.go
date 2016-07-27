@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -35,12 +36,15 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 	// within the header. E.g. "hostname.com:8080" -- though, common ports like
 	// 80 and 443 are left out.
 
-	// assign the origin host to the host header value
-	req.Host = c.Host
+	// assign the origin host to the host header value, ONLY if it matches the domains
+	// hostname
+	if strings.ToLower(req.URL.Host) == strings.ToLower(c.Host) || strings.ToLower(req.URL.Host) == strings.ToLower("www."+c.Host) {
+		req.Host = req.URL.Host
 
-	// and overwrite the host used to make the connection
-	if len(c.IP) > 0 {
-		req.URL.Host = c.IP
+		// and overwrite the host used to make the connection
+		if len(c.IP) > 0 {
+			req.URL.Host = c.IP
+		}
 	}
 
 	return req
