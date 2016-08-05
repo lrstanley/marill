@@ -1,4 +1,4 @@
-package main
+package scraper
 
 import (
 	"bytes"
@@ -197,10 +197,10 @@ func connHostname(URL string) (host string, err error) {
 	return
 }
 
-// FetchResource fetches a singular resource from a page, returning a *Resource struct.
+// fetchResource fetches a singular resource from a page, returning a *Resource struct.
 // As we don't care much about the body of the resource, that can safely be ignored. We
 // must still close the body object, however.
-func (rsrc *Resource) FetchResource() {
+func (rsrc *Resource) fetchResource() {
 	var err error
 
 	defer resourcePool.Done()
@@ -296,7 +296,7 @@ func Crawl(URL string, IP string) (res *Results) {
 
 		rsrc := &Resource{connURL: urls[i], connIP: ""}
 		res.Resources = append(res.Resources, rsrc)
-		go res.Resources[i].FetchResource()
+		go res.Resources[i].fetchResource()
 	}
 
 	resourcePool.Wait()
