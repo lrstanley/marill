@@ -301,8 +301,11 @@ func Crawl(URL string, IP string) (res *Results) {
 
 	resourcePool.Wait()
 
-	res.ResourceTime = resourceTime.End()
-	res.TotalTime = crawlTimer.End()
+	resourceTime.End()
+	crawlTimer.End()
+
+	res.ResourceTime = resourceTime.Result
+	res.TotalTime = crawlTimer.Result
 
 	return
 }

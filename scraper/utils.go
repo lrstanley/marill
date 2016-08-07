@@ -6,6 +6,7 @@ import "time"
 type Timer struct {
 	startTime int64
 	endTime   int64
+	Result    *TimerResult
 }
 
 // TimerResult is a result of an ended timer, providing easy millisecond
@@ -21,15 +22,13 @@ func (t *Timer) Start() {
 }
 
 // End completes a timer and calculates the differences
-func (t *Timer) End() *TimerResult {
+func (t *Timer) End() {
 	t.endTime = time.Now().UnixNano()
 
-	result := &TimerResult{}
+	t.Result.Milli = (t.endTime - t.startTime) / 1000000
+	t.Result.Seconds = t.Result.Milli / 1000
 
-	result.Milli = (t.endTime - t.startTime) / 1000000
-	result.Seconds = result.Milli / 1000
-
-	return result
+	return
 }
 
 // NewTimer returns a new Timer struct

@@ -26,7 +26,7 @@ func TestFetch(t *testing.T) {
 			t.Errorf("scraper.Crawl(%q) == %q, wanted error: %v", c.in, got.Error, c.want)
 		}
 
-		if got.Error == nil && c.want {
+		if got.Error == nil && c.want && got.Code == 200 {
 			t.Errorf("scraper.Crawl(%s) == %q (%q), though no errors", c.in, got.Error, got)
 		}
 	}

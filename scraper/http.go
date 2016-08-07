@@ -25,7 +25,7 @@ type CustomResponse struct {
 }
 
 func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) error {
-	req = c.requestWrap(req)
+	c.requestWrap(req)
 
 	// rewrite Referer (Referrer) if it exists, to have the proper hostname
 	uri := via[len(via)-1].URL
@@ -74,7 +74,7 @@ func (c *CustomClient) getHandler() (*CustomResponse, error) {
 
 	c.Host = req.URL.Host
 
-	req = c.requestWrap(req)
+	c.requestWrap(req)
 
 	// start tracking how long the request is going to take
 	timer := NewTimer()
@@ -83,9 +83,17 @@ func (c *CustomClient) getHandler() (*CustomResponse, error) {
 	resp, err := client.Do(req)
 
 	// stop tracking the request
-	timerResults := timer.End()
+	timer.End()
 
-	wrappedResp := &CustomResponse{resp, timerResults, resp.Request.URL.String()}
+	var url string
+
+	if err == nil {
+		url = resp.Request.URL.String()
+	} else {
+		url = req.URL.String()
+	}
+
+	wrappedResp := &CustomResponse{resp, timer.Result, url}
 
 	return wrappedResp, err
 }
