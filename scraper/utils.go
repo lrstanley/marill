@@ -25,6 +25,8 @@ func (t *Timer) Start() {
 func (t *Timer) End() {
 	t.endTime = time.Now().UnixNano()
 
+	t.Result = &TimerResult{}
+
 	t.Result.Milli = (t.endTime - t.startTime) / 1000000
 	t.Result.Seconds = t.Result.Milli / 1000
 
