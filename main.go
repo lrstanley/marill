@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"sync"
 
-	"./scraper"
+	"github.com/Liamraystanley/marill/scraper"
 )
 
 func main() {

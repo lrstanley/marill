@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"./scraper"
+	"github.com/Liamraystanley/marill/scraper"
 )
 
 func TestFetch(t *testing.T) {
