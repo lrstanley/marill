@@ -1,4 +1,4 @@
-package configfinder
+package domfinder
 
 import (
 	"io/ioutil"
@@ -50,4 +50,23 @@ func GetProcs() (pl []*Process) {
 	}
 
 	return pl
+}
+
+func GetDomains(pl []*Process) (err error) {
+	if len(pl) == 0 {
+		return &NewErr{Code: ErrNoWebservers}
+	}
+
+	// we want to get just one of the webservers, (or procs), to run our
+	// domain pulling from. Commonly httpd spawns multiple child processes
+	// which we don't need to check each one.
+
+	proc := pl[0]
+
+	if proc.Name == "httpd" || proc.Name == "apache" || proc.Name == "lshttpd" {
+		// assume apache based. Should be able to use "-S" switch:
+		// docs: http://httpd.apache.org/docs/current/vhosts/#directives
+	}
+
+	return nil
 }

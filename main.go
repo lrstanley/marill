@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"sync"
 
-	cf "github.com/Liamraystanley/marill/configfinder"
+	cf "github.com/Liamraystanley/marill/domfinder"
 	"github.com/Liamraystanley/marill/scraper"
 )
 
