@@ -6,11 +6,17 @@ import (
 	"runtime"
 	"sync"
 
+	cf "github.com/Liamraystanley/marill/configfinder"
 	"github.com/Liamraystanley/marill/scraper"
 )
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	ps := cf.GetProcs()
+	for _, proc := range ps {
+		fmt.Printf("%#v\n", proc)
+	}
 
 	urlsToCheck := os.Args[1:]
 	results := []*scraper.Results{}
