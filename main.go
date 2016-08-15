@@ -38,7 +38,11 @@ func main() {
 			result := scraper.Crawl(domain.URL.String(), "")
 			results = append(results, result)
 
-			fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m%4dms\033[0;m] \033[0;95mFinished scanning %s\033[0;m\n", result.TotalTime.Milli, domain.URL.String())
+			if result.Error != nil {
+				fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m%4dms\033[0;m] \033[0;31mFinished scanning %s (error: %s)\033[0;m\n", result.TotalTime.Milli, domain.URL.String(), result.Error)
+			} else {
+				fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m%4dms\033[0;m] \033[0;95mFinished scanning %s\033[0;m\n", result.TotalTime.Milli, domain.URL.String())
+			}
 		}(domain)
 	}
 
