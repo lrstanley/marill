@@ -207,11 +207,14 @@ func (rsrc *Resource) fetchResource() {
 
 	// calculate the time it takes to fetch the request
 	resp, err := Get(rsrc.connURL, rsrc.connIP)
-	resp.Body.Close()
 
 	if err != nil {
 		rsrc.Error = err
 		return
+	}
+
+	if resp.Body != nil {
+		resp.Body.Close()
 	}
 
 	rsrc.connHostname, err = connHostname(rsrc.connURL)
@@ -242,11 +245,15 @@ func (rsrc *Resource) fetchResource() {
 // providing a Results struct containing the entire crawl data needed
 func Crawl(URL string, IP string) (res *Results) {
 	res = &Results{}
-
 	crawlTimer := NewTimer()
 
 	// actually fetch the request
 	resp, err := Get(URL, IP)
+
+	defer func() {
+		crawlTimer.End()
+		res.TotalTime = crawlTimer.Result
+	}()
 
 	if err != nil {
 		res.Error = err
@@ -291,6 +298,11 @@ func Crawl(URL string, IP string) (res *Results) {
 
 	resourceTime := NewTimer()
 
+	defer func() {
+		resourceTime.End()
+		res.ResourceTime = resourceTime.Result
+	}()
+
 	for i := range urls {
 		resourcePool.Add(1)
 
@@ -300,12 +312,6 @@ func Crawl(URL string, IP string) (res *Results) {
 	}
 
 	resourcePool.Wait()
-
-	resourceTime.End()
-	crawlTimer.End()
-
-	res.ResourceTime = resourceTime.Result
-	res.TotalTime = crawlTimer.Result
 
 	return
 }
