@@ -2,39 +2,44 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"log"
 	"runtime"
 	"sync"
 
-	cf "github.com/Liamraystanley/marill/domfinder"
+	df "github.com/Liamraystanley/marill/domfinder"
 	"github.com/Liamraystanley/marill/scraper"
 )
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	ps := cf.GetProcs()
+	ps := df.GetProcs()
 	for _, proc := range ps {
 		fmt.Printf("%#v\n", proc)
 	}
 
-	urlsToCheck := os.Args[1:]
+	domains, err := df.GetDomains(ps)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	results := []*scraper.Results{}
 	var wg sync.WaitGroup
 
 	// loop through all supplied urls and send them to a worker to be fetched
-	for _, url := range urlsToCheck {
+	for _, domain := range domains {
 		wg.Add(1)
 
-		go func(url string) {
+		go func(domain *df.Domain) {
 			defer wg.Done()
 
-			fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m------\033[0;m] \033[0;95mStarting to scan %s\033[0;m\n", url)
-			result := scraper.Crawl(url, "")
+			fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m------\033[0;m] \033[0;95mStarting to scan %s\033[0;m\n", domain.URL.String())
+			result := scraper.Crawl(domain.URL.String(), "")
 			results = append(results, result)
 
-			fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m%4dms\033[0;m] \033[0;95mFinished scanning %s\033[0;m\n", result.TotalTime.Milli, url)
-		}(url)
+			fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m%4dms\033[0;m] \033[0;95mFinished scanning %s\033[0;m\n", result.TotalTime.Milli, domain.URL.String())
+		}(domain)
 	}
 
 	// wait for all workers to complete their tasks
