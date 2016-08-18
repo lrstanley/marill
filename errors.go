@@ -44,6 +44,10 @@ func (e NewErr) Error() string {
 // UpgradeErr takes a standard error interface and upgrades it to our
 // custom error types
 func UpgradeErr(e error) *NewErr {
+	if e == nil {
+		return nil
+	}
+
 	return &NewErr{Code: ErrUpgradedError, deepErr: e}
 }
 
