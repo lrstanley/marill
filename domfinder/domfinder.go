@@ -64,7 +64,7 @@ type Domain struct {
 	PublicIP string
 }
 
-func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err error) {
+func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err *NewErr) {
 	if len(pl) == 0 {
 		return nil, nil, &NewErr{Code: ErrNoWebservers}
 	}
@@ -91,10 +91,10 @@ func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err error) {
 
 		domains, err = ReadApacheVhosts(out)
 
-		return proc, domains, err
+		return proc, domains, UpgradeErr(err)
 	}
 
-	return nil, nil, errors.New("Unimplemented webserver")
+	return nil, nil, UpgradeErr(errors.New("Unimplemented webserver"))
 }
 
 func ReadApacheVhosts(raw string) ([]*Domain, error) {
