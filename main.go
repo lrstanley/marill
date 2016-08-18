@@ -43,5 +43,5 @@ func main() {
 	for _, domain := range domains {
 		tmplist = append(tmplist, &scraper.Domain{URL: domain.URL, IP: domain.IP})
 	}
-	scraper.Crawl(tmplist)
+	scraper.Crawl(tmplist, logger)
 }
