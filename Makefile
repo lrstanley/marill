@@ -11,3 +11,4 @@ all:
 	# add tests to bindata.go for inclusion
 	go-bindata tests/...
 	go build -v -o ${BINARY} main.go
+	/bin/rm -fv bindata.go
