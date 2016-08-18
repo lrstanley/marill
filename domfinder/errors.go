@@ -52,6 +52,7 @@ const (
 	ErrApacheParseVhosts
 	ErrApacheNoEntries
 	ErrNotImplemented
+	ErrInvalidURL
 )
 
 // errMsg contains a map of error name id keys and error/deep error pairs
@@ -59,6 +60,7 @@ var errMsg = map[int]string{
 	ErrUpgradedError:  "Not a real error",
 	ErrNoWebservers:   "Did not find any webservers running",
 	ErrNotImplemented: "The webserver %s is not implemented at this time",
+	ErrInvalidURL:     "The host/port pair %s is invalid",
 
 	// Apache specific
 	ErrApacheFetchVhosts:   "Unable to obtain vhost data from Apache: %s",

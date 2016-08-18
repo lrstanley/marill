@@ -201,14 +201,19 @@ func ReadApacheVhosts(raw string) ([]*Domain, error) {
 	return domains, nil
 }
 
-func isDomainURL(host string, port string) (*url.URL, error) {
+func isDomainURL(host string, port string) (*url.URL, *NewErr) {
 	if port != "443" && port != "80" {
 		host = fmt.Sprintf("%s:%s", host, port)
 	}
+
+	if strings.Contains(host, " ") {
+		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+	}
+
 	uri, err := url.Parse(host)
 
 	if err != nil {
-		return nil, err
+		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
 	}
 
 	// lets try and determine the scheme we need. Best solution would like be:
