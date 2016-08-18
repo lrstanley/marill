@@ -64,16 +64,16 @@ type Domain struct {
 	PublicIP string
 }
 
-func GetDomains(pl []*Process) (domains []*Domain, err error) {
+func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err error) {
 	if len(pl) == 0 {
-		return nil, &NewErr{Code: ErrNoWebservers}
+		return nil, nil, &NewErr{Code: ErrNoWebservers}
 	}
 
 	// we want to get just one of the webservers, (or procs), to run our
 	// domain pulling from. Commonly httpd spawns multiple child processes
 	// which we don't need to check each one.
 
-	proc := pl[0]
+	proc = pl[0]
 
 	if proc.Name == "httpd" || proc.Name == "apache" || proc.Name == "lshttpd" {
 		// assume apache based. Should be able to use "-S" switch:
@@ -82,19 +82,19 @@ func GetDomains(pl []*Process) (domains []*Domain, err error) {
 		out := string(output)
 
 		if err != nil {
-			return nil, &NewErr{Code: ErrApacheFetchVhosts, value: err.Error()}
+			return nil, nil, &NewErr{Code: ErrApacheFetchVhosts, value: err.Error()}
 		}
 
 		if !strings.Contains(out, "VirtualHost configuration") {
-			return nil, &NewErr{Code: ErrApacheInvalidVhosts, value: "binary: " + proc.Exe}
+			return nil, nil, &NewErr{Code: ErrApacheInvalidVhosts, value: "binary: " + proc.Exe}
 		}
 
 		domains, err = ReadApacheVhosts(out)
 
-		return domains, err
+		return proc, domains, err
 	}
 
-	return nil, errors.New("Unimplemented webserver")
+	return nil, nil, errors.New("Unimplemented webserver")
 }
 
 func ReadApacheVhosts(raw string) ([]*Domain, error) {

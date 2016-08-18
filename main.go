@@ -2,25 +2,39 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 	"runtime"
 
-	df "github.com/Liamraystanley/marill/domfinder"
+	"github.com/Liamraystanley/marill/domfinder"
 	"github.com/Liamraystanley/marill/scraper"
 )
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
+	// initialize the logger, just to stdout for now, in the future we will want to
+	// provide users the option to choose the path they would like to log to. Can
+	// also implement io.MultiWriter?
+	// initLoggerToFile("marill.log")
+	initLogger(os.Stdout)
+	logger.Println("Initializing logger")
 
-	ps := df.GetProcs()
-	for _, proc := range ps {
-		fmt.Printf("%#v\n", proc)
+	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
+	logger.Printf("Limiting max threads to %d", runtime.NumCPU()*2)
+
+	logger.Println("Checking for running webservers...")
+	ps := domfinder.GetProcs()
+
+	if out := ""; len(ps) > 0 {
+		for _, proc := range ps {
+			out += fmt.Sprintf("[%s:%s] ", proc.Name, proc.PID)
+		}
+		logger.Printf("Found %d procs matching a webserver: %s", len(ps), out)
 	}
 
-	domains, err := df.GetDomains(ps)
+	ws, domains, err := domfinder.GetDomains(ps)
+	logger.Printf("Found %d domains on webserver %s (exe: %s, pid: %s)", len(domains), ws.Name, ws.Exe, ws.PID)
 
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	tmplist := []*scraper.Domain{}
