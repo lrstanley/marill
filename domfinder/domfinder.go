@@ -1,7 +1,6 @@
 package domfinder
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -94,7 +93,7 @@ func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err *NewErr) {
 		return proc, domains, UpgradeErr(err)
 	}
 
-	return nil, nil, UpgradeErr(errors.New("Unimplemented webserver"))
+	return nil, nil, &NewErr{Code: ErrNotImplemented, value: proc.Name}
 }
 
 func ReadApacheVhosts(raw string) ([]*Domain, error) {
