@@ -241,9 +241,9 @@ func (rsrc *Resource) fetchResource() {
 	return
 }
 
-// Crawl manages the fetching of the main resource, as well as all child resources,
+// fetchURL manages the fetching of the main resource, as well as all child resources,
 // providing a Results struct containing the entire crawl data needed
-func Crawl(URL string, IP string) (res *Results) {
+func fetchURL(URL string, IP string) (res *Results) {
 	res = &Results{}
 	crawlTimer := NewTimer()
 
@@ -314,4 +314,36 @@ func Crawl(URL string, IP string) (res *Results) {
 	resourcePool.Wait()
 
 	return
+}
+
+type Domain struct {
+	URL *url.URL
+	IP  string
+}
+
+func Crawl(domains []*Domain) (results []*Results) {
+	var wg sync.WaitGroup
+	// loop through all supplied urls and send them to a worker to be fetched
+	for _, domain := range domains {
+		wg.Add(1)
+
+		go func(domain *Domain) {
+			defer wg.Done()
+
+			fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m------\033[0;m] \033[0;95mStarting to scan %s\033[0;m\n", domain.URL.String())
+			result := fetchURL(domain.URL.String(), "")
+			results = append(results, result)
+
+			if result.Error != nil {
+				fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m%4dms\033[0;m] \033[0;31mFinished scanning %s (error: %s)\033[0;m\n", result.TotalTime.Milli, domain.URL.String(), result.Error)
+			} else {
+				fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m%4dms\033[0;m] \033[0;95mFinished scanning %s\033[0;m\n", result.TotalTime.Milli, domain.URL.String())
+			}
+		}(domain)
+	}
+
+	// wait for all workers to complete their tasks
+	wg.Wait()
+
+	return results
 }
