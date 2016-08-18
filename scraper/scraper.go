@@ -243,7 +243,7 @@ func (rsrc *Resource) fetchResource() {
 
 // fetchURL manages the fetching of the main resource, as well as all child resources,
 // providing a Results struct containing the entire crawl data needed
-func fetchURL(URL string, IP string) (res *Results) {
+func FetchURL(URL string, IP string) (res *Results) {
 	res = &Results{}
 	crawlTimer := NewTimer()
 
@@ -331,7 +331,7 @@ func Crawl(domains []*Domain) (results []*Results) {
 			defer wg.Done()
 
 			fmt.Printf("[\033[1;36m---\033[0;m] [\033[0;32m------\033[0;m] \033[0;95mStarting to scan %s\033[0;m\n", domain.URL.String())
-			result := fetchURL(domain.URL.String(), "")
+			result := FetchURL(domain.URL.String(), "")
 			results = append(results, result)
 
 			if result.Error != nil {
