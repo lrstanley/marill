@@ -202,6 +202,9 @@ func ReadApacheVhosts(raw string) ([]*Domain, error) {
 }
 
 func isDomainURL(host string, port string) (*url.URL, error) {
+	if port != "443" && port != "80" {
+		host = fmt.Sprintf("%s:%s", host, port)
+	}
 	uri, err := url.Parse(host)
 
 	if err != nil {
@@ -215,7 +218,6 @@ func isDomainURL(host string, port string) (*url.URL, error) {
 		uri.Scheme = "https"
 	} else {
 		uri.Scheme = "http"
-		uri.Host = fmt.Sprintf("%s:%s", uri.Host, port)
 	}
 
 	return uri, nil
