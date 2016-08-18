@@ -1,12 +1,16 @@
 package main
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/Liamraystanley/marill/scraper"
 )
 
 func TestFetch(t *testing.T) {
+	initLogger(ioutil.Discard)
+	defer closeLogger() // ensure we're cleaning up the logger
+
 	cases := []struct {
 		in   string
 		inx  string // extra -- e.g. ip
@@ -29,7 +33,7 @@ func TestFetch(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		got := scraper.FetchURL(c.in, "")
+		got := scraper.FetchURL(c.in, "", logger)
 
 		if got.Error != nil && !c.want {
 			t.Errorf("scraper.fetchURL(%q, %q) == %q, wanted error: %v", c.in, c.inx, got.Error, c.want)
