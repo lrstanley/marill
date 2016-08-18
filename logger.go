@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-var errorlog *os.File
+var logf *os.File
 var logger *log.Logger
 
 func initLogger(w io.Writer) {
@@ -21,4 +21,8 @@ func initLoggerToFile(fn string) {
 		os.Exit(1)
 	}
 	initLogger(logf)
+}
+
+func closeLogger() {
+	logf.Close()
 }

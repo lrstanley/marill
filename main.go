@@ -15,6 +15,8 @@ func main() {
 	// also implement io.MultiWriter?
 	// initLoggerToFile("marill.log")
 	initLogger(os.Stdout)
+	defer closeLogger() // ensure we're cleaning up the logger
+
 	logger.Println("Initializing logger")
 
 	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
