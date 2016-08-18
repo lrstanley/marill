@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -206,6 +207,26 @@ func isDomainURL(host string, port string) (*url.URL, *NewErr) {
 		host = fmt.Sprintf("%s:%s", host, port)
 	}
 
+	intport, err := strconv.Atoi(port)
+	if err != nil {
+		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+	}
+	strport := strconv.Itoa(intport)
+	if strport != port {
+		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+	}
+
+	// lets try and determine the scheme we need. Best solution would like be:
+	//   - 443 -- https
+	//   - anything else -- http
+	var scheme string
+	if port == "443" {
+		scheme = "https://"
+	} else {
+		scheme = "http://"
+	}
+	host = scheme + host
+
 	if strings.Contains(host, " ") {
 		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
 	}
@@ -214,15 +235,6 @@ func isDomainURL(host string, port string) (*url.URL, *NewErr) {
 
 	if err != nil {
 		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
-	}
-
-	// lets try and determine the scheme we need. Best solution would like be:
-	//   - 443 -- https
-	//   - anything else -- http
-	if port == "443" {
-		uri.Scheme = "https"
-	} else {
-		uri.Scheme = "http"
 	}
 
 	return uri, nil
