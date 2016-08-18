@@ -39,8 +39,8 @@ func (e NewErr) Error() string {
 
 // UpgradeErr takes a standard error interface and upgrades it to our
 // custom error types
-func UpgradeErr(e error) Err {
-	return NewErr{Code: ErrUpgradedError, deepErr: e}
+func UpgradeErr(e error) *NewErr {
+	return &NewErr{Code: ErrUpgradedError, deepErr: e}
 }
 
 // map each error name to a unique id
@@ -51,12 +51,14 @@ const (
 	ErrApacheInvalidVhosts
 	ErrApacheParseVhosts
 	ErrApacheNoEntries
+	ErrNotImplemented
 )
 
 // errMsg contains a map of error name id keys and error/deep error pairs
 var errMsg = map[int]string{
-	ErrUpgradedError: "Not a real error",
-	ErrNoWebservers:  "Did not find any webservers running",
+	ErrUpgradedError:  "Not a real error",
+	ErrNoWebservers:   "Did not find any webservers running",
+	ErrNotImplemented: "The webserver %s is not implemented at this time",
 
 	// Apache specific
 	ErrApacheFetchVhosts:   "Unable to obtain vhost data from Apache: %s",

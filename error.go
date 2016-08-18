@@ -43,8 +43,8 @@ func (e NewErr) Error() string {
 
 // UpgradeErr takes a standard error interface and upgrades it to our
 // custom error types
-func UpgradeErr(e error) Err {
-	return NewErr{Code: ErrUpgradedError, deepErr: e}
+func UpgradeErr(e error) *NewErr {
+	return &NewErr{Code: ErrUpgradedError, deepErr: e}
 }
 
 // map each error name to a unique id
