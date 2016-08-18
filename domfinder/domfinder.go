@@ -215,6 +215,7 @@ func isDomainURL(host string, port string) (*url.URL, error) {
 		uri.Scheme = "https"
 	} else {
 		uri.Scheme = "http"
+		uri.Host = fmt.Sprintf("%s:%s", uri.Host, port)
 	}
 
 	return uri, nil
