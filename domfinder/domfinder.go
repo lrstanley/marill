@@ -106,6 +106,20 @@ func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err *NewErr) {
 	return nil, nil, &NewErr{Code: ErrNotImplemented, value: proc.Name}
 }
 
+const (
+	kernHostname = "/proc/sys/kernel/hostname"
+)
+
+func getHostname() string {
+	data, err := ioutil.ReadFile(kernHostname)
+
+	if err != nil {
+		return "unknown"
+	}
+
+	return strings.Replace(string(data), "\n", "", 1)
+}
+
 var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
 
 // ReadApacheVhosts interprets and parses the "httpd -S" directive entries.
@@ -118,6 +132,9 @@ func ReadApacheVhosts(raw string) ([]*Domain, error) {
 
 	// save the original, in case we need it
 	original := raw
+
+	// we'll want to get the hostname to test against (e.g. we want to ignore hostname urls)
+	hostname := getHostname()
 
 	var domains []*Domain
 
@@ -187,7 +204,7 @@ func ReadApacheVhosts(raw string) ([]*Domain, error) {
 			domainPort := item[1]
 			domainName := item[2]
 
-			if len(domainPort) == 0 || len(domainName) == 0 || reIP.MatchString(domainName) {
+			if len(domainPort) == 0 || len(domainName) == 0 || reIP.MatchString(domainName) || hostname == domainName {
 				// assume that we didn't parse the string properly -- might add logs for debugging
 				// in the future
 				continue
