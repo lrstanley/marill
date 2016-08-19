@@ -16,5 +16,5 @@ test: fetch
 	go test ./...
 
 all: fetch
-	go build -x -v -o ${BINARY} *.go
+	go build -x -v -o ${BINARY}
 	/bin/rm -fv bindata.go
