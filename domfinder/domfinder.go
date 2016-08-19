@@ -199,7 +199,30 @@ func ReadApacheVhosts(raw string) ([]*Domain, error) {
 		}
 	}
 
+	stripDups(&domains)
+
 	return domains, nil
+}
+
+func stripDups(domains *[]*Domain) {
+	var tmp []*Domain
+
+	for _, dom := range *domains {
+		isIn := false
+		for _, other := range tmp {
+			if dom.URL.String() == other.URL.String() {
+				isIn = true
+				break
+			}
+		}
+		if !isIn {
+			tmp = append(tmp, dom)
+		}
+	}
+
+	*domains = tmp
+
+	return
 }
 
 func isDomainURL(host string, port string) (*url.URL, *NewErr) {
