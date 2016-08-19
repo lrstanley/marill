@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+// webservers represents the list of nice-name processes that we should be checking
+// configurations for.
 var webservers = map[string]bool{
 	"httpd":   true,
 	"apache":  true,
@@ -19,12 +21,15 @@ var webservers = map[string]bool{
 	"lshttpd": true,
 }
 
+// Process represents a unix based process. This provides the direct path to the exe that
+// it was originally spawned with, along with the nicename and process ID.
 type Process struct {
 	PID  string
 	Name string
 	Exe  string
 }
 
+// GetProcs crawls /proc/ for al.l pids that match webservers matching "webservers".
 func GetProcs() (pl []*Process) {
 	ps, _ := filepath.Glob("/proc/[0-9]*")
 
@@ -57,6 +62,8 @@ func GetProcs() (pl []*Process) {
 	return pl
 }
 
+// Domain represents a domain we should be checking, including the necessary data
+// to fetch it, with the included host/port proxiable op, and public ip
 type Domain struct {
 	IP       string
 	Port     string
@@ -64,6 +71,8 @@ type Domain struct {
 	PublicIP string
 }
 
+// GetDomains represents all of the domains that the current webserver has virtual
+// hosts for.
 func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err *NewErr) {
 	if len(pl) == 0 {
 		return nil, nil, &NewErr{Code: ErrNoWebservers}
@@ -97,6 +106,8 @@ func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err *NewErr) {
 	return nil, nil, &NewErr{Code: ErrNotImplemented, value: proc.Name}
 }
 
+// ReadApacheVhosts interprets and parses the "httpd -S" directive entries.
+// docs: http://httpd.apache.org/docs/current/vhosts/#directives
 func ReadApacheVhosts(raw string) ([]*Domain, error) {
 	// some regex patterns to pull out data from the vhost results
 	reVhostblock := regexp.MustCompile(`(?sm:^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{2,5} \s+is a NameVirtualHost)`)
@@ -204,6 +215,7 @@ func ReadApacheVhosts(raw string) ([]*Domain, error) {
 	return domains, nil
 }
 
+// stripDups strips all domains that have the same resulting URL
 func stripDups(domains *[]*Domain) {
 	var tmp []*Domain
 
@@ -225,6 +237,9 @@ func stripDups(domains *[]*Domain) {
 	return
 }
 
+// isDomainURL should validate the data we are obtaining from the webservers to
+// ensure it is a proper hostname and/or port (within reason. custom configs are
+// custom)
 func isDomainURL(host string, port string) (*url.URL, *NewErr) {
 	if port != "443" && port != "80" {
 		host = fmt.Sprintf("%s:%s", host, port)
