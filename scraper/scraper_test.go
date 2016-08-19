@@ -1,15 +1,13 @@
-package main
+package scraper
 
 import (
-	"io/ioutil"
+	"log"
+	"os"
 	"testing"
-
-	"github.com/Liamraystanley/marill/scraper"
 )
 
 func TestFetch(t *testing.T) {
-	initLogger(ioutil.Discard)
-	defer closeLogger() // ensure we're cleaning up the logger
+	logger := log.New(os.Stdout, "", log.LstdFlags)
 
 	cases := []struct {
 		in   string
@@ -33,14 +31,14 @@ func TestFetch(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		got := scraper.FetchURL(c.in, "", logger)
+		got := FetchURL(c.in, "", logger)
 
 		if got.Error != nil && !c.want {
-			t.Errorf("scraper.fetchURL(%q, %q) == %q, wanted error: %v", c.in, c.inx, got.Error, c.want)
+			t.Errorf("fetchURL(%q, %q) == %q, wanted error: %v", c.in, c.inx, got.Error, c.want)
 		}
 
 		if got.Error == nil && c.want && got.Code == 200 {
-			t.Errorf("scraper.fetchURL(%q, %q) == %q (%#v), though no errors", c.in, c.inx, got.Error, got)
+			t.Errorf("fetchURL(%q, %q) == %q (%#v), though no errors", c.in, c.inx, got.Error, got)
 		}
 	}
 
