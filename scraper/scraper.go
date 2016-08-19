@@ -247,7 +247,7 @@ type Results struct {
 
 var resourcePool sync.WaitGroup
 
-// fetchURL manages the fetching of the main resource, as well as all child resources,
+// FetchURL manages the fetching of the main resource, as well as all child resources,
 // providing a Results struct containing the entire crawl data needed
 func FetchURL(URL string, IP string, logger *log.Logger) (res *Results) {
 	res = &Results{logger: logger}
@@ -322,11 +322,16 @@ func FetchURL(URL string, IP string, logger *log.Logger) (res *Results) {
 	return
 }
 
+// Domain represents a url we need to fetch, including the items needed to
+// fetch said url. E.g: host, port, ip, scheme, path, etc.
 type Domain struct {
 	URL *url.URL
 	IP  string
 }
 
+// Crawl represents the higher level functionality of scraper. Crawl should
+// concurrently request the needed resources for a list of domains, allowing
+// the bypass of DNS lookups where necessary.
 func Crawl(domains []*Domain, logger *log.Logger) (results []*Results) {
 	var wg sync.WaitGroup
 	timer := NewTimer()
