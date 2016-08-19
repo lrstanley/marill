@@ -106,6 +106,8 @@ func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err *NewErr) {
 	return nil, nil, &NewErr{Code: ErrNotImplemented, value: proc.Name}
 }
 
+var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
+
 // ReadApacheVhosts interprets and parses the "httpd -S" directive entries.
 // docs: http://httpd.apache.org/docs/current/vhosts/#directives
 func ReadApacheVhosts(raw string) ([]*Domain, error) {
@@ -185,7 +187,7 @@ func ReadApacheVhosts(raw string) ([]*Domain, error) {
 			domainPort := item[1]
 			domainName := item[2]
 
-			if len(domainPort) == 0 || len(domainName) == 0 {
+			if len(domainPort) == 0 || len(domainName) == 0 || reIP.MatchString(domainName) {
 				// assume that we didn't parse the string properly -- might add logs for debugging
 				// in the future
 				continue
