@@ -338,7 +338,7 @@ func Crawl(domains []*Domain, logger *log.Logger) (results []*Results) {
 		go func(domain *Domain) {
 			defer wg.Done()
 
-			result := FetchURL(domain.URL.String(), "", logger)
+			result := FetchURL(domain.URL.String(), domain.IP, logger)
 			results = append(results, result)
 
 			if result.Error != nil {
