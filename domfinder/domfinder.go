@@ -19,6 +19,7 @@ var webservers = map[string]bool{
 	"apache":  true,
 	"nginx":   true,
 	"lshttpd": true,
+	"cpsrvd":  true,
 }
 
 // Process represents a unix based process. This provides the direct path to the exe that
@@ -43,6 +44,10 @@ func GetProcs() (pl []*Process) {
 			continue
 		} else {
 			proc.Name = strings.Replace(string(data), "\n", "", 1)
+		}
+
+		if strings.Contains(proc.Name, "cpsrvd") {
+			proc.Name = "cpsrvd"
 		}
 
 		if !webservers[proc.Name] {
