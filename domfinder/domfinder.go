@@ -3,6 +3,7 @@ package domfinder
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"os/exec"
 	"strings"
@@ -20,11 +21,27 @@ var webservers = map[string]bool{
 	"nginx":   true,
 }
 
-func GetWebservers() (pl []*procfinder.Process, err error) {
+// Domain represents a domain we should be checking, including the necessary data
+// to fetch it, with the included host/port proxiable op, and public ip
+type Domain struct {
+	IP       string
+	Port     string
+	URL      *url.URL
+	PublicIP string
+}
+
+type Finder struct {
+	Procs    []*procfinder.Process
+	MainProc *procfinder.Process
+	Domains  []*Domain
+	Log      *log.Logger
+}
+
+func (f *Finder) GetWebservers() (err error) {
 	tmp, err := procfinder.GetProcs()
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for i := range tmp {
@@ -35,105 +52,97 @@ func GetWebservers() (pl []*procfinder.Process, err error) {
 		}
 
 		if webservers[tmp[i].Name] {
-			pl = append(pl, tmp[i])
+			f.Procs = append(f.Procs, tmp[i])
 		}
 	}
 
-	if len(pl) == 0 {
-		return nil, &NewErr{Code: ErrNoWebservers}
+	if len(f.Procs) == 0 {
+		return &NewErr{Code: ErrNoWebservers}
 	}
 
 	// check to see what's listening on ports 80/443, and check to see if we support 'em
 	var stdports *procfinder.Process
-	for i := range pl {
-		if pl[i].Port == 80 || pl[i].Port == 443 {
-			stdports = pl[i]
+	for i := range f.Procs {
+		if f.Procs[i].Port == 80 || f.Procs[i].Port == 443 {
+			stdports = f.Procs[i]
 			break
 		}
 	}
 
 	if !webservers[stdports.Name] {
 		// assume whatever is listening on port 80/443 is something we don't support
-		return nil, errors.New(fmt.Sprintf("Found process PID %s (%s) on port %d, which we don't support!", stdports.PID, stdports.Name, stdports.Port))
-	}
-
-	return pl, nil
-}
-
-func getWebserverMap(pl []*procfinder.Process) (mpl map[string]*procfinder.Process) {
-	mpl = make(map[string]*procfinder.Process)
-	for i := range pl {
-		mpl[pl[i].Name] = pl[i]
-	}
-
-	return mpl
-}
-
-func GetMainWebserver(pl []*procfinder.Process) *procfinder.Process {
-	for i := range pl {
-		if pl[i].Port == 80 || pl[i].Port == 443 {
-			return pl[i]
-		}
+		return errors.New(fmt.Sprintf("found process PID %s (%s) on port %d, which we don't support!", stdports.PID, stdports.Name, stdports.Port))
 	}
 
 	return nil
 }
 
-// Domain represents a domain we should be checking, including the necessary data
-// to fetch it, with the included host/port proxiable op, and public ip
-type Domain struct {
-	IP       string
-	Port     string
-	URL      *url.URL
-	PublicIP string
+func (f *Finder) getWebserverMap() (mpl map[string]*procfinder.Process) {
+	mpl = make(map[string]*procfinder.Process)
+	for i := range f.Procs {
+		mpl[f.Procs[i].Name] = f.Procs[i]
+	}
+
+	return mpl
+}
+
+func (f *Finder) GetMainWebserver() {
+	for i := range f.Procs {
+		if f.Procs[i].Port == 80 || f.Procs[i].Port == 443 {
+			f.MainProc = f.Procs[i]
+			return
+		}
+	}
+
+	f.MainProc = nil
+
+	return
 }
 
 // GetDomains represents all of the domains that the current webserver has virtual
 // hosts for.
-func GetDomains(pl []*procfinder.Process) (*procfinder.Process, []*Domain, Err) {
+func (f *Finder) GetDomains() Err {
 	// we want to get just one of the webservers, (or procs), to run our
 	// domain pulling from. commonly httpd spawns multiple child processes
 	// which we don't need to check each one.
-	proc := GetMainWebserver(pl)
-	mpl := getWebserverMap(pl)
+	mpl := f.getWebserverMap()
 
-	if proc == nil {
-		return nil, nil, &NewErr{Code: ErrNoWebservers}
+	if f.GetMainWebserver(); f.MainProc == nil {
+		return &NewErr{Code: ErrNoWebservers}
 	}
 
 	// check to see if there were any cPanel processes within the list
 	if proc, ok := mpl["cpsrvd"]; ok {
-		// assume cPanel based. we can crawl /var/cpanel/ for necessary data.
-		domains, err := ReadCpanelVars()
+		f.MainProc = proc
 
-		if err != nil {
-			return nil, nil, UpgradeErr(err)
+		// assume cPanel based. we can crawl /var/cpanel/ for necessary data.
+		if err := f.ReadCpanelVars(); err != nil {
+			return UpgradeErr(err)
 		}
 
-		return proc, domains, nil
+		return nil
 	}
 
-	if proc.Name == "httpd" || proc.Name == "apache" || proc.Name == "lshttpd" {
+	if f.MainProc.Name == "httpd" || f.MainProc.Name == "apache" || f.MainProc.Name == "lshttpd" {
 		// assume apache based. should be able to use "-S" switch:
 		// docs: http://httpd.apache.org/docs/current/vhosts/#directives
-		output, err := exec.Command(proc.Exe, "-S").Output()
+		output, err := exec.Command(f.MainProc.Exe, "-S").Output()
 		out := string(output)
 
 		if err != nil {
-			return nil, nil, &NewErr{Code: ErrApacheFetchVhosts, value: err.Error()}
+			return &NewErr{Code: ErrApacheFetchVhosts, value: err.Error()}
 		}
 
 		if !strings.Contains(out, "VirtualHost configuration") {
-			return nil, nil, &NewErr{Code: ErrApacheInvalidVhosts, value: "binary: " + proc.Exe}
+			return &NewErr{Code: ErrApacheInvalidVhosts, value: "binary: " + f.MainProc.Exe}
 		}
 
-		domains, err := ReadApacheVhosts(out)
-		if err != nil {
-			return nil, nil, UpgradeErr(err)
+		if err := f.ReadApacheVhosts(out); err != nil {
+			return UpgradeErr(err)
 		}
 
-		return proc, domains, nil
+		return nil
 	}
 
-	return nil, nil, &NewErr{Code: ErrNotImplemented, value: proc.Name}
+	return &NewErr{Code: ErrNotImplemented, value: f.MainProc.Name}
 }

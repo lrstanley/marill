@@ -21,11 +21,11 @@ type cpanelVhost struct {
 	Port         string
 }
 
-func ReadCpanelVars() ([]*Domain, error) {
+func (f *Finder) ReadCpanelVars() error {
 	cphosts, err := filepath.Glob("/var/cpanel/userdata/[a-z0-9_]*/*.*.cache")
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var domains []*Domain
@@ -85,12 +85,14 @@ func ReadCpanelVars() ([]*Domain, error) {
 		}
 	}
 
-	return domains, nil
+	f.Domains = domains
+
+	return nil
 }
 
 // ReadApacheVhosts interprets and parses the "httpd -S" directive entries.
 // docs: http://httpd.apache.org/docs/current/vhosts/#directives
-func ReadApacheVhosts(raw string) ([]*Domain, error) {
+func (f *Finder) ReadApacheVhosts(raw string) error {
 	// some regex patterns to pull out data from the vhost results
 	reVhostblock := regexp.MustCompile(`(?sm:^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{2,5} \s+is a NameVirtualHost)`)
 	reStripvars := regexp.MustCompile(`(?ms:[\w-]+: .*$)`)
@@ -139,7 +141,7 @@ func ReadApacheVhosts(raw string) ([]*Domain, error) {
 	}
 
 	if len(results) == 0 {
-		return nil, &NewErr{Code: ErrApacheNoEntries}
+		return &NewErr{Code: ErrApacheNoEntries}
 	}
 
 	// now we should have a list of loaded virtual host blocks.
@@ -149,13 +151,13 @@ func ReadApacheVhosts(raw string) ([]*Domain, error) {
 
 		rawipport := reVhostipport.FindAllStringSubmatch(rvhost, -1)
 		if len(rawipport) == 0 {
-			return nil, &NewErr{Code: ErrApacheParseVhosts, value: fmt.Sprintf("line %s", line)}
+			return &NewErr{Code: ErrApacheParseVhosts, value: fmt.Sprintf("line %s", line)}
 		}
 
 		ip := rawipport[0][1]
 		port := rawipport[0][2]
 		if len(ip) == 0 || len(port) == 0 {
-			return nil, &NewErr{Code: ErrApacheParseVhosts, value: fmt.Sprintf("line %s, unable to determine ip/port", line)}
+			return &NewErr{Code: ErrApacheParseVhosts, value: fmt.Sprintf("line %s, unable to determine ip/port", line)}
 		}
 
 		reNameVhost := regexp.MustCompile(`\s+ port (\d{2,5}) namevhost ([^ ]+)`)
@@ -197,5 +199,7 @@ func ReadApacheVhosts(raw string) ([]*Domain, error) {
 
 	stripDups(&domains)
 
-	return domains, nil
+	f.Domains = domains
+
+	return nil
 }
