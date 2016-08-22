@@ -20,7 +20,8 @@ type CustomClient struct {
 	URL       string
 	IP        string
 	Host      string
-	ResultURL *url.URL
+	ResultURL *url.URL // represents the url for the resulting request, without modifications
+	OriginURL *url.URL // represents the url from the original request, without modifications
 }
 
 // CustomResponse is the wrapped response from http.Client.Do() which also
@@ -51,6 +52,14 @@ func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) e
 		return errors.New("Redirected to IP that doesn't match proxy")
 	}
 
+	cHost := strings.ToLower(req.URL.Host)
+	oHost := strings.ToLower(c.Host)
+	if cHost != oHost && cHost != "www."+oHost && "www."+cHost != oHost {
+		if c.OriginURL.Path == "" {
+			return errors.New("Redirection does not match origin host")
+		}
+	}
+
 	return nil
 }
 
@@ -66,7 +75,9 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 
 	// assign the origin host to the host header value, ONLY if it matches the domains
 	// hostname
-	if strings.ToLower(req.URL.Host) == strings.ToLower(c.Host) || strings.ToLower(req.URL.Host) == strings.ToLower("www."+c.Host) {
+	curHost := strings.ToLower(req.URL.Host)
+	origHost := strings.ToLower(c.Host)
+	if curHost == origHost || curHost == "www."+origHost || "www."+curHost == origHost {
 		req.Host = req.URL.Host
 
 		// and overwrite the host used to make the connection
@@ -242,6 +253,7 @@ func (c *CustomClient) getHandler() (*CustomResponse, error) {
 		return nil, err
 	}
 
+	c.OriginURL = req.URL // set origin url for use in redirect wrapper
 	c.requestWrap(req)
 
 	// start tracking how long the request is going to take
