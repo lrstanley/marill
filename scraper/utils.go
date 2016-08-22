@@ -1,6 +1,10 @@
 package scraper
 
-import "time"
+import (
+	"errors"
+	"net/url"
+	"time"
+)
 
 // Timer represents a custom timer, holding start/end nanoseconds
 type Timer struct {
@@ -39,4 +43,14 @@ func NewTimer() *Timer {
 	timer.Start()
 
 	return timer
+}
+
+func getHost(uri string) (string, error) {
+	host, err := url.Parse(uri)
+
+	if err != nil {
+		return "", errors.New("Invalid url")
+	}
+
+	return host.Host, nil
 }
