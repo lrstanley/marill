@@ -1,70 +1,87 @@
 package domfinder
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/url"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Liamraystanley/marill/procfinder"
 )
 
 // webservers represents the list of nice-name processes that we should be checking
 // configurations for.
 var webservers = map[string]bool{
+	"cpsrvd":  true,
 	"httpd":   true,
 	"apache":  true,
-	"nginx":   true,
 	"lshttpd": true,
-	"cpsrvd":  true,
+	"nginx":   true,
 }
 
-// Process represents a unix based process. This provides the direct path to the exe that
-// it was originally spawned with, along with the nicename and process ID.
-type Process struct {
-	PID  string
-	Name string
-	Exe  string
-}
+func GetWebservers() (pl []*procfinder.Process, err error) {
+	tmp, err := procfinder.GetProcs()
 
-// GetProcs crawls /proc/ for al.l pids that match webservers matching "webservers".
-func GetProcs() (pl []*Process) {
-	ps, _ := filepath.Glob("/proc/[0-9]*")
-
-	for i := range ps {
-		proc := &Process{}
-
-		proc.PID = strings.Split(ps[i], "/")[2]
-
-		// command name
-		if data, err := ioutil.ReadFile(ps[i] + "/comm"); err != nil {
-			continue
-		} else {
-			proc.Name = strings.Replace(string(data), "\n", "", 1)
-		}
-
-		if strings.Contains(proc.Name, "cpsrvd") {
-			proc.Name = "cpsrvd"
-		}
-
-		if !webservers[proc.Name] {
-			continue
-		}
-
-		// executable path
-		if data, err := os.Readlink(ps[i] + "/exe"); err != nil {
-			continue
-		} else {
-			proc.Exe = strings.Replace(string(data), "\n", "", 1)
-		}
-
-		pl = append(pl, proc)
+	if err != nil {
+		return nil, err
 	}
 
-	return pl
+	for i := range tmp {
+		// correction for cPanel proc names, as cPanel dynamically updates these based
+		// on the state of cPanel (idling, SSL, etc)
+		if strings.Contains(tmp[i].Name, "cpsrvd") {
+			tmp[i].Name = "cpsrvd"
+		}
+
+		if webservers[tmp[i].Name] {
+			pl = append(pl, tmp[i])
+		}
+	}
+
+	if len(pl) == 0 {
+		return nil, &NewErr{Code: ErrNoWebservers}
+	}
+
+	// check to see what's listening on ports 80/443, and check to see if we support 'em
+	var stdports *procfinder.Process
+	for i := range pl {
+		if pl[i].Port == 80 || pl[i].Port == 443 {
+			stdports = pl[i]
+			break
+		}
+	}
+
+	if !webservers[stdports.Name] {
+		// assume whatever is listening on port 80/443 is something we don't support
+		return nil, errors.New(fmt.Sprintf("Found process PID %s (%s) on port %d, which we don't support!", stdports.PID, stdports.Name, stdports.Port))
+	}
+
+	return pl, nil
+}
+
+func getWebserverMap(pl []*procfinder.Process) (mpl map[string]*procfinder.Process) {
+	mpl = make(map[string]*procfinder.Process)
+	for i := range pl {
+		mpl[pl[i].Name] = pl[i]
+	}
+
+	return mpl
+}
+
+func GetMainWebserver(pl []*procfinder.Process) *procfinder.Process {
+	for i := range pl {
+		if pl[i].Port == 80 || pl[i].Port == 443 {
+			return pl[i]
+		}
+	}
+
+	return nil
 }
 
 // Domain represents a domain we should be checking, including the necessary data
@@ -78,19 +95,31 @@ type Domain struct {
 
 // GetDomains represents all of the domains that the current webserver has virtual
 // hosts for.
-func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err *NewErr) {
-	if len(pl) == 0 {
+func GetDomains(pl []*procfinder.Process) (*procfinder.Process, []*Domain, Err) {
+	// we want to get just one of the webservers, (or procs), to run our
+	// domain pulling from. commonly httpd spawns multiple child processes
+	// which we don't need to check each one.
+	proc := GetMainWebserver(pl)
+	mpl := getWebserverMap(pl)
+
+	if proc == nil {
 		return nil, nil, &NewErr{Code: ErrNoWebservers}
 	}
 
-	// we want to get just one of the webservers, (or procs), to run our
-	// domain pulling from. Commonly httpd spawns multiple child processes
-	// which we don't need to check each one.
+	// check to see if there were any cPanel processes within the list
+	if proc, ok := mpl["cpsrvd"]; ok {
+		// assume cPanel based. we can crawl /var/cpanel/ for necessary data.
+		domains, err := ReadCpanelVars()
 
-	proc = pl[0]
+		if err != nil {
+			return nil, nil, UpgradeErr(err)
+		}
+
+		return proc, domains, nil
+	}
 
 	if proc.Name == "httpd" || proc.Name == "apache" || proc.Name == "lshttpd" {
-		// assume apache based. Should be able to use "-S" switch:
+		// assume apache based. should be able to use "-S" switch:
 		// docs: http://httpd.apache.org/docs/current/vhosts/#directives
 		output, err := exec.Command(proc.Exe, "-S").Output()
 		out := string(output)
@@ -103,9 +132,12 @@ func GetDomains(pl []*Process) (proc *Process, domains []*Domain, err *NewErr) {
 			return nil, nil, &NewErr{Code: ErrApacheInvalidVhosts, value: "binary: " + proc.Exe}
 		}
 
-		domains, err = ReadApacheVhosts(out)
+		domains, err := ReadApacheVhosts(out)
+		if err != nil {
+			return nil, nil, UpgradeErr(err)
+		}
 
-		return proc, domains, UpgradeErr(err)
+		return proc, domains, nil
 	}
 
 	return nil, nil, &NewErr{Code: ErrNotImplemented, value: proc.Name}
@@ -126,6 +158,83 @@ func getHostname() string {
 }
 
 var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
+
+type cpanelVhost struct {
+	Servername   string
+	Serveralias  string
+	Homedir      string
+	User         string
+	IP           string
+	Documentroot string
+	Port         string
+}
+
+func ReadCpanelVars() ([]*Domain, error) {
+	cphosts, err := filepath.Glob("/var/cpanel/userdata/[a-z0-9_]*/*.*.cache")
+
+	if err != nil {
+		return nil, err
+	}
+
+	var domains []*Domain
+	for i := range cphosts {
+		raw, err := ioutil.ReadFile(cphosts[i])
+		if err != nil {
+			continue
+		}
+
+		vhost := &cpanelVhost{}
+
+		err = json.Unmarshal(raw, &vhost)
+		if err != nil {
+			continue
+		}
+
+		if vhost.User == "nobody" || reIP.MatchString(vhost.Servername) {
+			// assume it's an invalid user or it's an ip. we can ignore.
+			continue
+		}
+
+		// actually get the cPanel user data
+		cpuser, err := ioutil.ReadFile(fmt.Sprintf("/var/cpanel/users/%s", vhost.User))
+		if err != nil {
+			continue
+		}
+
+		if strings.Contains(string(cpuser), "SUSPENDED=1") {
+			// assume they are suspended
+			continue
+		}
+
+		domainURL, err := isDomainURL(vhost.Servername, vhost.Port)
+		if err != nil {
+			// assume the actual domain is invalid
+			continue
+		}
+
+		domains = append(domains, &Domain{
+			IP:   vhost.IP,
+			Port: vhost.Port,
+			URL:  domainURL,
+		})
+
+		for _, subvhost := range strings.Split(vhost.Serveralias, " ") {
+			subURL, err := isDomainURL(subvhost, vhost.Port)
+			if err != nil {
+				// assume bad domain
+				continue
+			}
+
+			domains = append(domains, &Domain{
+				IP:   vhost.IP,
+				Port: vhost.Port,
+				URL:  subURL,
+			})
+		}
+	}
+
+	return domains, nil
+}
 
 // ReadApacheVhosts interprets and parses the "httpd -S" directive entries.
 // docs: http://httpd.apache.org/docs/current/vhosts/#directives
@@ -264,7 +373,7 @@ func stripDups(domains *[]*Domain) {
 // isDomainURL should validate the data we are obtaining from the webservers to
 // ensure it is a proper hostname and/or port (within reason. custom configs are
 // custom)
-func isDomainURL(host string, port string) (*url.URL, *NewErr) {
+func isDomainURL(host string, port string) (*url.URL, Err) {
 	if port != "443" && port != "80" {
 		host = fmt.Sprintf("%s:%s", host, port)
 	}

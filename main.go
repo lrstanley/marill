@@ -23,7 +23,7 @@ func main() {
 	logger.Printf("Limiting max threads to %d", runtime.NumCPU()*2)
 
 	logger.Println("Checking for running webservers...")
-	ps := domfinder.GetProcs()
+	ps, err := domfinder.GetWebservers()
 
 	if out := ""; len(ps) > 0 {
 		for _, proc := range ps {
@@ -36,6 +36,7 @@ func main() {
 	logger.Printf("Found %d domains on webserver %s (exe: %s, pid: %s)", len(domains), ws.Name, ws.Exe, ws.PID)
 
 	if err != nil {
+		fmt.Printf("%#v\n", err)
 		logger.Fatal(err)
 	}
 
