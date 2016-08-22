@@ -288,6 +288,10 @@ func Get(url string, ip string) (*CustomResponse, error) {
 		return nil, err
 	}
 
+	if len(ip) > 0 && !reIP.MatchString(ip) {
+		return nil, errors.New("IP address provided is invalid")
+	}
+
 	c := &CustomClient{URL: url, IP: ip, Host: host}
 
 	return c.getHandler()
