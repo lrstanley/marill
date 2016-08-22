@@ -11,6 +11,7 @@ import (
 
 var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
 
+// cpanelVhost represents a /var/cpanel/userdata/<user>/<domain>.cache file.
 type cpanelVhost struct {
 	Servername   string
 	Serveralias  string
@@ -21,6 +22,8 @@ type cpanelVhost struct {
 	Port         string
 }
 
+// ReadCpanelVars crawls through /var/cpanel/userdata/ and returns all valid
+// domains/ports that the cPanel server is hosting
 func (f *Finder) ReadCpanelVars() error {
 	cphosts, err := filepath.Glob("/var/cpanel/userdata/[a-z0-9_]*/*.*.cache")
 

@@ -12,6 +12,8 @@ const (
 	kernHostname = "/proc/sys/kernel/hostname"
 )
 
+// getHostname returns the servers hostname which we should compare against webserver
+// vhost entries.
 func getHostname() string {
 	data, err := ioutil.ReadFile(kernHostname)
 

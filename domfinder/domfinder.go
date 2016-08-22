@@ -30,13 +30,22 @@ type Domain struct {
 	PublicIP string
 }
 
+// Finder represents the entire domain crawl process to find domains that the server
+// is actually hosting.
 type Finder struct {
-	Procs    []*procfinder.Process
+	// Procs is a list of procs that should match up to a running webserver. these
+	// should all have bound tcp (4) sockets.
+	Procs []*procfinder.Process
+	// MainProc represents the main process which we are pulling information from.
 	MainProc *procfinder.Process
-	Domains  []*Domain
-	Log      *log.Logger
+	// Domains represents the list of domains that are valid and should be crawled.
+	Domains []*Domain
+	// Log is a logger which we should dump debugging info to.
+	Log *log.Logger
 }
 
+// GetWebServers pulls only the web server processes from the process list on the
+// server.
 func (f *Finder) GetWebservers() (err error) {
 	tmp, err := procfinder.GetProcs()
 
@@ -77,6 +86,8 @@ func (f *Finder) GetWebservers() (err error) {
 	return nil
 }
 
+// getWebserverMap returns a map of processes based on a key map of the process
+// names. useful to easily know if a process name is within the list
 func (f *Finder) getWebserverMap() (mpl map[string]*procfinder.Process) {
 	mpl = make(map[string]*procfinder.Process)
 	for i := range f.Procs {
@@ -86,6 +97,8 @@ func (f *Finder) getWebserverMap() (mpl map[string]*procfinder.Process) {
 	return mpl
 }
 
+// GetMainWebserver returns only one webserver which we should be pulling data
+// from.
 func (f *Finder) GetMainWebserver() {
 	for i := range f.Procs {
 		if f.Procs[i].Port == 80 || f.Procs[i].Port == 443 {
