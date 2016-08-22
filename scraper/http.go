@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -31,6 +32,11 @@ func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) e
 	uri := via[len(via)-1].URL
 	uri.Host = via[len(via)-1].Host
 	req.Header.Set("Referer", uri.String())
+
+	if len(via) > 3 {
+		// assume too many redirects
+		return errors.New("too many redirects (3)")
+	}
 
 	return nil
 }
