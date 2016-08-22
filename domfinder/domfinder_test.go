@@ -1,50 +1,6 @@
 package domfinder
 
-import (
-	"log"
-	"testing"
-)
-
-func TestFetch(t *testing.T) {
-	ps := GetProcs()
-
-	if len(ps) > 0 {
-		for _, proc := range ps {
-			if !webservers[proc.Name] {
-				log.Fatalf("GetProcs() returned len %d, proc %#v not webserver", len(ps), proc)
-			}
-		}
-	}
-
-	cases := []*Process{
-		{
-			PID:  "1",
-			Name: "test",
-			Exe:  "/usr/bin/doesntexist",
-		},
-		{
-			PID:  "1",
-			Name: "httpdtest",
-			Exe:  "/usr/sbin/httpd", // may exist, but the name doesn't match
-		},
-	}
-
-	// these should fail with ErrNotImplemented
-	for _, c := range cases {
-		proclist := []*Process{c}
-		proc, domains, err := GetDomains(proclist)
-
-		if err == nil {
-			t.Fatalf("GetDomains(%#v) should have failed but got: (%#v :: %#v :: %q)", proclist, proc, domains, err)
-		}
-
-		if err.GetCode() != ErrNotImplemented {
-			t.Fatalf("GetDomains(%#v) should have returned %v but returned %v", proclist, &NewErr{Code: ErrNotImplemented, value: c.Name}, err)
-		}
-	}
-
-	return
-}
+import "testing"
 
 func TestIsDomainURL(t *testing.T) {
 	cases := []struct {
