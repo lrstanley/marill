@@ -78,7 +78,9 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 		req.Host = req.URL.Host
 
 		// and overwrite the host used to make the connection
-		req.URL.Host = c.ipmap[req.URL.Host]
+		if len(c.ipmap[req.URL.Host]) > 0 {
+			req.URL.Host = c.ipmap[req.URL.Host]
+		}
 	}
 
 	// update our cached resulting uri
