@@ -22,6 +22,7 @@ type CustomClient struct {
 	Host      string
 	ResultURL *url.URL // represents the url for the resulting request, without modifications
 	OriginURL *url.URL // represents the url from the original request, without modifications
+	ipmap     map[string]string
 }
 
 // CustomResponse is the wrapped response from http.Client.Do() which also
@@ -52,9 +53,7 @@ func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) e
 		return errors.New("Redirected to IP that doesn't match proxy")
 	}
 
-	cHost := strings.ToLower(req.URL.Host)
-	oHost := strings.ToLower(c.Host)
-	if cHost != oHost && cHost != "www."+oHost && "www."+cHost != oHost {
+	if _, ok := c.ipmap[req.Host]; !ok {
 		if c.OriginURL.Path == "" {
 			return errors.New("Redirection does not match origin host")
 		}
@@ -75,15 +74,11 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 
 	// assign the origin host to the host header value, ONLY if it matches the domains
 	// hostname
-	curHost := strings.ToLower(req.URL.Host)
-	origHost := strings.ToLower(c.Host)
-	if curHost == origHost || curHost == "www."+origHost || "www."+curHost == origHost {
+	if _, ok := c.ipmap[req.URL.Host]; ok {
 		req.Host = req.URL.Host
 
 		// and overwrite the host used to make the connection
-		if len(c.IP) > 0 {
-			req.URL.Host = c.IP
-		}
+		req.URL.Host = c.ipmap[req.URL.Host]
 	}
 
 	// update our cached resulting uri
@@ -282,17 +277,21 @@ func (c *CustomClient) getHandler() (*CustomResponse, error) {
 }
 
 // Get wraps GetHandler -- easy interface for making get requests
-func Get(url string, ip string) (*CustomResponse, error) {
+func Get(ipmap map[string]string, url string) (*CustomResponse, error) {
 	host, err := getHost(url)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(ip) > 0 && !reIP.MatchString(ip) {
-		return nil, errors.New("IP address provided is invalid")
+	ip, ok := ipmap[host]
+
+	if ok {
+		if len(ip) > 0 && !reIP.MatchString(ip) {
+			return nil, errors.New("IP address provided is invalid")
+		}
 	}
 
-	c := &CustomClient{URL: url, IP: ip, Host: host}
+	c := &CustomClient{URL: url, IP: ip, Host: host, ipmap: ipmap}
 
 	return c.getHandler()
 }

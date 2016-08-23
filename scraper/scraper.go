@@ -6,19 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
+	"strings"
 	"sync"
 )
-
-func connHostname(URL string) (host string, err error) {
-	tmp, err := url.Parse(URL)
-
-	if err != nil {
-		return
-	}
-
-	host = tmp.Host
-	return
-}
 
 // Resource represents a single entity of many within a given crawl. These should
 // only be of type css, js, jpg, png, etc (static resources).
@@ -71,13 +61,13 @@ type Resource struct {
 // fetchResource fetches a singular resource from a page, returning a *Resource struct.
 // As we don't care much about the body of the resource, that can safely be ignored. We
 // must still close the body object, however.
-func (rsrc *Resource) fetchResource() {
+func (c *Crawler) fetchResource(rsrc *Resource) {
 	var err error
 
 	defer resourcePool.Done()
 
 	// calculate the time it takes to fetch the request
-	resp, err := Get(rsrc.connURL, rsrc.connIP)
+	resp, err := Get(c.ipmap, rsrc.connURL)
 
 	if err != nil {
 		rsrc.Error = err
@@ -88,7 +78,7 @@ func (rsrc *Resource) fetchResource() {
 		resp.Body.Close()
 	}
 
-	rsrc.connHostname, err = connHostname(rsrc.connURL)
+	rsrc.connHostname, err = getHost(rsrc.connURL)
 	if err != nil {
 		rsrc.Error = err
 		return
@@ -107,7 +97,7 @@ func (rsrc *Resource) fetchResource() {
 		rsrc.Remote = true
 	}
 
-	rsrc.logger.Printf("fetched %s in %dms with status %d", rsrc.URL, rsrc.Time.Milli, rsrc.Code)
+	c.Log.Printf("fetched %s in %dms with status %d", rsrc.URL, rsrc.Time.Milli, rsrc.Code)
 
 	return
 }
@@ -129,21 +119,24 @@ type Results struct {
 
 	// TotalTime represents the time it took to crawl the site
 	TotalTime *TimerResult
-
-	// logging functionality
-	logger *log.Logger
 }
 
 var resourcePool sync.WaitGroup
 
 // FetchURL manages the fetching of the main resource, as well as all child resources,
 // providing a Results struct containing the entire crawl data needed
-func FetchURL(URL string, IP string, logger *log.Logger) (res *Results) {
-	res = &Results{logger: logger}
+func (c *Crawler) FetchURL(URL string) (res *Results) {
+	res = &Results{}
 	crawlTimer := NewTimer()
 
+	host, err := getHost(URL)
+	if err != nil {
+		res.Error = err
+		return
+	}
+
 	// actually fetch the request
-	resp, err := Get(URL, IP)
+	resp, err := Get(c.ipmap, URL)
 
 	defer func() {
 		crawlTimer.End()
@@ -157,14 +150,14 @@ func FetchURL(URL string, IP string, logger *log.Logger) (res *Results) {
 
 	defer resp.Body.Close()
 
-	res.connHostname, err = connHostname(URL)
+	res.connHostname = host
 	if err != nil {
 		res.Error = err
 		return
 	}
 
 	res.connURL = URL
-	res.connIP = IP
+	res.connIP = c.ipmap[host]
 	res.Hostname = resp.Request.Host
 	res.URL = resp.URL
 	res.Code = resp.StatusCode
@@ -189,7 +182,7 @@ func FetchURL(URL string, IP string, logger *log.Logger) (res *Results) {
 
 	urls := getSrc(b, resp.Request)
 
-	res.logger.Printf("fetched %s in %dms with status %d", res.URL, res.Time.Milli, res.Code)
+	c.Log.Printf("fetched %s in %dms with status %d", res.URL, res.Time.Milli, res.Code)
 
 	resourceTime := NewTimer()
 
@@ -201,9 +194,9 @@ func FetchURL(URL string, IP string, logger *log.Logger) (res *Results) {
 	for i := range urls {
 		resourcePool.Add(1)
 
-		rsrc := &Resource{connURL: urls[i], connIP: "", logger: res.logger}
+		rsrc := &Resource{connURL: urls[i], connIP: ""}
 		res.Resources = append(res.Resources, rsrc)
-		go res.Resources[i].fetchResource()
+		go c.fetchResource(res.Resources[i])
 	}
 
 	resourcePool.Wait()
@@ -218,27 +211,40 @@ type Domain struct {
 	IP  string
 }
 
+type Crawler struct {
+	Log     *log.Logger
+	Domains []*Domain
+	ipmap   map[string]string
+}
+
 // Crawl represents the higher level functionality of scraper. Crawl should
 // concurrently request the needed resources for a list of domains, allowing
 // the bypass of DNS lookups where necessary.
-func Crawl(domains []*Domain, logger *log.Logger) (results []*Results) {
+func (c *Crawler) Crawl() (results []*Results) {
 	var wg sync.WaitGroup
 	timer := NewTimer()
 
+	c.ipmap = make(map[string]string)
+	for i := range c.Domains {
+		c.ipmap[c.Domains[i].URL.Host] = c.Domains[i].IP
+		c.ipmap[strings.TrimPrefix(c.Domains[i].URL.Host, "www.")] = c.Domains[i].IP // no www. directive
+		c.ipmap["www."+c.Domains[i].URL.Host] = c.Domains[i].IP                      // www. directive
+	}
+
 	// loop through all supplied urls and send them to a worker to be fetched
-	for _, domain := range domains {
+	for _, domain := range c.Domains {
 		wg.Add(1)
 
 		go func(domain *Domain) {
 			defer wg.Done()
 
-			result := FetchURL(domain.URL.String(), domain.IP, logger)
+			result := c.FetchURL(domain.URL.String())
 			results = append(results, result)
 
 			if result.Error != nil {
-				logger.Printf("error scanning %s (error: %s)", domain.URL.String(), result.Error)
+				c.Log.Printf("error scanning %s (error: %s)", domain.URL.String(), result.Error)
 			} else {
-				logger.Printf("finished scanning %s (%dms)", domain.URL.String(), result.TotalTime.Milli)
+				c.Log.Printf("finished scanning %s (%dms)", domain.URL.String(), result.TotalTime.Milli)
 			}
 		}(domain)
 	}
@@ -247,7 +253,7 @@ func Crawl(domains []*Domain, logger *log.Logger) (results []*Results) {
 	wg.Wait()
 	timer.End()
 
-	logger.Printf("finished scanning %d urls in %d seconds", len(results), timer.Result.Seconds)
+	c.Log.Printf("finished scanning %d urls in %d seconds", len(results), timer.Result.Seconds)
 
 	// give some extra details
 	var resSuccess, resError int
@@ -260,7 +266,7 @@ func Crawl(domains []*Domain, logger *log.Logger) (results []*Results) {
 		resSuccess++
 	}
 
-	logger.Printf("%d successful, %d errored", resSuccess, resError)
+	c.Log.Printf("%d successful, %d errored", resSuccess, resError)
 
 	return results
 }
