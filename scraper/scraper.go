@@ -119,6 +119,9 @@ type Results struct {
 
 	// TotalTime represents the time it took to crawl the site
 	TotalTime *TimerResult
+
+	OriginURL string
+	OriginIP  string
 }
 
 var resourcePool sync.WaitGroup
@@ -134,6 +137,10 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 		res.Error = err
 		return
 	}
+
+	// set the origin host and IP
+	res.OriginURL = URL
+	res.OriginIP = c.ipmap[host]
 
 	// actually fetch the request
 	resp, err := Get(c.ipmap, URL)
