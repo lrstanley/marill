@@ -79,7 +79,7 @@ func (f *Finder) GetWebservers() (err error) {
 
 	if !webservers[stdports.Name] {
 		// assume whatever is listening on port 80/443 is something we don't support
-		return fmt.Errorf("found process PID %s (%s) on port %d, which we don't support!", stdports.PID, stdports.Name, stdports.Port)
+		return fmt.Errorf("found process PID %s (%s) on port %d, which we don't support", stdports.PID, stdports.Name, stdports.Port)
 	}
 
 	return nil

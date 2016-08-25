@@ -11,13 +11,13 @@ import (
 )
 
 func readNetTCP() ([]string, error) {
-	procTcp, err := ioutil.ReadFile("/proc/net/tcp")
+	procTCP, err := ioutil.ReadFile("/proc/net/tcp")
 
 	if err != nil {
 		return nil, err
 	}
 
-	lines := strings.Split(string(procTcp), "\n")
+	lines := strings.Split(string(procTCP), "\n")
 
 	return lines[1 : len(lines)-1], nil
 }
@@ -37,14 +37,14 @@ type Process struct {
 
 func removeEmpty(array []string) []string {
 	// remove empty data from line
-	var new_array []string
+	var newArray []string
 	for _, i := range array {
 		if i != "" {
-			new_array = append(new_array, i)
+			newArray = append(newArray, i)
 		}
 	}
 
-	return new_array
+	return newArray
 }
 
 // convert hexadecimal to decimal
@@ -120,17 +120,17 @@ func GetProcs() (pl []*Process, err error) {
 	}
 
 	for _, line := range tcp {
-		line_array := removeEmpty(strings.Split(strings.TrimSpace(line), " "))
-		ip_port := strings.Split(line_array[1], ":")
-		fip_port := strings.Split(line_array[2], ":")
+		lineArray := removeEmpty(strings.Split(strings.TrimSpace(line), " "))
+		ipPort := strings.Split(lineArray[1], ":")
+		fipPort := strings.Split(lineArray[2], ":")
 
 		proc := &Process{
-			IP:          ip(ip_port[0]),
-			Port:        hexToDec(ip_port[1]),
-			ForeignIP:   ip(fip_port[0]),
-			ForeignPort: hexToDec(fip_port[1]),
-			User:        getUser(line_array[7]),
-			PID:         getPid(line_array[9]),
+			IP:          ip(ipPort[0]),
+			Port:        hexToDec(ipPort[1]),
+			ForeignIP:   ip(fipPort[0]),
+			ForeignPort: hexToDec(fipPort[1]),
+			User:        getUser(lineArray[7]),
+			PID:         getPid(lineArray[9]),
 		}
 
 		proc.Exe = getProcessExe(proc.PID)
