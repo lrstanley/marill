@@ -216,6 +216,7 @@ type Domain struct {
 	IP  string
 }
 
+// Crawler is the higher level struct which wraps the entire threaded crawl process
 type Crawler struct {
 	Log     *log.Logger
 	Domains []*Domain
