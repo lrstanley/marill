@@ -92,6 +92,7 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 	return req
 }
 
+// HostnameError appears when an invalid SSL certificate is supplied
 type HostnameError struct {
 	Certificate *x509.Certificate
 	Host        string
@@ -216,6 +217,7 @@ func verifyx509(c *x509.Certificate, h string) error {
 	return HostnameError{c, h}
 }
 
+// VerifyHostname verifies if the tls.ConnectionState certificate matches the hostname
 func VerifyHostname(c *tls.ConnectionState, host string) error {
 	if c == nil {
 		return nil
