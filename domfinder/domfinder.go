@@ -1,7 +1,6 @@
 package domfinder
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -44,7 +43,7 @@ type Finder struct {
 	Log *log.Logger
 }
 
-// GetWebServers pulls only the web server processes from the process list on the
+// GetWebservers pulls only the web server processes from the process list on the
 // server.
 func (f *Finder) GetWebservers() (err error) {
 	tmp, err := procfinder.GetProcs()
@@ -80,7 +79,7 @@ func (f *Finder) GetWebservers() (err error) {
 
 	if !webservers[stdports.Name] {
 		// assume whatever is listening on port 80/443 is something we don't support
-		return errors.New(fmt.Sprintf("found process PID %s (%s) on port %d, which we don't support!", stdports.PID, stdports.Name, stdports.Port))
+		return fmt.Errorf("found process PID %s (%s) on port %d, which we don't support!", stdports.PID, stdports.Name, stdports.Port)
 	}
 
 	return nil
