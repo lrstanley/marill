@@ -154,13 +154,13 @@ func (f *Finder) ReadApacheVhosts(raw string) error {
 
 		rawipport := reVhostipport.FindAllStringSubmatch(rvhost, -1)
 		if len(rawipport) == 0 {
-			return &NewErr{Code: ErrApacheParseVhosts, value: fmt.Sprintf("line %s", line)}
+			return &NewErr{Code: ErrApacheParseVhosts, value: fmt.Sprintf("line %d", line)}
 		}
 
 		ip := rawipport[0][1]
 		port := rawipport[0][2]
 		if len(ip) == 0 || len(port) == 0 {
-			return &NewErr{Code: ErrApacheParseVhosts, value: fmt.Sprintf("line %s, unable to determine ip/port", line)}
+			return &NewErr{Code: ErrApacheParseVhosts, value: fmt.Sprintf("line %d, unable to determine ip/port", line)}
 		}
 
 		reNameVhost := regexp.MustCompile(`\s+ port (\d{2,5}) namevhost ([^ ]+)`)
