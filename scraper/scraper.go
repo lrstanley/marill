@@ -181,7 +181,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	defer b.Close()
 
 	bbytes, err := ioutil.ReadAll(bytes.NewBuffer(buf))
-	if len(bbytes) != 0 {
+	if err == nil && len(bbytes) != 0 {
 		res.Body = string(bbytes[:])
 	}
 
