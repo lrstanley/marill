@@ -3,6 +3,7 @@ package scraper
 import (
 	"bytes"
 	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -119,9 +120,14 @@ type Results struct {
 
 	// TotalTime represents the time it took to crawl the site
 	TotalTime *TimerResult
+}
 
-	OriginURL string
-	OriginIP  string
+func (r *Results) String() string {
+	if r.Resources != nil && r.ResourceTime != nil && r.TotalTime != nil {
+		return fmt.Sprintf("<url(%s) == %d, resources(%d), resourceTime(%dms), totalTime(%dms), err(%s)>", r.URL, r.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
+	}
+
+	return fmt.Sprintf("<url(%s), ip(%s), err(%s)>", r.connURL, r.connIP, r.Error)
 }
 
 var resourcePool sync.WaitGroup
@@ -132,15 +138,15 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	res = &Results{}
 	crawlTimer := NewTimer()
 
-	host, err := getHost(URL)
+	var err error
+
+	res.connURL = URL
+	res.connHostname, err = getHost(URL)
 	if err != nil {
 		res.Error = err
 		return
 	}
-
-	// set the origin host and IP
-	res.OriginURL = URL
-	res.OriginIP = c.ipmap[host]
+	res.connIP = c.ipmap[res.connHostname]
 
 	// actually fetch the request
 	resp, err := Get(c.ipmap, URL)
@@ -157,14 +163,6 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	defer resp.Body.Close()
 
-	res.connHostname = host
-	if err != nil {
-		res.Error = err
-		return
-	}
-
-	res.connURL = URL
-	res.connIP = c.ipmap[host]
 	res.Hostname = resp.Request.Host
 	res.URL = resp.URL
 	res.Code = resp.StatusCode
@@ -221,15 +219,20 @@ type Domain struct {
 type Crawler struct {
 	Log     *log.Logger
 	Domains []*Domain
+	Results []*Results
 	ipmap   map[string]string
 }
 
 // Crawl represents the higher level functionality of scraper. Crawl should
 // concurrently request the needed resources for a list of domains, allowing
 // the bypass of DNS lookups where necessary.
-func (c *Crawler) Crawl() (results []*Results) {
+func (c *Crawler) Crawl() {
+	var results []*Results
 	var wg sync.WaitGroup
 	timer := NewTimer()
+
+	// strip all common duplicate domain/ip pairs
+	stripDups(&c.Domains)
 
 	c.ipmap = make(map[string]string)
 	for i := range c.Domains {
@@ -275,5 +278,18 @@ func (c *Crawler) Crawl() (results []*Results) {
 
 	c.Log.Printf("%d successful, %d errored", resSuccess, resError)
 
-	return results
+	c.Results = results
+
+	return
+}
+
+// GetResults gets the potential results of a given requested url/ip
+func (c *Crawler) GetResults(URL, IP string) *Results {
+	for i := range c.Results {
+		if c.Results[i].connURL == URL && c.Results[i].connIP == IP {
+			return c.Results[i]
+		}
+	}
+
+	return nil
 }
