@@ -35,7 +35,7 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 		case tt == html.ErrorToken:
 			// this assumes that there are no further tokens -- end of document
 
-			stripDups(&urls)
+			stripURLDups(&urls)
 
 			return
 		case tt == html.StartTagToken || tt == html.SelfClosingTagToken:
@@ -117,8 +117,8 @@ func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
 	}
 }
 
-// stripDups strips all duplicate src URLs
-func stripDups(domains *[]string) {
+// stripURLDups strips all duplicate src URLs
+func stripURLDups(domains *[]string) {
 	var tmp []string
 
 	for _, dom := range *domains {
