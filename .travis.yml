@@ -7,3 +7,9 @@ go:
   - 1.7
 script:
   - make test all
+notifications:
+  irc:
+    channels:
+      - "irc.byteirc.org#L"
+    on_success: change
+    on_failure: change
