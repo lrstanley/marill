@@ -221,10 +221,6 @@ func VerifyHostname(c *tls.ConnectionState, host string) error {
 		return nil
 	}
 
-	// if len(c.VerifiedChains) == 0 {
-	// 	return errors.New("tls: handshake did not verify certificate chain")
-	// }
-
 	return verifyx509(c.PeerCertificates[0], host)
 }
 
@@ -279,13 +275,13 @@ func (c *CustomClient) getHandler() (*CustomResponse, error) {
 }
 
 // Get wraps GetHandler -- easy interface for making get requests
-func Get(ipmap map[string]string, url string) (*CustomResponse, error) {
+func (c *Crawler) Get(url string) (*CustomResponse, error) {
 	host, err := getHost(url)
 	if err != nil {
 		return nil, err
 	}
 
-	ip, ok := ipmap[host]
+	ip, ok := c.ipmap[host]
 
 	if ok {
 		if len(ip) > 0 && !reIP.MatchString(ip) {
@@ -293,7 +289,7 @@ func Get(ipmap map[string]string, url string) (*CustomResponse, error) {
 		}
 	}
 
-	c := &CustomClient{URL: url, IP: ip, Host: host, ipmap: ipmap}
+	cc := &CustomClient{URL: url, IP: ip, Host: host, ipmap: c.ipmap}
 
-	return c.getHandler()
+	return cc.getHandler()
 }

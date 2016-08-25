@@ -68,7 +68,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	defer resourcePool.Done()
 
 	// calculate the time it takes to fetch the request
-	resp, err := Get(c.ipmap, rsrc.connURL)
+	resp, err := c.Get(rsrc.connURL)
 
 	if err != nil {
 		rsrc.Error = err
@@ -149,7 +149,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	res.connIP = c.ipmap[res.connHostname]
 
 	// actually fetch the request
-	resp, err := Get(c.ipmap, URL)
+	resp, err := c.Get(URL)
 
 	defer func() {
 		crawlTimer.End()
