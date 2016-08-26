@@ -18,7 +18,6 @@ import (
 // redirects.
 type CustomClient struct {
 	URL       string
-	IP        string
 	Host      string
 	ResultURL *url.URL // represents the url for the resulting request, without modifications
 	OriginURL *url.URL // represents the url from the original request, without modifications
@@ -49,8 +48,8 @@ func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) e
 		return errors.New("too many redirects (3)")
 	}
 
-	if reIP.MatchString(req.Host) && req.Host != c.IP {
-		return errors.New("Redirected to IP that doesn't match proxy")
+	if reIP.MatchString(req.Host) && req.Host != c.Host {
+		return errors.New("Redirected to IP that doesn't match proxy/origin request")
 	}
 
 	if _, ok := c.ipmap[req.Host]; !ok {
@@ -283,15 +282,13 @@ func (c *Crawler) Get(url string) (*CustomResponse, error) {
 		return nil, err
 	}
 
-	ip, ok := c.ipmap[host]
-
-	if ok {
+	if ip, ok := c.ipmap[host]; ok {
 		if len(ip) > 0 && !reIP.MatchString(ip) {
 			return nil, errors.New("IP address provided is invalid")
 		}
 	}
 
-	cc := &CustomClient{URL: url, IP: ip, Host: host, ipmap: c.ipmap}
+	cc := &CustomClient{URL: url, Host: host, ipmap: c.ipmap}
 
 	return cc.getHandler()
 }
