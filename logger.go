@@ -7,6 +7,9 @@ import (
 	"os"
 )
 
+// may just setup a global logger, and change output during runtime...
+// http://codereview.stackexchange.com/a/59733
+
 var logf *os.File
 var logger *log.Logger
 
