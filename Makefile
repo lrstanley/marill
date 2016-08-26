@@ -8,6 +8,7 @@ export $(PATH)
 
 fetch:
 	go get -u golang.org/x/net/html
+	go get -u github.com/urfave/cli
 	go get -u github.com/jteeuwen/go-bindata/...
 
 lint:
