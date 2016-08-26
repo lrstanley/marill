@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/Liamraystanley/marill/domfinder"
 	"github.com/Liamraystanley/marill/scraper"
+	"github.com/urfave/cli"
 )
 
-func main() {
+type Config struct{}
+
+func run(c *cli.Context) {
 	// initialize the logger, just to stdout for now, in the future we will want to
 	// provide users the option to choose the path they would like to log to. Can
 	// also implement io.MultiWriter?
@@ -49,4 +53,22 @@ func main() {
 	}
 	crawler := &scraper.Crawler{Log: logger, Domains: tmplist}
 	crawler.Crawl()
+}
+
+func main() {
+	app := cli.NewApp()
+	app.Name = "marill"
+	app.Version = "0.1.0"
+	app.Authors = []cli.Author{
+		cli.Author{
+			Name:  "Liam Stanley",
+			Email: "me@liamstanley.io",
+		},
+	}
+	app.Compiled = time.Now()
+	app.Usage = "Automated website testing utility"
+
+	app.Action = run
+
+	app.Run(os.Args)
 }
