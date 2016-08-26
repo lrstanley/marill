@@ -11,17 +11,20 @@ import (
 	"sync"
 )
 
+// ResourceOrigin represents data originally used to create this resource
+type ResourceOrigin struct {
+	// URL represents the initial URL received by input
+	URL string
+	// IP represents the initial IP address received by input
+	IP string
+	// Host represents the original requested hostname for the resource
+	Host string
+}
+
 // Resource represents a single entity of many within a given crawl. These should
 // only be of type css, js, jpg, png, etc (static resources).
 type Resource struct {
-	// connURL is the initial URL received by input
-	connURL string
-
-	// connIP is the initial IP address received by input
-	connIP string
-
-	// connHostname represents the original requested hostname for the resource
-	connHostname string
+	origin ResourceOrigin
 
 	// URL represents the resulting static URL derived by the original result page
 	URL string
@@ -54,9 +57,6 @@ type Resource struct {
 
 	// Time represents the time it took to complete the request
 	Time *TimerResult
-
-	// logging functionality
-	logger *log.Logger
 }
 
 // fetchResource fetches a singular resource from a page, returning a *Resource struct.
@@ -68,7 +68,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	defer resourcePool.Done()
 
 	// calculate the time it takes to fetch the request
-	resp, err := c.Get(rsrc.connURL)
+	resp, err := c.Get(rsrc.origin.URL)
 
 	if err != nil {
 		rsrc.Error = err
@@ -79,7 +79,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 		resp.Body.Close()
 	}
 
-	rsrc.connHostname, err = getHost(rsrc.connURL)
+	rsrc.origin.Host, err = getHost(rsrc.origin.URL)
 	if err != nil {
 		rsrc.Error = err
 		return
@@ -94,7 +94,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	rsrc.TLS = resp.TLS
 	rsrc.Time = resp.Time
 
-	if rsrc.Hostname != rsrc.connHostname {
+	if rsrc.Hostname != rsrc.origin.Host {
 		rsrc.Remote = true
 	}
 
@@ -127,7 +127,7 @@ func (r *Results) String() string {
 		return fmt.Sprintf("<url(%s) == %d, resources(%d), resourceTime(%dms), totalTime(%dms), err(%s)>", r.URL, r.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
 	}
 
-	return fmt.Sprintf("<url(%s), ip(%s), err(%s)>", r.connURL, r.connIP, r.Error)
+	return fmt.Sprintf("<url(%s), ip(%s), err(%s)>", r.origin.URL, r.origin.IP, r.Error)
 }
 
 var resourcePool sync.WaitGroup
@@ -140,13 +140,13 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	var err error
 
-	res.connURL = URL
-	res.connHostname, err = getHost(URL)
+	res.origin.URL = URL
+	res.origin.Host, err = getHost(URL)
 	if err != nil {
 		res.Error = err
 		return
 	}
-	res.connIP = c.ipmap[res.connHostname]
+	res.origin.IP = c.ipmap[res.origin.Host]
 
 	// actually fetch the request
 	resp, err := c.Get(URL)
@@ -172,7 +172,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	res.TLS = resp.TLS
 	res.Time = resp.Time
 
-	if res.Hostname != res.connHostname {
+	if res.Hostname != res.origin.Host {
 		res.Remote = true
 	}
 
@@ -199,7 +199,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	for i := range urls {
 		resourcePool.Add(1)
 
-		rsrc := &Resource{connURL: urls[i], connIP: ""}
+		rsrc := &Resource{origin: ResourceOrigin{URL: urls[i]}}
 		res.Resources = append(res.Resources, rsrc)
 		go c.fetchResource(res.Resources[i])
 	}
@@ -287,7 +287,7 @@ func (c *Crawler) Crawl() {
 // GetResults gets the potential results of a given requested url/ip
 func (c *Crawler) GetResults(URL, IP string) *Results {
 	for i := range c.Results {
-		if c.Results[i].connURL == URL && c.Results[i].connIP == IP {
+		if c.Results[i].origin.URL == URL && c.Results[i].origin.IP == IP {
 			return c.Results[i]
 		}
 	}
