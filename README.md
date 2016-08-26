@@ -5,7 +5,7 @@ Marill -- Automated site testing utility
 
 [![Build Status](https://travis-ci.org/Liamraystanley/marill.svg?branch=master)](https://travis-ci.org/Liamraystanley/marill)
 [![GitHub Issues](https://img.shields.io/github/issues/Liamraystanley/marill.svg)](https://github.com/Liamraystanley/marill/issues)
-[![Project Status](https://img.shields.io/badge/status-pre--alpha-red.svg)](https://github.com/Liamraystanley/marill/commits/master)
+[![Project Status](https://img.shields.io/badge/status-alpha-red.svg)](https://github.com/Liamraystanley/marill/commits/master)
 [![Codebeat Badge](https://codebeat.co/badges/4653f785-83ec-4b21-bf0c-b519b20c89d6)](https://codebeat.co/projects/github-com-liamraystanley-marill)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Liamraystanley/marill)](https://goreportcard.com/report/github.com/Liamraystanley/marill)
 
