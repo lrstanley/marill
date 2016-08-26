@@ -21,14 +21,9 @@ type ResourceOrigin struct {
 	Host string
 }
 
-// Resource represents a single entity of many within a given crawl. These should
-// only be of type css, js, jpg, png, etc (static resources).
-type Resource struct {
-	request ResourceOrigin
-
-	// URL represents the resulting static URL derived by the original result page
-	URL string
-
+// Response represents the data for the HTTP-based request, closely matching
+// http.Response
+type Response struct {
 	// Host represents the resulting host derived by the original returned
 	// resource
 	Host string
@@ -36,14 +31,12 @@ type Resource struct {
 	// Remote represents if the resulting resource is remote to the original domain
 	Remote bool
 
-	// Error represents any errors that may have occurred when fetching the resource
-	Error error
-
 	// Code represents the numeric HTTP based status code
 	Code int
 
-	// Proto represents the end protocol used to fetch the page. For example, HTTP/2.0
-	Proto string
+	// Body represents a string implementation of the byte array returned by
+	// http.Response. Only used for primary requests, ignored for Resource structs.
+	Body string
 
 	// Scheme represents the end scheme used to fetch the page. For example, https
 	Scheme string
@@ -54,6 +47,22 @@ type Resource struct {
 	// TLS represents the SSL/TLS handshake/session if the resource was loaded over
 	// SSL.
 	TLS *tls.ConnectionState
+}
+
+// Resource represents a single entity of many within a given crawl. These should
+// only be of type css, js, jpg, png, etc (static resources).
+type Resource struct {
+	// request represents what we were provided before the request
+	request ResourceOrigin
+
+	// Response represents the end result/data/status/etc.
+	Response Response
+
+	// URL represents the resulting static URL derived by the original result page
+	URL string
+
+	// Error represents any errors that may have occurred when fetching the resource
+	Error error
 
 	// Time represents the time it took to complete the request
 	Time *TimerResult
@@ -85,20 +94,19 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 		return
 	}
 
-	rsrc.Host = resp.Request.Host
+	rsrc.Response.Host = resp.Request.Host
 	rsrc.URL = resp.URL
-	rsrc.Code = resp.StatusCode
-	rsrc.Proto = resp.Proto
-	rsrc.Scheme = resp.Request.URL.Scheme
-	rsrc.ContentLength = resp.ContentLength
-	rsrc.TLS = resp.TLS
+	rsrc.Response.Code = resp.StatusCode
+	rsrc.Response.Scheme = resp.Request.URL.Scheme
+	rsrc.Response.ContentLength = resp.ContentLength
+	rsrc.Response.TLS = resp.TLS
 	rsrc.Time = resp.Time
 
-	if rsrc.Host != rsrc.request.Host {
-		rsrc.Remote = true
+	if rsrc.Response.Host != rsrc.request.Host {
+		rsrc.Response.Remote = true
 	}
 
-	c.Log.Printf("fetched %s in %dms with status %d", rsrc.URL, rsrc.Time.Milli, rsrc.Code)
+	c.Log.Printf("fetched %s in %dms with status %d", rsrc.URL, rsrc.Time.Milli, rsrc.Response.Code)
 
 	return
 }
@@ -107,10 +115,6 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 type Results struct {
 	// Inherit the Resource struct
 	Resource
-
-	// Body represents a string implementation of the byte array returned by
-	// http.Response
-	Body string
 
 	// Slice of Resource structs containing the needed resources for the given URL
 	Resources []*Resource
@@ -124,7 +128,7 @@ type Results struct {
 
 func (r *Results) String() string {
 	if r.Resources != nil && r.ResourceTime != nil && r.TotalTime != nil {
-		return fmt.Sprintf("<url(%s) == %d, resources(%d), resourceTime(%dms), totalTime(%dms), err(%s)>", r.URL, r.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
+		return fmt.Sprintf("<url(%s) == %d, resources(%d), resourceTime(%dms), totalTime(%dms), err(%s)>", r.URL, r.Response.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
 	}
 
 	return fmt.Sprintf("<url(%s), ip(%s), err(%s)>", r.request.URL, r.request.IP, r.Error)
@@ -163,17 +167,16 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	defer resp.Body.Close()
 
-	res.Host = resp.Request.Host
+	res.Response.Host = resp.Request.Host
 	res.URL = resp.URL
-	res.Code = resp.StatusCode
-	res.Proto = resp.Proto
-	res.Scheme = resp.Request.URL.Scheme
-	res.ContentLength = resp.ContentLength
-	res.TLS = resp.TLS
+	res.Response.Code = resp.StatusCode
+	res.Response.Scheme = resp.Request.URL.Scheme
+	res.Response.ContentLength = resp.ContentLength
+	res.Response.TLS = resp.TLS
 	res.Time = resp.Time
 
-	if res.Host != res.request.Host {
-		res.Remote = true
+	if res.Response.Host != res.request.Host {
+		res.Response.Remote = true
 	}
 
 	buf, _ := ioutil.ReadAll(resp.Body)
@@ -182,12 +185,12 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	bbytes, err := ioutil.ReadAll(bytes.NewBuffer(buf))
 	if err == nil && len(bbytes) != 0 {
-		res.Body = string(bbytes[:])
+		res.Response.Body = string(bbytes[:])
 	}
 
 	urls := getSrc(b, resp.Request)
 
-	c.Log.Printf("fetched %s in %dms with status %d", res.URL, res.Time.Milli, res.Code)
+	c.Log.Printf("fetched %s in %dms with status %d", res.URL, res.Time.Milli, res.Response.Code)
 
 	resourceTime := NewTimer()
 

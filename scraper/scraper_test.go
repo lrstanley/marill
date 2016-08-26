@@ -79,7 +79,7 @@ func TestFetch(t *testing.T) {
 
 		// only success tests below this
 
-		if dom.Error == nil && c.want && dom.Code == 200 {
+		if dom.Error == nil && c.want && dom.Response.Code == 200 {
 			t.Fatalf("Crawl of (%q, %q) == %s, though no errors", c.in, c.inx, dom)
 		}
 	}
