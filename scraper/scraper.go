@@ -24,14 +24,14 @@ type ResourceOrigin struct {
 // Resource represents a single entity of many within a given crawl. These should
 // only be of type css, js, jpg, png, etc (static resources).
 type Resource struct {
-	origin ResourceOrigin
+	request ResourceOrigin
 
 	// URL represents the resulting static URL derived by the original result page
 	URL string
 
-	// Hostname represents the resulting hostname derived by the original returned
+	// Host represents the resulting host derived by the original returned
 	// resource
-	Hostname string
+	Host string
 
 	// Remote represents if the resulting resource is remote to the original domain
 	Remote bool
@@ -68,7 +68,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	defer resourcePool.Done()
 
 	// calculate the time it takes to fetch the request
-	resp, err := c.Get(rsrc.origin.URL)
+	resp, err := c.Get(rsrc.request.URL)
 
 	if err != nil {
 		rsrc.Error = err
@@ -79,13 +79,13 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 		resp.Body.Close()
 	}
 
-	rsrc.origin.Host, err = getHost(rsrc.origin.URL)
+	rsrc.request.Host, err = getHost(rsrc.request.URL)
 	if err != nil {
 		rsrc.Error = err
 		return
 	}
 
-	rsrc.Hostname = resp.Request.Host
+	rsrc.Host = resp.Request.Host
 	rsrc.URL = resp.URL
 	rsrc.Code = resp.StatusCode
 	rsrc.Proto = resp.Proto
@@ -94,7 +94,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	rsrc.TLS = resp.TLS
 	rsrc.Time = resp.Time
 
-	if rsrc.Hostname != rsrc.origin.Host {
+	if rsrc.Host != rsrc.request.Host {
 		rsrc.Remote = true
 	}
 
@@ -127,7 +127,7 @@ func (r *Results) String() string {
 		return fmt.Sprintf("<url(%s) == %d, resources(%d), resourceTime(%dms), totalTime(%dms), err(%s)>", r.URL, r.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
 	}
 
-	return fmt.Sprintf("<url(%s), ip(%s), err(%s)>", r.origin.URL, r.origin.IP, r.Error)
+	return fmt.Sprintf("<url(%s), ip(%s), err(%s)>", r.request.URL, r.request.IP, r.Error)
 }
 
 var resourcePool sync.WaitGroup
@@ -140,13 +140,13 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	var err error
 
-	res.origin.URL = URL
-	res.origin.Host, err = getHost(URL)
+	res.request.URL = URL
+	res.request.Host, err = getHost(URL)
 	if err != nil {
 		res.Error = err
 		return
 	}
-	res.origin.IP = c.ipmap[res.origin.Host]
+	res.request.IP = c.ipmap[res.request.Host]
 
 	// actually fetch the request
 	resp, err := c.Get(URL)
@@ -163,7 +163,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	defer resp.Body.Close()
 
-	res.Hostname = resp.Request.Host
+	res.Host = resp.Request.Host
 	res.URL = resp.URL
 	res.Code = resp.StatusCode
 	res.Proto = resp.Proto
@@ -172,7 +172,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	res.TLS = resp.TLS
 	res.Time = resp.Time
 
-	if res.Hostname != res.origin.Host {
+	if res.Host != res.request.Host {
 		res.Remote = true
 	}
 
@@ -199,7 +199,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	for i := range urls {
 		resourcePool.Add(1)
 
-		rsrc := &Resource{origin: ResourceOrigin{URL: urls[i]}}
+		rsrc := &Resource{request: ResourceOrigin{URL: urls[i]}}
 		res.Resources = append(res.Resources, rsrc)
 		go c.fetchResource(res.Resources[i])
 	}
@@ -287,7 +287,7 @@ func (c *Crawler) Crawl() {
 // GetResults gets the potential results of a given requested url/ip
 func (c *Crawler) GetResults(URL, IP string) *Results {
 	for i := range c.Results {
-		if c.Results[i].origin.URL == URL && c.Results[i].origin.IP == IP {
+		if c.Results[i].request.URL == URL && c.Results[i].request.IP == IP {
 			return c.Results[i]
 		}
 	}
