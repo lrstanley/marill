@@ -263,7 +263,7 @@ func (c *CustomClient) getHandler() (*CustomResponse, error) {
 
 	if err == nil {
 		url = c.ResultURL.String()
-		if err := VerifyHostname(resp.TLS, c.ResultURL.Host); err != nil {
+		if err = VerifyHostname(resp.TLS, c.ResultURL.Host); err != nil {
 			return nil, err
 		}
 	} else {
