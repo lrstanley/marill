@@ -38,18 +38,6 @@ func TestFetch(t *testing.T) {
 		{"https://httpbin.org/delay/3", "", false},
 	}
 
-	// for _, c := range cases {
-	// 	got := FetchURL(c.in, c.inx, logger)
-
-	// 	if got.Error != nil && !c.want {
-	// 		t.Errorf("fetchURL(%q, %q) == %q, wanted error: %v", c.in, c.inx, got.Error, c.want)
-	// 	}
-
-	// 	if got.Error == nil && c.want && got.Code == 200 {
-	// 		t.Errorf("fetchURL(%q, %q) == %q (%#v), though no errors", c.in, c.inx, got.Error, got)
-	// 	}
-	// }
-
 	tmplist := []*Domain{}
 	for _, c := range cases {
 		uri, _ := url.Parse(c.in)
