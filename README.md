@@ -9,6 +9,21 @@ Marill -- Automated site testing utility
 [![Codebeat Badge](https://codebeat.co/badges/4653f785-83ec-4b21-bf0c-b519b20c89d6)](https://codebeat.co/projects/github-com-liamraystanley-marill)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Liamraystanley/marill)](https://goreportcard.com/report/github.com/Liamraystanley/marill)
 
+#### Project Status:
+At this stage, things are still in alpha/likely going to change quite a bit. This includes code, exported functions/tools, cli args, etc. This is what I intend to have completed for the beta release:
+
+- [x] crawling of pages recursively
+- [x] scan **Apache**/**Lightspeed** based webservers for domains to fetch
+- [x] scan **cPanel** based webservers for domains to fetch
+- [ ] scan **Nginx** based webservers for domains to fetch
+- [ ] cli arg manager
+- [ ] scan any webserver based on manual cli input
+- [ ] return results in a human readible format
+- [ ] return results in a bot/script readible format
+- [ ] provide potential fixes
+- [ ] scan server for possible issues (reference error_log files, webserver error logs, etc)
+
+
 ##### License:
 
     LICENSE: The MIT License (MIT)
