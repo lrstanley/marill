@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -15,6 +16,10 @@ var logger *log.Logger
 
 func initLogger(w io.Writer) {
 	logger = log.New(w, "", log.Lshortfile|log.LstdFlags)
+}
+
+func initLoggerToNull() {
+	initLogger(ioutil.Discard)
 }
 
 func initLoggerToFile(fn string) {
