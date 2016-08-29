@@ -239,13 +239,12 @@ func (c *Crawler) Crawl() {
 	stripDups(&c.Domains)
 
 	c.ipmap = make(map[string]string)
-	var withwww string
+	var dom string
 	for i := range c.Domains {
 		c.ipmap[c.Domains[i].URL.Host] = c.Domains[i].IP
-		c.ipmap[strings.TrimPrefix(c.Domains[i].URL.Host, "www.")] = c.Domains[i].IP // no www. directive
-
-		withwww = "www." + strings.TrimPrefix(c.Domains[i].URL.Host, "www.")
-		c.ipmap[withwww] = c.Domains[i].IP // www. directive
+		dom = strings.TrimPrefix(c.Domains[i].URL.Host, "www.")
+		c.ipmap[dom] = c.Domains[i].IP        // no www. directive
+		c.ipmap["www."+dom] = c.Domains[i].IP // www. directive
 	}
 
 	// loop through all supplied urls and send them to a worker to be fetched
