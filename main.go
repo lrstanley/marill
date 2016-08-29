@@ -11,18 +11,28 @@ import (
 	"github.com/urfave/cli"
 )
 
-type Config struct{}
+type outputConfig struct {
+	noColors   bool
+	printDebug bool
+	logFile    string
+}
 
-func run(c *cli.Context) {
-	// initialize the logger, just to stdout for now, in the future we will want to
-	// provide users the option to choose the path they would like to log to. Can
-	// also implement io.MultiWriter?
-	// initLoggerToFile("marill.log")
-	initLogger(os.Stdout)
-	defer closeLogger() // ensure we're cleaning up the logger
+type scanConfig struct{}
 
-	logger.Println("initializing logger")
+type appConfig struct {
+	printUrls bool
+}
 
+type config struct {
+	app  appConfig
+	scan scanConfig
+	out  outputConfig
+}
+
+var conf config
+var out = Output{}
+
+func run() {
 	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
 	logger.Printf("limiting max threads to %d", runtime.NumCPU()*2)
 
@@ -55,8 +65,28 @@ func run(c *cli.Context) {
 	crawler.Crawl()
 }
 
+func printUrls() error {
+	finder := &domfinder.Finder{Log: logger}
+	if err := finder.GetWebservers(); err != nil {
+		return fmt.Errorf("unable to get process list: %s", err)
+	}
+
+	if err := finder.GetDomains(); err != nil {
+		return fmt.Errorf("unable to auto-fetch domain list: %s", err)
+	}
+
+	for _, domain := range finder.Domains {
+		out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
+	}
+
+	return nil
+}
+
 func main() {
+	defer closeLogger() // ensure we're cleaning up the logger if there is one
+
 	app := cli.NewApp()
+
 	app.Name = "marill"
 	app.Version = "0.1.0"
 	app.Authors = []cli.Author{
@@ -68,7 +98,41 @@ func main() {
 	app.Compiled = time.Now()
 	app.Usage = "Automated website testing utility"
 
-	app.Action = run
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:        "printurls",
+			Usage:       "Print the list of urls as if they were going to be scanned",
+			Destination: &conf.app.printUrls,
+		},
+		cli.BoolFlag{
+			Name:        "debug, d",
+			Usage:       "Print debugging information to stdout",
+			Destination: &conf.out.printDebug,
+		},
+		cli.StringFlag{
+			Name:        "log-file",
+			Usage:       "File to log debugging information",
+			Destination: &conf.out.logFile,
+		},
+	}
+
+	app.Action = func(c *cli.Context) error {
+		// initialize the logger. ensure this only occurs after the cli args are
+		// pulled.
+		initLogger()
+
+		if conf.app.printUrls {
+			if err := printUrls(); err != nil {
+				return err
+			}
+
+			os.Exit(0)
+		}
+
+		run()
+
+		return nil
+	}
 
 	app.Run(os.Args)
 }
