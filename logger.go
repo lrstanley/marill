@@ -92,12 +92,20 @@ type Output struct{}
 
 // Printf interprets []*Color{} escape codes and prints them to stdout
 func (o Output) Printf(format string, a ...interface{}) (n int, err error) {
+	if !conf.out.printStd {
+		return 0, nil
+	}
+
 	FmtColor(&format, conf.out.noColors)
 
 	return fmt.Printf(format, a...)
 }
 
 // Println interprets []*Color{} escape codes and prints them to stdout
-func (o Output) Println(a ...interface{}) (n int, err error) {
-	return fmt.Println(a...)
+func (o Output) Print(a ...string) (n int, err error) {
+	if !conf.out.printStd {
+		return 0, nil
+	}
+
+	return fmt.Printf(strings.Join(a, " "))
 }
