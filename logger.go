@@ -16,24 +16,47 @@ import (
 var logf *os.File
 var logger *log.Logger
 
-func initLogger(w io.Writer) {
+func initLoggerWriter(w io.Writer) {
 	logger = log.New(w, "", log.Lshortfile|log.LstdFlags)
+	logger.Println("initializing logger")
 }
 
-func initLoggerToNull() {
-	initLogger(ioutil.Discard)
-}
+func initLogger() {
+	if conf.out.logFile != "" && conf.out.printDebug {
+		logf, err := os.OpenFile(conf.out.logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			fmt.Printf("error opening log file: %s, %v", conf.out.logFile, err)
+			os.Exit(1)
+		}
 
-func initLoggerToFile(fn string) {
-	logf, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		fmt.Printf("error opening log file: %s, %v", fn, err)
-		os.Exit(1)
+		initLoggerWriter(io.MultiWriter(logf, os.Stdout))
+		return
 	}
-	initLogger(logf)
+
+	if conf.out.logFile != "" {
+		logf, err := os.OpenFile(conf.out.logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			fmt.Printf("error opening log file: %s, %v", conf.out.logFile, err)
+			os.Exit(1)
+		}
+
+		initLoggerWriter(logf)
+		return
+	}
+
+	if conf.out.printDebug {
+		initLoggerWriter(os.Stdout)
+		return
+	}
+
+	initLoggerWriter(ioutil.Discard)
 }
 
 func closeLogger() {
+	if logf == nil {
+		return
+	}
+
 	logf.Close()
 }
 
