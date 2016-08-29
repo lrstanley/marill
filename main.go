@@ -14,10 +14,13 @@ import (
 type outputConfig struct {
 	noColors   bool
 	printDebug bool
+	printStd   bool
 	logFile    string
 }
 
-type scanConfig struct{}
+type scanConfig struct {
+	threads int
+}
 
 type appConfig struct {
 	printUrls bool
@@ -33,9 +36,6 @@ var conf config
 var out = Output{}
 
 func run() {
-	runtime.GOMAXPROCS(runtime.NumCPU() * 2)
-	logger.Printf("limiting max threads to %d", runtime.NumCPU()*2)
-
 	logger.Println("checking for running webservers...")
 
 	finder := &domfinder.Finder{Log: logger}
@@ -63,6 +63,22 @@ func run() {
 	}
 	crawler := &scraper.Crawler{Log: logger, Domains: tmplist}
 	crawler.Crawl()
+}
+
+func numThreads() {
+	if conf.scan.threads == 0 {
+		fmt.Println("error: threads must be greater than 0")
+	}
+
+	if conf.scan.threads > (runtime.NumCPU() * 2) {
+		logger.Printf("warning: using %d threads, which is more than 2x the amount of cores", conf.scan.threads)
+		out.Printf("{yellow}warning: using %d threads, which is more than 2x the cores on the server!{c}\n", conf.scan.threads)
+	}
+
+	runtime.GOMAXPROCS(conf.scan.threads)
+	logger.Printf("using %d threads (%d cores)", conf.scan.threads, runtime.NumCPU())
+
+	return
 }
 
 func printUrls() error {
@@ -109,10 +125,21 @@ func main() {
 			Usage:       "Print debugging information to stdout",
 			Destination: &conf.out.printDebug,
 		},
+		cli.BoolFlag{
+			Name:        "quiet, q",
+			Usage:       "Dont't print regular stdout messages",
+			Destination: &conf.out.printStd,
+		},
 		cli.StringFlag{
 			Name:        "log-file",
 			Usage:       "File to log debugging information",
 			Destination: &conf.out.logFile,
+		},
+		cli.IntFlag{
+			Name:        "threads, t",
+			Value:       runtime.NumCPU(),
+			Usage:       "How many threads to use to fetch data",
+			Destination: &conf.scan.threads,
 		},
 	}
 
@@ -120,6 +147,9 @@ func main() {
 		// initialize the logger. ensure this only occurs after the cli args are
 		// pulled.
 		initLogger()
+
+		// initialize some form of max go procs
+		numThreads()
 
 		if conf.app.printUrls {
 			if err := printUrls(); err != nil {
