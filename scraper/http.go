@@ -19,7 +19,7 @@ import (
 type CustomClient struct {
 	URL       string
 	Host      string
-	ResultURL *url.URL // represents the url for the resulting request, without modifications
+	ResultURL url.URL  // represents the url for the resulting request, without modifications
 	OriginURL *url.URL // represents the url from the original request, without modifications
 	ipmap     map[string]string
 }
@@ -73,17 +73,17 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 
 	// assign the origin host to the host header value, ONLY if it matches the domains
 	// hostname
-	if _, ok := c.ipmap[req.URL.Host]; ok {
+	if ip, ok := c.ipmap[req.URL.Host]; ok {
 		req.Host = req.URL.Host
 
 		// and overwrite the host used to make the connection
-		if len(c.ipmap[req.URL.Host]) > 0 {
-			req.URL.Host = c.ipmap[req.URL.Host]
+		if len(ip) > 0 {
+			req.URL.Host = ip
 		}
 	}
 
 	// update our cached resulting uri
-	c.ResultURL = req.URL
+	c.ResultURL = *req.URL
 	if len(req.Host) > 0 {
 		c.ResultURL.Host = req.Host
 	}
