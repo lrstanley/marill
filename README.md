@@ -24,6 +24,21 @@ At this stage, things are still in alpha/likely going to change quite a bit. Thi
 - [ ] scan server for possible issues (reference error_log files, webserver error logs, etc)
 
 
+#### Building:
+Marill supports building on 1.3+ (or even possibly older), however it is recommended to build on the latest go release. Note that you will not be able to use the Makefile to compile Marill if you are trying to build on go 1.4 or lower. You will need to manually compile it, due to limitations with ldflag support.
+
+```
+$ git clone https://github.com/Liamraystanley/marill.git
+$ cd marill
+$ make
+```
+
+To run unit tests, then compile, simply run:
+
+```
+$ make test all
+```
+
 #### Usage:
 This is very likely to change quite a bit until we're out of beta. Please use wisely.
 
