@@ -35,6 +35,26 @@ type config struct {
 var conf config
 var out = Output{}
 
+func statsLoop(done <-chan struct{}) {
+	mem := &runtime.MemStats{}
+	var numRoutines, numCPU int
+
+	for {
+		select {
+		case <-done:
+			return
+		default:
+			runtime.ReadMemStats(mem)
+			numRoutines = runtime.NumGoroutine()
+			numCPU = runtime.NumCPU()
+
+			logger.Printf("allocated mem: %dM, sys: %dM, threads: %d, cores: %d", mem.Alloc/1024/1024, mem.Sys/1024/1024, numRoutines, numCPU)
+
+			time.Sleep(2 * time.Second)
+		}
+	}
+}
+
 func numCores() {
 	if conf.scan.cores == 0 {
 		if runtime.NumCPU() == 1 {
@@ -156,6 +176,15 @@ func main() {
 
 		// initialize some form of max go procs
 		numCores()
+
+		// initialize the stats data
+		done := make(chan struct{}, 1)
+		go statsLoop(done)
+
+		// close the stats data goroutine when we're complete.
+		defer func() {
+			done <- struct{}{}
+		}()
 
 		if conf.app.printUrls {
 			if err := printUrls(); err != nil {
