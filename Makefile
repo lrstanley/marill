@@ -24,5 +24,6 @@ test: fetch
 all: fetch
 	# add tests to bindata.go for inclusion
 	go-bindata tests/...
+	# using "-X 'var=value'" is supported in go 1.5+, and "-X 'var value'" is supported prior to that
 	go build -ldflags "-X 'main.version=$(VERSION)' -X 'main.commithash=$(HASH)' -X 'main.compiledate=$(COMPILE_DATE)'" -x -v -o ${BINARY}
 	/bin/rm -fv bindata.go
