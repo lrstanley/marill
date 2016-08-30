@@ -24,6 +24,36 @@ At this stage, things are still in alpha/likely going to change quite a bit. Thi
 - [ ] scan server for possible issues (reference error_log files, webserver error logs, etc)
 
 
+#### Usage:
+This is very likely to change quite a bit until we're out of beta. Please use wisely.
+
+```
+$ marill --help
+NAME:
+   marill - Automated website testing utility
+
+USAGE:
+   marill [global options] command [command options] [arguments...]
+   
+VERSION:
+   git revision xxxxxx
+   
+AUTHOR(S):
+   Liam Stanley <me@liamstanley.io> 
+   
+COMMANDS:
+     help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --printurls         Print the list of urls as if they were going to be scanned
+   --debug, -d         Print debugging information to stdout
+   --quiet, -q         Dont't print regular stdout messages
+   --log-file logfile  Log debugging information to logfile
+   --cores n           Use n cores to fetch data (0 being server cores/2) (default: 0)
+   --help, -h          show help
+   --version, -v       print the version
+```
+
 ##### License:
 
     LICENSE: The MIT License (MIT)
