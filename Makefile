@@ -7,8 +7,7 @@ export $(PATH)
 .DEFAULT_GOAL := all
 
 fetch:
-	go get -u golang.org/x/net/html
-	go get -u github.com/urfave/cli
+	go get -d ./...
 	which go-bindata > /dev/null || go get -u github.com/jteeuwen/go-bindata/...
 
 lint:
