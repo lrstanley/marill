@@ -159,12 +159,12 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:        "log-file",
-			Usage:       "File to log debugging information",
+			Usage:       "Log debugging information to `logfile`",
 			Destination: &conf.out.logFile,
 		},
 		cli.IntFlag{
 			Name:        "cores",
-			Usage:       "How many cores to use to fetch data (0 being server cores/2)",
+			Usage:       "Use `n` cores to fetch data (0 being server cores/2)",
 			Destination: &conf.scan.cores,
 		},
 	}
