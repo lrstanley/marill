@@ -19,7 +19,7 @@ type outputConfig struct {
 }
 
 type scanConfig struct {
-	threads int
+	cores int
 }
 
 type appConfig struct {
@@ -65,18 +65,27 @@ func run() {
 	crawler.Crawl()
 }
 
-func numThreads() {
-	if conf.scan.threads == 0 {
-		fmt.Println("error: threads must be greater than 0")
+func numCores() {
+	if conf.scan.cores == 0 {
+		if runtime.NumCPU() == 1 {
+			conf.scan.cores = 1
+		}
+
+		conf.scan.cores = runtime.NumCPU() / 2
 	}
 
-	if conf.scan.threads > (runtime.NumCPU() * 2) {
-		logger.Printf("warning: using %d threads, which is more than 2x the amount of cores", conf.scan.threads)
-		out.Printf("{yellow}warning: using %d threads, which is more than 2x the cores on the server!{c}\n", conf.scan.threads)
+	if conf.scan.cores > runtime.NumCPU() {
+		logger.Printf("warning: using %d cores, which is more than the amount of cores", conf.scan.cores)
+		out.Printf("{yellow}warning: using %d cores, which is more than the amount of cores on the server!{c}\n", conf.scan.cores)
+
+		// set it to the amount of cores on the server. go will do this regardless, so.
+		conf.scan.cores = runtime.NumCPU()
+		logger.Printf("limiting number of cores to %d", conf.scan.cores)
+		out.Printf("limiting number of cores to %d\n", conf.scan.cores)
 	}
 
-	runtime.GOMAXPROCS(conf.scan.threads)
-	logger.Printf("using %d threads (%d cores)", conf.scan.threads, runtime.NumCPU())
+	runtime.GOMAXPROCS(conf.scan.cores)
+	logger.Printf("using %d cores (max %d)", conf.scan.cores, runtime.NumCPU())
 
 	return
 }
@@ -136,10 +145,9 @@ func main() {
 			Destination: &conf.out.logFile,
 		},
 		cli.IntFlag{
-			Name:        "threads, t",
-			Value:       runtime.NumCPU(),
-			Usage:       "How many threads to use to fetch data",
-			Destination: &conf.scan.threads,
+			Name:        "cores",
+			Usage:       "How many cores to use to fetch data",
+			Destination: &conf.scan.cores,
 		},
 	}
 
@@ -149,7 +157,7 @@ func main() {
 		initLogger()
 
 		// initialize some form of max go procs
-		numThreads()
+		numCores()
 
 		if conf.app.printUrls {
 			if err := printUrls(); err != nil {
