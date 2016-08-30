@@ -11,6 +11,9 @@ import (
 	"github.com/urfave/cli"
 )
 
+// these /SHOULD/ be defined during the make process. not always however.
+var version, commithash, compiledate = "", "", ""
+
 type outputConfig struct {
 	noColors   bool
 	printDebug bool
@@ -128,10 +131,30 @@ func run() {
 func main() {
 	defer closeLogger() // ensure we're cleaning up the logger if there is one
 
+	cli.VersionPrinter = func(c *cli.Context) {
+		if version != "" && commithash != "" && compiledate != "" {
+			fmt.Printf("version %s, revision %s (%s)\n", version, commithash, compiledate)
+		} else if commithash != "" && compiledate != "" {
+			fmt.Printf("revision %s (%s)\n", commithash, compiledate)
+		} else if version != "" {
+			fmt.Printf("version %s\n", version)
+		} else {
+			fmt.Println("version unknown")
+		}
+	}
+
 	app := cli.NewApp()
 
 	app.Name = "marill"
-	app.Version = "0.1.0"
+
+	if version != "" && commithash != "" {
+		app.Version = fmt.Sprintf("%s, git revision %s", version, commithash)
+	} else if version != "" {
+		app.Version = version
+	} else if commithash != "" {
+		app.Version = "git revision " + commithash
+	}
+
 	app.Authors = []cli.Author{
 		cli.Author{
 			Name:  "Liam Stanley",
