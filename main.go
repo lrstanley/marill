@@ -164,7 +164,7 @@ func main() {
 		},
 		cli.IntFlag{
 			Name:        "cores",
-			Usage:       "How many cores to use to fetch data",
+			Usage:       "How many cores to use to fetch data (0 being server cores/2)",
 			Destination: &conf.scan.cores,
 		},
 	}
