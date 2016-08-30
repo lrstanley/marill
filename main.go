@@ -35,36 +35,6 @@ type config struct {
 var conf config
 var out = Output{}
 
-func run() {
-	logger.Println("checking for running webservers...")
-
-	finder := &domfinder.Finder{Log: logger}
-	if err := finder.GetWebservers(); err != nil {
-		logger.Fatalf("unable to get process list: %s", err)
-	}
-
-	if out := ""; len(finder.Procs) > 0 {
-		for _, proc := range finder.Procs {
-			out += fmt.Sprintf("[%s:%s] ", proc.Name, proc.PID)
-		}
-		logger.Printf("found %d procs matching a webserver: %s", len(finder.Procs), out)
-	}
-
-	// start crawling for domains
-	if err := finder.GetDomains(); err != nil {
-		logger.Fatalf("unable to auto-fetch domain list: %s", err)
-	}
-
-	logger.Printf("found %d domains on webserver %s (exe: %s, pid: %s)", len(finder.Domains), finder.MainProc.Name, finder.MainProc.Exe, finder.MainProc.PID)
-
-	tmplist := []*scraper.Domain{}
-	for _, domain := range finder.Domains {
-		tmplist = append(tmplist, &scraper.Domain{URL: domain.URL, IP: domain.IP})
-	}
-	crawler := &scraper.Crawler{Log: logger, Domains: tmplist}
-	crawler.Crawl()
-}
-
 func numCores() {
 	if conf.scan.cores == 0 {
 		if runtime.NumCPU() == 1 {
@@ -105,6 +75,36 @@ func printUrls() error {
 	}
 
 	return nil
+}
+
+func run() {
+	logger.Println("checking for running webservers...")
+
+	finder := &domfinder.Finder{Log: logger}
+	if err := finder.GetWebservers(); err != nil {
+		logger.Fatalf("unable to get process list: %s", err)
+	}
+
+	if out := ""; len(finder.Procs) > 0 {
+		for _, proc := range finder.Procs {
+			out += fmt.Sprintf("[%s:%s] ", proc.Name, proc.PID)
+		}
+		logger.Printf("found %d procs matching a webserver: %s", len(finder.Procs), out)
+	}
+
+	// start crawling for domains
+	if err := finder.GetDomains(); err != nil {
+		logger.Fatalf("unable to auto-fetch domain list: %s", err)
+	}
+
+	logger.Printf("found %d domains on webserver %s (exe: %s, pid: %s)", len(finder.Domains), finder.MainProc.Name, finder.MainProc.Exe, finder.MainProc.PID)
+
+	tmplist := []*scraper.Domain{}
+	for _, domain := range finder.Domains {
+		tmplist = append(tmplist, &scraper.Domain{URL: domain.URL, IP: domain.IP})
+	}
+	crawler := &scraper.Crawler{Log: logger, Domains: tmplist}
+	crawler.Crawl()
 }
 
 func main() {
