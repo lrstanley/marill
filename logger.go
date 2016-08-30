@@ -92,7 +92,7 @@ type Output struct{}
 
 // Printf interprets []*Color{} escape codes and prints them to stdout
 func (o Output) Printf(format string, a ...interface{}) (n int, err error) {
-	if !conf.out.printStd {
+	if conf.out.ignoreStd {
 		return 0, nil
 	}
 
@@ -103,7 +103,7 @@ func (o Output) Printf(format string, a ...interface{}) (n int, err error) {
 
 // Println interprets []*Color{} escape codes and prints them to stdout
 func (o Output) Print(a ...string) (n int, err error) {
-	if !conf.out.printStd {
+	if conf.out.ignoreStd {
 		return 0, nil
 	}
 

@@ -14,7 +14,7 @@ import (
 type outputConfig struct {
 	noColors   bool
 	printDebug bool
-	printStd   bool
+	ignoreStd  bool
 	logFile    string
 }
 
@@ -39,12 +39,10 @@ func numCores() {
 	if conf.scan.cores == 0 {
 		if runtime.NumCPU() == 1 {
 			conf.scan.cores = 1
+		} else {
+			conf.scan.cores = runtime.NumCPU() / 2
 		}
-
-		conf.scan.cores = runtime.NumCPU() / 2
-	}
-
-	if conf.scan.cores > runtime.NumCPU() {
+	} else if conf.scan.cores > runtime.NumCPU() {
 		logger.Printf("warning: using %d cores, which is more than the amount of cores", conf.scan.cores)
 		out.Printf("{yellow}warning: using %d cores, which is more than the amount of cores on the server!{c}\n", conf.scan.cores)
 
@@ -137,7 +135,7 @@ func main() {
 		cli.BoolFlag{
 			Name:        "quiet, q",
 			Usage:       "Dont't print regular stdout messages",
-			Destination: &conf.out.printStd,
+			Destination: &conf.out.ignoreStd,
 		},
 		cli.StringFlag{
 			Name:        "log-file",
@@ -161,6 +159,7 @@ func main() {
 
 		if conf.app.printUrls {
 			if err := printUrls(); err != nil {
+				fmt.Printf("err: %s", err)
 				return err
 			}
 
