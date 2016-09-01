@@ -48,8 +48,12 @@ func removeEmpty(array []string) []string {
 }
 
 // convert hexadecimal to decimal
-func hexToDec(h string) (d int64) {
-	d, _ = strconv.ParseInt(h, 16, 32)
+func hexToDec(h string) int64 {
+	d, err := strconv.ParseInt(h, 16, 32)
+
+	if err != nil {
+		return 0
+	}
 
 	return d
 }
