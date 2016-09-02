@@ -79,12 +79,22 @@ func TestIP(t *testing.T) {
 }
 
 func TestGetProcessExe(t *testing.T) {
-	// proc := os.Args[0]
 	pid := strconv.Itoa(os.Getppid())
 	out := getProcessExe(pid)
 
 	if !strings.HasSuffix(out, "/go") {
 		t.Fatalf("getProcessExe(%q) == %q, not go", pid, out)
+	}
+
+	return
+}
+
+func TestGetProcessName(t *testing.T) {
+	pid := strconv.Itoa(os.Getppid())
+	out := getProcessName(pid)
+
+	if out != "go" {
+		t.Fatalf("getProcessName(%q) == %q, not go", pid, out)
 	}
 
 	return
