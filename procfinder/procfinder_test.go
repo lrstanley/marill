@@ -1,7 +1,10 @@
 package procfinder
 
 import (
+	"os"
 	"reflect"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -70,6 +73,18 @@ func TestIP(t *testing.T) {
 		if out != c.want {
 			t.Fatalf("ip(%q) == %q, wanted %q", c.in, out, c.want)
 		}
+	}
+
+	return
+}
+
+func TestGetProcessExe(t *testing.T) {
+	// proc := os.Args[0]
+	pid := strconv.Itoa(os.Getppid())
+	out := getProcessExe(pid)
+
+	if !strings.HasSuffix(out, "/go") {
+		t.Fatalf("getProcessExe(%q) == %q, not go", pid, out)
 	}
 
 	return
