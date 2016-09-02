@@ -64,14 +64,16 @@ func ip(ip string) string {
 	var out string
 
 	// check ip size. if greater than 8, it is ipv6
-	if len(ip) > 8 {
+	if len(ip) > 8 && len(ip) <= 32 {
 		i := []string{ip[30:32], ip[28:30], ip[26:28], ip[24:26], ip[22:24], ip[20:22], ip[18:20], ip[16:18], ip[14:16], ip[12:14], ip[10:12], ip[8:10], ip[6:8], ip[4:6], ip[2:4], ip[0:2]}
 		out = fmt.Sprintf("%v%v:%v%v:%v%v:%v%v:%v%v:%v%v:%v%v:%v%v", i[14], i[15], i[13], i[12], i[10], i[11], i[8], i[9], i[6], i[7], i[4], i[5], i[2], i[3], i[0], i[1])
-	} else {
+	} else if len(ip) <= 8 && len(ip) > 0 {
 		// ipv4
 		i := []int64{hexToDec(ip[6:8]), hexToDec(ip[4:6]), hexToDec(ip[2:4]), hexToDec(ip[0:2])}
 
 		out = fmt.Sprintf("%v.%v.%v.%v", i[0], i[1], i[2], i[3])
+	} else {
+		return "0.0.0.0"
 	}
 
 	return out
