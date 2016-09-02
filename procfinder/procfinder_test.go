@@ -49,3 +49,28 @@ func TestHexToDec(t *testing.T) {
 
 	return
 }
+
+func TestIP(t *testing.T) {
+	cases := []struct {
+		in   string
+		want string
+	}{
+		{in: "0100007F", want: "127.0.0.1"},
+		{in: "00000000", want: "0.0.0.0"},
+		{in: "8706140A", want: "10.20.6.135"},
+		{in: "069AA1C0", want: "192.161.154.6"},
+		{in: "A0AB3448", want: "72.52.171.160"},
+		{in: "111111111111111111111111111111111111", want: "0.0.0.0"}, // should fail
+		{in: "", want: "0.0.0.0"},                                     // should fail
+	}
+
+	for _, c := range cases {
+		out := ip(c.in)
+
+		if out != c.want {
+			t.Fatalf("ip(%q) == %q, wanted %q", c.in, out, c.want)
+		}
+	}
+
+	return
+}
