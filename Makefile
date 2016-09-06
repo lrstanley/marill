@@ -5,7 +5,7 @@ PATH := $(GOPATH)/bin:$(PATH)
 export $(PATH)
 
 BINARY=marill
-VERSION=$(shell git describe --tags --abbrev=0 > /dev/null)
+VERSION=$(shell git describe --tags --abbrev=0 2>/dev/null)
 HASH=$(shell git rev-parse --short HEAD)
 COMPILE_DATE=$(shell date -u '+%B %d %Y')
 LD_FLAGS += -s -w -X 'main.version=$(VERSION)' -X 'main.commithash=$(HASH)' -X 'main.compiledate=$(COMPILE_DATE)'
@@ -37,21 +37,28 @@ tools: fetch
 	@echo "\n\033[0;36m [ Verifying dependencies are installed ]\033[0;m"
 	go get github.com/mitchellh/gox
 
-cc:
+clean:
+	@echo "\n\033[0;36m [ Removing previously compiled binaries, and cleaning up ]\033[0;m"
+	/bin/rm -vrf "${BINARY}" "${RELEASE_ROOT}" bindata.go
+
+cc: clean
 	@echo "\n\033[0;36m [ Cross compiling ]\033[0;m"
+	mkdir -p ${RELEASE_ROOT}/dist
 	gox -verbose -ldflags="${LD_FLAGS}" -os="linux freebsd netbsd openbsd" -arch="386 amd64 arm" -output "${RELEASE_ROOT}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
 
-targz:
+dobuild: cc
 	@echo "\n\033[0;36m [ Compressing compiled binaries ]\033[0;m"
-	mkdir -p ${RELEASE_ROOT}/dist
-	cd ${RELEASE_ROOT}/pkg/;for osarch in *;do (cd $$osarch;tar zcvf ../../dist/marill_$$osarch.tar.gz ./* > /dev/null);done
+	cd ${RELEASE_ROOT}/pkg/;for osarch in *;do (cd $$osarch;tar -zcvf "../../dist/marill_$${osarch}_git-${HASH}.tar.gz" ./* >/dev/null);done
 	@echo "\n\033[0;36m [ Binaries compiled ]\033[0;m"
 	find ${RELEASE_ROOT}/dist -type f
 
-all: fetch
-	@echo "\n\033[0;36m [ Removing previously compiled binaries ]\033[0;m"
-	rm -vf ${BINARY}
+dorelease: cc
+	@echo "\n\033[0;36m [ Compressing compiled binaries ]\033[0;m"
+	cd ${RELEASE_ROOT}/pkg/;for osarch in *;do (cd $$osarch;tar -zcvf "../../dist/marill_$${osarch}_${VERSION}-${HASH}.tar.gz" ./* >/dev/null);done
+	@echo "\n\033[0;36m [ Binaries compiled ]\033[0;m"
+	find ${RELEASE_ROOT}/dist -type f
 
+all: clean fetch
 	# add tests to bindata.go for inclusion
 	go-bindata tests/...
 
