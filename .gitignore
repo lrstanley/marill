@@ -31,3 +31,6 @@ vendor
 # Marill specific
 marill
 bindata.go
+
+# release dirs
+release
