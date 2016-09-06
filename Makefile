@@ -46,13 +46,17 @@ cc: clean
 	mkdir -p ${RELEASE_ROOT}/dist
 	gox -verbose -ldflags="${LD_FLAGS}" -os="linux freebsd netbsd openbsd" -arch="386 amd64 arm" -output "${RELEASE_ROOT}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
 
-dobuild: cc
+ccshrink:
+	@echo "\n\033[0;36m [ Stripping debugging into and symbol tables from binaries ]\033[0;m"
+	find ${RELEASE_ROOT}/pkg/ -type f | while read bin;do (which upx > /dev/null && upx -1 -q "$$bin" > /dev/null) || echo -n;done
+
+dobuild: cc ccshrink
 	@echo "\n\033[0;36m [ Compressing compiled binaries ]\033[0;m"
 	cd ${RELEASE_ROOT}/pkg/;for osarch in *;do (cd $$osarch;tar -zcvf "../../dist/marill_$${osarch}_git-${HASH}.tar.gz" ./* >/dev/null);done
 	@echo "\n\033[0;36m [ Binaries compiled ]\033[0;m"
 	find ${RELEASE_ROOT}/dist -type f
 
-dorelease: cc
+dorelease: cc ccshrink
 	@echo "\n\033[0;36m [ Compressing compiled binaries ]\033[0;m"
 	cd ${RELEASE_ROOT}/pkg/;for osarch in *;do (cd $$osarch;tar -zcvf "../../dist/marill_$${osarch}_${VERSION}-${HASH}.tar.gz" ./* >/dev/null);done
 	@echo "\n\033[0;36m [ Binaries compiled ]\033[0;m"
