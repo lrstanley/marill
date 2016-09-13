@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"runtime"
 	"time"
@@ -41,6 +42,7 @@ var out = Output{}
 func statsLoop(done <-chan struct{}) {
 	mem := &runtime.MemStats{}
 	var numRoutines, numCPU int
+	var load5, load10, load15 float32
 
 	for {
 		select {
@@ -51,7 +53,13 @@ func statsLoop(done <-chan struct{}) {
 			numRoutines = runtime.NumGoroutine()
 			numCPU = runtime.NumCPU()
 
-			logger.Printf("allocated mem: %dM, sys: %dM, threads: %d, cores: %d", mem.Alloc/1024/1024, mem.Sys/1024/1024, numRoutines, numCPU)
+			if contents, err := ioutil.ReadFile("/proc/loadavg"); err == nil {
+				fmt.Sscanf(string(contents), "%f %f %f %*s %*d", &load5, &load10, &load15)
+			}
+
+			logger.Printf(
+				"allocated mem: %dM, sys: %dM, threads: %d, cores: %d load5: %.2f load10: %.2f load15: %.2f",
+				mem.Alloc/1024/1024, mem.Sys/1024/1024, numRoutines, numCPU, load5, load10, load15)
 
 			time.Sleep(2 * time.Second)
 		}
