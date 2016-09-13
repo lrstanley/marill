@@ -18,13 +18,14 @@ LD_FLAGS += -s -w -X 'main.version=$(VERSION)' -X 'main.commithash=$(HASH)' -X '
 
 generate:
 	@echo "\n\033[0;36m [ Generating gocode from assets... ]\033[0;m"
-	which go-bindata > /dev/null || go get github.com/jteeuwen/go-bindata/...
-	go-bindata tests/...
+	$(GOPATH)/bin/go-bindata tests/...
 
 fetch:
 	@echo "\n\033[0;36m [ Fetching dependencies ]\033[0;m"
 	go get -d ./...
 	test -f $(GOPATH)/bin/gometalinter.v1 || go get -u gopkg.in/alecthomas/gometalinter.v1
+	test -f $(GOPATH)/bin/gox || go get github.com/mitchellh/gox
+	test -f $(GOPATH)/bin/go-bindata || go get github.com/jteeuwen/go-bindata/...
 
 lint: test
 	@echo "\n\033[0;36m [ Installng linters ]\033[0;m"
@@ -50,9 +51,8 @@ clean:
 
 cc: clean fetch generate
 	@echo "\n\033[0;36m [ Cross compiling ]\033[0;m"
-	which gox > /dev/null || go get github.com/mitchellh/gox
 	mkdir -p ${RELEASE_ROOT}/dist
-	gox -verbose -ldflags="${LD_FLAGS}" -os="linux freebsd netbsd openbsd" -arch="386 amd64 arm" -output "${RELEASE_ROOT}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
+	$(GOPATH)/bin/gox -verbose -ldflags="${LD_FLAGS}" -os="linux freebsd netbsd openbsd" -arch="386 amd64 arm" -output "${RELEASE_ROOT}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
 
 ccshrink:
 	@echo "\n\033[0;36m [ Stripping debugging into and symbol tables from binaries ]\033[0;m"
