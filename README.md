@@ -51,7 +51,7 @@ USAGE:
    marill [global options] command [command options] [arguments...]
    
 VERSION:
-   git revision xxxxxx
+   git revision XXXXXX
    
 AUTHOR(S):
    Liam Stanley <me@liamstanley.io> 
@@ -60,11 +60,13 @@ COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --printurls         Print the list of urls as if they were going to be scanned
+   --print-urls        Print the list of urls as if they were going to be scanned
    --debug, -d         Print debugging information to stdout
    --quiet, -q         Dont't print regular stdout messages
    --log-file logfile  Log debugging information to logfile
    --cores n           Use n cores to fetch data (0 being server cores/2) (default: 0)
+   --ignore-http       Ignore http-based URLs during domain search
+   --ignore-https      Ignore https-based URLs during domain search
    --help, -h          show help
    --version, -v       print the version
 ```
