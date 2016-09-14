@@ -23,7 +23,9 @@ type outputConfig struct {
 }
 
 type scanConfig struct {
-	cores int
+	cores       int
+	ignorehttp  bool
+	ignorehttps bool
 }
 
 type appConfig struct {
@@ -99,6 +101,11 @@ func printUrls() error {
 		return fmt.Errorf("unable to auto-fetch domain list: %s", err)
 	}
 
+	finder.Filter(domfinder.DomainFilter{
+		IgnoreHTTP:  conf.scan.ignorehttp,
+		IgnoreHTTPS: conf.scan.ignorehttps,
+	})
+
 	for _, domain := range finder.Domains {
 		out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
 	}
@@ -125,6 +132,11 @@ func run() {
 	if err := finder.GetDomains(); err != nil {
 		logger.Fatalf("unable to auto-fetch domain list: %s", err)
 	}
+
+	finder.Filter(domfinder.DomainFilter{
+		IgnoreHTTP:  conf.scan.ignorehttp,
+		IgnoreHTTPS: conf.scan.ignorehttps,
+	})
 
 	logger.Printf("found %d domains on webserver %s (exe: %s, pid: %s)", len(finder.Domains), finder.MainProc.Name, finder.MainProc.Exe, finder.MainProc.PID)
 
@@ -197,6 +209,16 @@ func main() {
 			Name:        "cores",
 			Usage:       "Use `n` cores to fetch data (0 being server cores/2)",
 			Destination: &conf.scan.cores,
+		},
+		cli.BoolFlag{
+			Name:        "ignore-http",
+			Usage:       "Ignore http-based URLs in domain finder",
+			Destination: &conf.scan.ignorehttp,
+		},
+		cli.BoolFlag{
+			Name:        "ignore-https",
+			Usage:       "Ignore https-based URLs in domain finder",
+			Destination: &conf.scan.ignorehttps,
 		},
 	}
 
