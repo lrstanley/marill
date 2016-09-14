@@ -10,18 +10,23 @@ import (
 
 const (
 	kernHostname = "/proc/sys/kernel/hostname"
+	kernDomain   = "/proc/sys/kernel/domainname"
 )
 
 // getHostname returns the servers hostname which we should compare against webserver
 // vhost entries.
 func getHostname() string {
-	data, err := ioutil.ReadFile(kernHostname)
-
-	if err != nil {
+	host, herr := ioutil.ReadFile(kernHostname)
+	domain, derr := ioutil.ReadFile(kernDomain)
+	if herr != nil || derr != nil {
 		return "unknown"
 	}
 
-	return strings.Replace(string(data), "\n", "", 1)
+	if strings.Contains(string(domain), "none") {
+		return strings.Replace(string(host), "\n", "", 1)
+	}
+
+	return strings.Replace(string(host), "\n", "", 1) + "." + strings.Replace(string(domain), "\n", "", 1)
 }
 
 // stripDups strips all domains that have the same resulting URL
