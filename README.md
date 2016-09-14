@@ -16,10 +16,13 @@ At this stage, things are still in alpha/likely going to change quite a bit. Thi
 - [x] scan **Apache**/**Lightspeed** based webservers for domains to fetch
 - [x] scan **cPanel** based webservers for domains to fetch
 - [ ] scan **Nginx** based webservers for domains to fetch
-- [ ] cli arg manager [**IN PROGRESS**]
-- [ ] scan any webserver based on manual cli input
+- [X] cli arg manager [**ACTIVELY BEING MODIFIED**]
+- [ ] scan any webserver based on manual cli input [**IN PROGRESS**]
 - [ ] return results in a human readible format
 - [ ] return results in a bot/script readible format
+
+Things I would like to have completed for the first major release:
+
 - [ ] provide potential fixes
 - [ ] scan server for possible issues (reference error_log files, webserver error logs, etc)
 
