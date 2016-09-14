@@ -1,17 +1,20 @@
 language: go
 go:
-  - 1.5
-  - 1.6
-  - 1.7
-  - tip
+- 1.5
+- 1.6
+- 1.7
+- tip
 script:
-  - make test all
+- make test all
 notifications:
   irc:
     channels:
-      - "irc.byteirc.org#L"
+    - irc.byteirc.org#L
     template:
-      - "%{repository} #%{build_number} %{branch}/%{commit}: %{author} -- %{message} %{build_url}"
+    - "%{repository} #%{build_number} %{branch}/%{commit}: %{author} -- %{message}
+      %{build_url}"
     on_success: change
     on_failure: change
     skip_join: true
+  slack:
+    secure: e/TXptPKv6o9HiAIPb8awy0pfqji7Os+YtHQPukOBPzepRZRivFCcMoQCApdDcjDkhnnHKGVzxyFPNxvhw1BYelXc03T6WHN4WE4yILUz+Yhwu/jBiARKfPZAAhcCuALxmbdndd9dLOaVqly8GDK+GY3hfUeYJWNdIAiyBZ+lYn70Rr4KluLXV8uYcnpn1Mje4N9bQA7noZ7ehPMLKUgrz7skEUVTGC46PL+h7PmIiWmdMF9Tw9nJaYZSvjRI7GEi2d++dbU/JU1MyTVuOuQEkaJG0OvSRKgqTIp9Dw24QC8Qm38AiHUnM4h/686MQnTrH8ZJeIw+nVgmm/FZasA4Z2q72/Rc6zQttCLAu8j9ABPLsnAEFnNU1K4gmEKSiEfvxc7r6sdefVf7ZMU6Kve0P0++quuxWAxF/SvcWxdhMuuepB2VVAI/lpk62+azglgytuHoLJt30IdNDvCU/WR4t2sR5P2ZDRVmmPAjcz40cvsNbhykffBv1HQvHsIrObPyL6Gvk76jAptilXpLQcVjS7Vw1jeuqnorG7FAgR/T/Cd87gU2cGYnoxig5B/wC6fnQVgRAPOT/wBS99453PTj6084aqM4WRW1d7sxCUIrFOH0kbOCnafVDuFqugbitzhstpgR30DNbJFbfcToEOnUNJRJYVvcmGie3YLfxDVfOA=
