@@ -26,6 +26,8 @@ type scanConfig struct {
 	cores       int
 	ignorehttp  bool
 	ignorehttps bool
+	ignorematch string
+	matchonly   string
 }
 
 type appConfig struct {
@@ -104,6 +106,8 @@ func printUrls() error {
 	finder.Filter(domfinder.DomainFilter{
 		IgnoreHTTP:  conf.scan.ignorehttp,
 		IgnoreHTTPS: conf.scan.ignorehttps,
+		IgnoreMatch: conf.scan.ignorematch,
+		MatchOnly:   conf.scan.matchonly,
 	})
 
 	for _, domain := range finder.Domains {
@@ -136,6 +140,8 @@ func run() {
 	finder.Filter(domfinder.DomainFilter{
 		IgnoreHTTP:  conf.scan.ignorehttp,
 		IgnoreHTTPS: conf.scan.ignorehttps,
+		IgnoreMatch: conf.scan.ignorematch,
+		MatchOnly:   conf.scan.matchonly,
 	})
 
 	logger.Printf("found %d domains on webserver %s (exe: %s, pid: %s)", len(finder.Domains), finder.MainProc.Name, finder.MainProc.Exe, finder.MainProc.PID)
@@ -219,6 +225,16 @@ func main() {
 			Name:        "ignore-https",
 			Usage:       "Ignore https-based URLs during domain search",
 			Destination: &conf.scan.ignorehttps,
+		},
+		cli.StringFlag{
+			Name:        "ignore-match",
+			Usage:       "Ignore URLS during domain search that match `GLOB`",
+			Destination: &conf.scan.ignorematch,
+		},
+		cli.StringFlag{
+			Name:        "match-only",
+			Usage:       "Allow URLS during domain search that match `GLOB`",
+			Destination: &conf.scan.matchonly,
 		},
 	}
 
