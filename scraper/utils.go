@@ -1,7 +1,7 @@
 package scraper
 
 import (
-	"errors"
+	"fmt"
 	"net/url"
 	"time"
 )
@@ -49,7 +49,7 @@ func getHost(uri string) (string, error) {
 	host, err := url.Parse(uri)
 
 	if err != nil {
-		return "", errors.New("Invalid url")
+		return "", fmt.Errorf("invalid uri: %s", uri)
 	}
 
 	return host.Host, nil
