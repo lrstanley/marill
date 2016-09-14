@@ -29,6 +29,10 @@ type Domain struct {
 	PublicIP string
 }
 
+func (d *Domain) String() string {
+	return fmt.Sprintf("<[%s]::%s:%s>", d.URL.String(), d.IP, d.Port)
+}
+
 // Finder represents the entire domain crawl process to find domains that the server
 // is actually hosting.
 type Finder struct {
