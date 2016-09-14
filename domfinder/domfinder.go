@@ -43,6 +43,28 @@ type Finder struct {
 	Log *log.Logger
 }
 
+type DomainFilter struct {
+	IgnoreHTTP  bool
+	IgnoreHTTPS bool
+}
+
+func (f *Finder) Filter(cnf DomainFilter) {
+	new := []*Domain{}
+
+	for i := range f.Domains {
+		if cnf.IgnoreHTTP && f.Domains[i].URL.Scheme == "http" {
+			continue
+		}
+		if cnf.IgnoreHTTPS && f.Domains[i].URL.Scheme == "https" {
+			continue
+		}
+
+		new = append(new, f.Domains[i])
+	}
+
+	f.Domains = new
+}
+
 // GetWebservers pulls only the web server processes from the process list on the
 // server.
 func (f *Finder) GetWebservers() (err error) {
