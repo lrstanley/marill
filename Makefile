@@ -35,7 +35,7 @@ lint: test
 
 test: fetch
 	@echo "\n\033[0;36m [ Running tests ]\033[0;m"
-	go test ./...
+	go test -v -timeout 2m ./...
 
 debug: clean fetch generate
 	@echo "\n\033[0;36m [ Executing ]\033[0;m"
