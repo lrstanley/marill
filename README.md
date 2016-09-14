@@ -60,17 +60,17 @@ COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --print-urls         Print the list of urls as if they were going to be scanned
-   --debug, -d          Print debugging information to stdout
-   --quiet, -q          Dont't print regular stdout messages
-   --log-file logfile   Log debugging information to logfile
-   --cores n            Use n cores to fetch data (0 being server cores/2) (default: 0)
-   --ignore-http        Ignore http-based URLs during domain search
-   --ignore-https       Ignore https-based URLs during domain search
-   --ignore-match GLOB  Ignore URLS during domain search that match GLOB
-   --match-only GLOB    Allow URLS during domain search that match GLOB
-   --help, -h           show help
-   --version, -v        print the version
+   --print-urls          Print the list of urls as if they were going to be scanned
+   --debug, -d           Print debugging information to stdout
+   --quiet, -q           Dont't print regular stdout messages
+   --log-file logfile    Log debugging information to logfile
+   --cores n             Use n cores to fetch data (0 being server cores/2) (default: 0)
+   --ignore-http         Ignore http-based URLs during domain search
+   --ignore-https        Ignore https-based URLs during domain search
+   --domain-ignore GLOB  Ignore URLS during domain search that match GLOB
+   --domain-match GLOB   Allow URLS during domain search that match GLOB
+   --help, -h            show help
+   --version, -v         print the version
 ```
 
 ##### License:

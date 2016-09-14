@@ -227,12 +227,12 @@ func main() {
 			Destination: &conf.scan.ignorehttps,
 		},
 		cli.StringFlag{
-			Name:        "ignore-match",
+			Name:        "domain-ignore",
 			Usage:       "Ignore URLS during domain search that match `GLOB`",
 			Destination: &conf.scan.ignorematch,
 		},
 		cli.StringFlag{
-			Name:        "match-only",
+			Name:        "domain-match",
 			Usage:       "Allow URLS during domain search that match `GLOB`",
 			Destination: &conf.scan.matchonly,
 		},
