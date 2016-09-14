@@ -212,12 +212,12 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:        "ignore-http",
-			Usage:       "Ignore http-based URLs in domain finder",
+			Usage:       "Ignore http-based URLs during domain search",
 			Destination: &conf.scan.ignorehttp,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-https",
-			Usage:       "Ignore https-based URLs in domain finder",
+			Usage:       "Ignore https-based URLs during domain search",
 			Destination: &conf.scan.ignorehttps,
 		},
 	}
