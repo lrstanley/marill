@@ -186,7 +186,7 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
-			Name:        "printurls",
+			Name:        "print-urls",
 			Usage:       "Print the list of urls as if they were going to be scanned",
 			Destination: &conf.app.printUrls,
 		},
