@@ -1,6 +1,25 @@
 package domfinder
 
-import "testing"
+import (
+	"os"
+	"strings"
+	"testing"
+)
+
+func TestGetHostname(t *testing.T) {
+	host, err := os.Hostname()
+	if err != nil {
+		t.Fatalf("os.Hostname() returned: %q", err)
+	}
+
+	newHost := getHostname()
+
+	if !strings.HasPrefix(newHost, host) {
+		t.Fatalf("getHostname() == %q, wanted prefix: %q", newHost, host)
+	}
+
+	return
+}
 
 func TestIsDomainURL(t *testing.T) {
 	cases := []struct {
