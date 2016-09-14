@@ -43,9 +43,12 @@ type Finder struct {
 	Log *log.Logger
 }
 
+// DomainFilter filters Finder.Domains based on query input
 type DomainFilter struct {
-	IgnoreHTTP  bool
-	IgnoreHTTPS bool
+	IgnoreHTTP  bool   // ignore ^http urls
+	IgnoreHTTPS bool   // ignore ^https urls
+	IgnoreMatch string // ignore urls matching glob
+	MatchOnly   string // ignore urls not matching glob
 }
 
 func (f *Finder) Filter(cnf DomainFilter) {
@@ -56,6 +59,12 @@ func (f *Finder) Filter(cnf DomainFilter) {
 			continue
 		}
 		if cnf.IgnoreHTTPS && f.Domains[i].URL.Scheme == "https" {
+			continue
+		}
+		if len(cnf.IgnoreMatch) > 0 && Glob(f.Domains[i].URL.String(), cnf.IgnoreMatch) {
+			continue
+		}
+		if len(cnf.MatchOnly) > 0 && !Glob(f.Domains[i].URL.String(), cnf.MatchOnly) {
 			continue
 		}
 
