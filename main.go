@@ -119,6 +119,13 @@ func printUrls() error {
 }
 
 func run() {
+	if len(version) != 0 && len(commithash) != 0 {
+		out.Printf("{bold}{blue}Running marill version %s (git revision %s){c}\n", version, commithash)
+		logger.Printf("marill: version:%s revision:%s\n", version, commithash)
+	} else {
+		out.Println("{bold}{blue}Running marill (unknown version){c}")
+	}
+
 	logger.Println("checking for running webservers...")
 
 	finder := &domfinder.Finder{Log: logger}
@@ -126,11 +133,12 @@ func run() {
 		logger.Fatalf("unable to get process list: %s", err)
 	}
 
-	if out := ""; len(finder.Procs) > 0 {
+	if outlist := ""; len(finder.Procs) > 0 {
 		for _, proc := range finder.Procs {
-			out += fmt.Sprintf("[%s:%s] ", proc.Name, proc.PID)
+			outlist += fmt.Sprintf("[%s:%s] ", proc.Name, proc.PID)
 		}
-		logger.Printf("found %d procs matching a webserver: %s", len(finder.Procs), out)
+		logger.Printf("found %d procs matching a webserver: %s", len(finder.Procs), outlist)
+		out.Printf("found %d procs matching a webserver...\n", len(finder.Procs))
 	}
 
 	// start crawling for domains
@@ -154,7 +162,18 @@ func run() {
 	crawler := &scraper.Crawler{Log: logger}
 	crawler.Cnf.Domains = tmplist
 	crawler.Cnf.Recursive = conf.scan.recursive
+
+	logger.Printf("starting crawler...")
+	out.Printf("Starting scan on %d domains...\n", len(tmplist))
 	crawler.Crawl()
+	out.Println("Scan complete.")
+	for _, dom := range crawler.Results {
+		if dom.Error != nil {
+			out.Printf("{red}[FAILURE]{c} [code: ---] [%15s] [{cyan}  0 resources{c}] [{green}     0ms{c}] %s ({red}%s{c})\n", dom.Request.IP, dom.Request.URL, dom.Error)
+		} else {
+			out.Printf("{green}[SUCCESS]{c} [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", dom.Resource.Response.Code, dom.Request.IP, len(dom.Resources), dom.Resource.Time.Milli, dom.Resource.URL)
+		}
+	}
 }
 
 func main() {
