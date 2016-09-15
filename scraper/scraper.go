@@ -221,10 +221,16 @@ type Domain struct {
 
 // Crawler is the higher level struct which wraps the entire threaded crawl process
 type Crawler struct {
-	Log     *log.Logger
-	Domains []*Domain
-	Results []*Results
-	ipmap   map[string]string
+	Log     *log.Logger       // output log
+	ipmap   map[string]string // domain -> ip map, to easily tell if something is local
+	Results []*Results        // scan results, should only be access when scan is complete
+	Cnf     CrawlerConfig
+}
+
+// CrawlerConfig is the configuration which changes Crawler
+type CrawlerConfig struct {
+	Domains   []*Domain // list of domains to scan
+	Recursive bool      // if we want to pull the resources for the page too
 }
 
 // Crawl represents the higher level functionality of scraper. Crawl should
@@ -236,19 +242,19 @@ func (c *Crawler) Crawl() {
 	timer := NewTimer()
 
 	// strip all common duplicate domain/ip pairs
-	stripDups(&c.Domains)
+	stripDups(&c.Cnf.Domains)
 
 	c.ipmap = make(map[string]string)
 	var dom string
-	for i := range c.Domains {
-		c.ipmap[c.Domains[i].URL.Host] = c.Domains[i].IP
-		dom = strings.TrimPrefix(c.Domains[i].URL.Host, "www.")
-		c.ipmap[dom] = c.Domains[i].IP        // no www. directive
-		c.ipmap["www."+dom] = c.Domains[i].IP // www. directive
+	for i := range c.Cnf.Domains {
+		c.ipmap[c.Cnf.Domains[i].URL.Host] = c.Cnf.Domains[i].IP
+		dom = strings.TrimPrefix(c.Cnf.Domains[i].URL.Host, "www.")
+		c.ipmap[dom] = c.Cnf.Domains[i].IP        // no www. directive
+		c.ipmap["www."+dom] = c.Cnf.Domains[i].IP // www. directive
 	}
 
 	// loop through all supplied urls and send them to a worker to be fetched
-	for _, domain := range c.Domains {
+	for _, domain := range c.Cnf.Domains {
 		wg.Add(1)
 
 		go func(domain *Domain) {

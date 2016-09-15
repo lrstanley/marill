@@ -150,7 +150,8 @@ func run() {
 	for _, domain := range finder.Domains {
 		tmplist = append(tmplist, &scraper.Domain{URL: domain.URL, IP: domain.IP})
 	}
-	crawler := &scraper.Crawler{Log: logger, Domains: tmplist}
+	crawler := &scraper.Crawler{Log: logger}
+	crawler.Cnf.Domains = tmplist
 	crawler.Crawl()
 }
 

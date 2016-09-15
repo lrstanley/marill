@@ -45,7 +45,8 @@ func TestFetch(t *testing.T) {
 		tmplist = append(tmplist, &Domain{URL: uri, IP: c.inx})
 	}
 
-	crawler := Crawler{Log: logger, Domains: tmplist}
+	crawler := Crawler{Log: logger}
+	crawler.Cnf.Domains = tmplist
 	crawler.Crawl()
 
 	for _, c := range cases {
