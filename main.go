@@ -214,19 +214,19 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
-			Name:        "print-urls",
-			Usage:       "Print the list of urls as if they were going to be scanned",
-			Destination: &conf.app.printUrls,
-		},
-		cli.BoolFlag{
 			Name:        "debug, d",
 			Usage:       "Print debugging information to stdout",
 			Destination: &conf.out.printDebug,
 		},
 		cli.BoolFlag{
 			Name:        "quiet, q",
-			Usage:       "Dont't print regular stdout messages",
+			Usage:       "Do not print regular stdout messages",
 			Destination: &conf.out.ignoreStd,
+		},
+		cli.BoolFlag{
+			Name:        "no-color",
+			Usage:       "Do not print with color",
+			Destination: &conf.out.noColors,
 		},
 		cli.StringFlag{
 			Name:        "log-file",
@@ -237,6 +237,11 @@ func main() {
 			Name:        "cores",
 			Usage:       "Use `n` cores to fetch data (0 being server cores/2)",
 			Destination: &conf.scan.cores,
+		},
+		cli.BoolFlag{
+			Name:        "print-urls",
+			Usage:       "Print the list of urls as if they were going to be scanned",
+			Destination: &conf.app.printUrls,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-http",
