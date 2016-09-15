@@ -63,11 +63,12 @@ COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --print-urls          Print the list of urls as if they were going to be scanned
    --debug, -d           Print debugging information to stdout
-   --quiet, -q           Dont't print regular stdout messages
+   --quiet, -q           Do not print regular stdout messages
+   --no-color            Do not print with color
    --log-file logfile    Log debugging information to logfile
    --cores n             Use n cores to fetch data (0 being server cores/2) (default: 0)
+   --print-urls          Print the list of urls as if they were going to be scanned
    --ignore-http         Ignore http-based URLs during domain search
    --ignore-https        Ignore https-based URLs during domain search
    --domain-ignore GLOB  Ignore URLS during domain search that match GLOB
