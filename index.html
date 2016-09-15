@@ -42,10 +42,15 @@
 <li>[x] scan <strong>Apache</strong>/<strong>Lightspeed</strong> based webservers for domains to fetch</li>
 <li>[x] scan <strong>cPanel</strong> based webservers for domains to fetch</li>
 <li>[ ] scan <strong>Nginx</strong> based webservers for domains to fetch</li>
-<li>[ ] cli arg manager [<strong>IN PROGRESS</strong>]</li>
-<li>[ ] scan any webserver based on manual cli input</li>
+<li>[x] cli arg manager [<strong>ACTIVELY BEING MODIFIED</strong>]</li>
+<li>[ ] scan any webserver based on manual cli input [<strong>IN PROGRESS</strong>]</li>
 <li>[ ] return results in a human readible format</li>
 <li>[ ] return results in a bot/script readible format</li>
+</ul>
+
+<p>Things I would like to have completed for the first major release:</p>
+
+<ul>
 <li>[ ] provide potential fixes</li>
 <li>[ ] scan server for possible issues (reference error_log files, webserver error logs, etc)</li>
 </ul>
@@ -78,7 +83,7 @@ USAGE:
    marill [global options] command [command options] [arguments...]
 
 VERSION:
-   git revision xxxxxx
+   git revision XXXXXX
 
 AUTHOR(S):
    Liam Stanley &lt;me@liamstanley.io&gt; 
@@ -87,13 +92,19 @@ COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --printurls         Print the list of urls as if they were going to be scanned
-   --debug, -d         Print debugging information to stdout
-   --quiet, -q         Dont't print regular stdout messages
-   --log-file logfile  Log debugging information to logfile
-   --cores n           Use n cores to fetch data (0 being server cores/2) (default: 0)
-   --help, -h          show help
-   --version, -v       print the version
+   --debug, -d           Print debugging information to stdout
+   --quiet, -q           Do not print regular stdout messages
+   --no-color            Do not print with color
+   --log-file logfile    Log debugging information to logfile
+   --cores n             Use n cores to fetch data (0 being server cores/2) (default: 0)
+   --print-urls          Print the list of urls as if they were going to be scanned
+   --ignore-http         Ignore http-based URLs during domain search
+   --ignore-https        Ignore https-based URLs during domain search
+   --domain-ignore GLOB  Ignore URLS during domain search that match GLOB
+   --domain-match GLOB   Allow URLS during domain search that match GLOB
+   --recursive           Check all assets (css/js/images) for each page, recursively
+   --help, -h            show help
+   --version, -v         print the version
 </code></pre>
 
 <h5>
