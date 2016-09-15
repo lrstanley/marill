@@ -96,16 +96,19 @@ func (o Output) Printf(format string, a ...interface{}) (n int, err error) {
 		return 0, nil
 	}
 
-	FmtColor(&format, conf.out.noColors)
+	str := fmt.Sprintf(format, a...)
+	FmtColor(&str, conf.out.noColors)
 
-	return fmt.Printf(format, a...)
+	return fmt.Print(str)
 }
 
 // Println interprets []*Color{} escape codes and prints them to stdout
-func (o Output) Print(a ...string) (n int, err error) {
+func (o Output) Println(a ...interface{}) (n int, err error) {
 	if conf.out.ignoreStd {
 		return 0, nil
 	}
 
-	return fmt.Printf(strings.Join(a, " "))
+	str := fmt.Sprintln(a...)
+	FmtColor(&str, conf.out.noColors)
+	return fmt.Print(str)
 }
