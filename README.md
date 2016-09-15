@@ -72,6 +72,7 @@ GLOBAL OPTIONS:
    --ignore-https        Ignore https-based URLs during domain search
    --domain-ignore GLOB  Ignore URLS during domain search that match GLOB
    --domain-match GLOB   Allow URLS during domain search that match GLOB
+   --recursive           Check all assets (css/js/images) for each page, recursively
    --help, -h            show help
    --version, -v         print the version
 ```

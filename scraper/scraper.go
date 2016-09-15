@@ -199,15 +199,17 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 		res.ResourceTime = resourceTime.Result
 	}()
 
-	for i := range urls {
-		resourcePool.Add(1)
+	if c.Cnf.Recursive {
+		for i := range urls {
+			resourcePool.Add(1)
 
-		rsrc := &Resource{request: ResourceOrigin{URL: urls[i]}}
-		res.Resources = append(res.Resources, rsrc)
-		go c.fetchResource(res.Resources[i])
+			rsrc := &Resource{request: ResourceOrigin{URL: urls[i]}}
+			res.Resources = append(res.Resources, rsrc)
+			go c.fetchResource(res.Resources[i])
+		}
+
+		resourcePool.Wait()
 	}
-
-	resourcePool.Wait()
 
 	return
 }

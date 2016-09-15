@@ -28,6 +28,7 @@ type scanConfig struct {
 	ignorehttps bool
 	ignorematch string
 	matchonly   string
+	recursive   bool
 }
 
 type appConfig struct {
@@ -152,6 +153,7 @@ func run() {
 	}
 	crawler := &scraper.Crawler{Log: logger}
 	crawler.Cnf.Domains = tmplist
+	crawler.Cnf.Recursive = conf.scan.recursive
 	crawler.Crawl()
 }
 
@@ -236,6 +238,11 @@ func main() {
 			Name:        "domain-match",
 			Usage:       "Allow URLS during domain search that match `GLOB`",
 			Destination: &conf.scan.matchonly,
+		},
+		cli.BoolFlag{
+			Name:        "recursive",
+			Usage:       "Check all assets (css/js/images) for each page, recursively",
+			Destination: &conf.scan.recursive,
 		},
 	}
 
