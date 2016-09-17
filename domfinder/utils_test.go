@@ -99,19 +99,19 @@ func TestIsDomainURL(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		uri, err := isDomainURL(c.host, c.port)
+		uri, err := IsDomainURL(c.host, c.port)
 
 		if err != nil && c.want != "" {
-			t.Fatalf("isDomainURL(%s, %s) returned error %v", c.host, c.port, err)
+			t.Fatalf("IsDomainURL(%s, %s) returned error %v", c.host, c.port, err)
 		}
 
 		if err == nil && c.want == "" {
-			t.Fatalf("isDomainURL(%s, %s) returned no errors", c.host, c.port)
+			t.Fatalf("IsDomainURL(%s, %s) returned no errors", c.host, c.port)
 		}
 
 		if err == nil && len(c.want) > 0 {
 			if uri.String() != c.want {
-				t.Fatalf("isDomainURL(%s, %s) returned no errors. wanted: %s, got: %s", c.host, c.port, c.want, uri.String())
+				t.Fatalf("IsDomainURL(%s, %s) returned no errors. wanted: %s, got: %s", c.host, c.port, c.want, uri.String())
 			}
 		}
 	}

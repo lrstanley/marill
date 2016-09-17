@@ -51,10 +51,10 @@ func stripDups(domains *[]*Domain) {
 	return
 }
 
-// isDomainURL should validate the data we are obtaining from the webservers to
+// IsDomainURL should validate the data we are obtaining from the webservers to
 // ensure it is a proper hostname and/or port (within reason. custom configs are
 // custom)
-func isDomainURL(host, port string) (*url.URL, Err) {
+func IsDomainURL(host, port string) (*url.URL, Err) {
 	if port != "443" && port != "80" {
 		host = fmt.Sprintf("%s:%s", host, port)
 	}
@@ -94,7 +94,7 @@ func isDomainURL(host, port string) (*url.URL, Err) {
 
 // MustURL is much like isDomainURL, however will panic on error (useful for tests).
 func MustURL(host, port string) *url.URL {
-	uri, err := isDomainURL(host, port)
+	uri, err := IsDomainURL(host, port)
 	if err != nil {
 		panic(err)
 	}

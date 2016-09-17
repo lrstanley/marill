@@ -61,7 +61,7 @@ func (f *Finder) ReadCpanelVars() error {
 			continue
 		}
 
-		domainURL, err := isDomainURL(vhost.Servername, vhost.Port)
+		domainURL, err := IsDomainURL(vhost.Servername, vhost.Port)
 		if err != nil {
 			// assume the actual domain is invalid
 			continue
@@ -74,7 +74,7 @@ func (f *Finder) ReadCpanelVars() error {
 		})
 
 		for _, subvhost := range strings.Split(vhost.Serveralias, " ") {
-			subURL, err := isDomainURL(subvhost, vhost.Port)
+			subURL, err := IsDomainURL(subvhost, vhost.Port)
 			if err != nil {
 				// assume bad domain
 				continue
@@ -182,7 +182,7 @@ func (f *Finder) ReadApacheVhosts(raw string) error {
 			}
 
 			// lets try and parse it into a URL
-			domainURL, err := isDomainURL(domainName, domainPort)
+			domainURL, err := IsDomainURL(domainName, domainPort)
 
 			if err != nil {
 				// assume they have an entry in apache that just simply isn't a valid
