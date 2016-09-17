@@ -75,13 +75,25 @@ func IsDomainURL(host, port string) (*url.URL, Err) {
 		}
 	}
 
+	if strings.Contains(host, " ") {
+		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+	}
+
 	if strings.HasPrefix(host, "http") {
 		uri, err = url.Parse(host)
 		if err != nil {
 			return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
 		}
 
-		if strings.HasPrefix(host, "http") && port != "" {
+		if port == "443" {
+			uri.Scheme = "https"
+			port = ""
+		} else if port == "80" {
+			uri.Scheme = "http"
+			port = ""
+		}
+
+		if port != "" {
 			uri.Host = uri.Host + ":" + port
 		}
 	} else {
@@ -95,10 +107,6 @@ func IsDomainURL(host, port string) (*url.URL, Err) {
 			scheme = "http://"
 		}
 		host = scheme + host
-
-		if strings.Contains(host, " ") {
-			return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
-		}
 
 		uri, err = url.Parse(host)
 		if err != nil {
