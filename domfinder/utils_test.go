@@ -95,7 +95,7 @@ func TestIsDomainURL(t *testing.T) {
 		{host: "domain.com", port: "443", want: "https://domain.com"},
 		{host: "domain.com", port: "8080", want: "http://domain.com:8080"},
 		{host: "domain.com", port: "0123", want: ""},
-		{host: "domain.com", port: "", want: ""},
+		{host: "domain.com", port: "", want: "http://domain.com"},
 	}
 
 	for _, c := range cases {

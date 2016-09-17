@@ -55,38 +55,55 @@ func stripDups(domains *[]*Domain) {
 // ensure it is a proper hostname and/or port (within reason. custom configs are
 // custom)
 func IsDomainURL(host, port string) (*url.URL, Err) {
-	if port != "443" && port != "80" {
-		host = fmt.Sprintf("%s:%s", host, port)
+	var uri *url.URL
+	var err error
+
+	if !strings.HasPrefix(host, "http") {
+		if port != "443" && port != "80" && port != "" {
+			host = fmt.Sprintf("%s:%s", host, port)
+		}
 	}
 
-	intport, err := strconv.Atoi(port)
-	if err != nil {
-		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
-	}
-	strport := strconv.Itoa(intport)
-	if strport != port {
-		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+	if port != "" {
+		intport, err := strconv.Atoi(port)
+		if err != nil {
+			return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+		}
+		strport := strconv.Itoa(intport)
+		if strport != port {
+			return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+		}
 	}
 
-	// lets try and determine the scheme we need. Best solution would like be:
-	//   - 443 -- https
-	//   - anything else -- http
-	var scheme string
-	if port == "443" {
-		scheme = "https://"
+	if strings.HasPrefix(host, "http") {
+		uri, err = url.Parse(host)
+		if err != nil {
+			return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+		}
+
+		if strings.HasPrefix(host, "http") && port != "" {
+			uri.Host = uri.Host + ":" + port
+		}
 	} else {
-		scheme = "http://"
-	}
-	host = scheme + host
+		// lets try and determine the scheme we need. Best solution would like be:
+		//   - 443 -- https
+		//   - anything else -- http
+		var scheme string
+		if port == "443" {
+			scheme = "https://"
+		} else {
+			scheme = "http://"
+		}
+		host = scheme + host
 
-	if strings.Contains(host, " ") {
-		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
-	}
+		if strings.Contains(host, " ") {
+			return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+		}
 
-	uri, err := url.Parse(host)
-
-	if err != nil {
-		return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+		uri, err = url.Parse(host)
+		if err != nil {
+			return nil, &NewErr{Code: ErrInvalidURL, value: fmt.Sprintf("%s (port: %s)", host, port)}
+		}
 	}
 
 	return uri, nil
