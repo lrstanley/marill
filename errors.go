@@ -2,10 +2,6 @@ package main
 
 import "fmt"
 
-// stole structure for this from --
-//    https://github.com/JackKnifed/moxxi/blob/master/moxxiconf/error.go
-// because :yes:
-
 // Err represents the custom error methods
 type Err interface {
 	error
@@ -59,11 +55,4 @@ const (
 // errMsg contains a map of error name id keys and error/deep error pairs
 var errMsg = map[int]string{
 	ErrUpgradedError: "Not a real error",
-}
-
-// CheckError is a simple error wrapper that will panic if the error isn't nil
-func CheckError(err error) {
-	if err != nil {
-		panic(err)
-	}
 }

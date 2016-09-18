@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/Liamraystanley/marill/domfinder"
@@ -24,10 +26,11 @@ type outputConfig struct {
 
 type scanConfig struct {
 	cores       int
-	ignorehttp  bool
-	ignorehttps bool
-	ignorematch string
-	matchonly   string
+	manualList  string
+	ignoreHttp  bool
+	ignoreHttps bool
+	ignoreMatch string
+	matchOnly   string
 	recursive   bool
 }
 
@@ -94,6 +97,49 @@ func numCores() {
 	return
 }
 
+// reManualDomain can match the following:
+// (DOMAIN|URL):IP:PORT
+// (DOMAIN|URL):IP
+// (DOMAIN|URL):PORT
+// (DOMAIN|URL)
+var reManualDomain = regexp.MustCompile(`^(?P<domain>(?:[A-Za-z0-9_.-]{2,350}\.[A-Za-z0-9]{2,63})|https?://[A-Za-z0-9_.-]{2,350}\.[A-Za-z0-9]{2,63}[!-~]+?)(?::(?P<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))?(?::(?P<port>\d{2,5}))?$`)
+var reSpaces = regexp.MustCompile(`[\t\n\v\f\r ]+`)
+
+/// parseManualList parses the list of domains specified from --domains
+func parseManualList() (domlist []*scraper.Domain, err error) {
+	input := strings.Split(reSpaces.ReplaceAllString(conf.scan.manualList, " "), " ")
+
+	for _, item := range input {
+		item = strings.TrimSuffix(strings.TrimPrefix(item, " "), " ")
+		if item == "" {
+			continue
+		}
+
+		results := reManualDomain.FindStringSubmatch(item)
+		if len(results) != 4 {
+			return nil, fmt.Errorf("invalid domain manually provided: %s", item)
+		}
+
+		domain, ip, port := results[1], results[2], results[3]
+
+		if domain == "" {
+			return nil, fmt.Errorf("invalid domain manually provided: %s", item)
+		}
+
+		uri, err := domfinder.IsDomainURL(domain, port)
+		if err != nil {
+			return nil, fmt.Errorf("invalid domain manually provided: %s", err)
+		}
+
+		domlist = append(domlist, &scraper.Domain{
+			URL: uri,
+			IP:  ip,
+		})
+	}
+
+	return domlist, nil
+}
+
 func printUrls() error {
 	finder := &domfinder.Finder{Log: logger}
 	if err := finder.GetWebservers(); err != nil {
@@ -105,10 +151,10 @@ func printUrls() error {
 	}
 
 	finder.Filter(domfinder.DomainFilter{
-		IgnoreHTTP:  conf.scan.ignorehttp,
-		IgnoreHTTPS: conf.scan.ignorehttps,
-		IgnoreMatch: conf.scan.ignorematch,
-		MatchOnly:   conf.scan.matchonly,
+		IgnoreHTTP:  conf.scan.ignoreHttp,
+		IgnoreHTTPS: conf.scan.ignoreHttps,
+		IgnoreMatch: conf.scan.ignoreMatch,
+		MatchOnly:   conf.scan.matchOnly,
 	})
 
 	for _, domain := range finder.Domains {
@@ -126,47 +172,58 @@ func run() {
 		out.Println("{bold}{blue}Running marill (unknown version){c}")
 	}
 
-	logger.Println("checking for running webservers...")
-
-	finder := &domfinder.Finder{Log: logger}
-	if err := finder.GetWebservers(); err != nil {
-		logger.Fatalf("unable to get process list: %s", err)
-	}
-
-	if outlist := ""; len(finder.Procs) > 0 {
-		for _, proc := range finder.Procs {
-			outlist += fmt.Sprintf("[%s:%s] ", proc.Name, proc.PID)
-		}
-		logger.Printf("found %d procs matching a webserver: %s", len(finder.Procs), outlist)
-		out.Printf("found %d procs matching a webserver...\n", len(finder.Procs))
-	}
-
-	// start crawling for domains
-	if err := finder.GetDomains(); err != nil {
-		logger.Fatalf("unable to auto-fetch domain list: %s", err)
-	}
-
-	finder.Filter(domfinder.DomainFilter{
-		IgnoreHTTP:  conf.scan.ignorehttp,
-		IgnoreHTTPS: conf.scan.ignorehttps,
-		IgnoreMatch: conf.scan.ignorematch,
-		MatchOnly:   conf.scan.matchonly,
-	})
-
-	logger.Printf("found %d domains on webserver %s (exe: %s, pid: %s)", len(finder.Domains), finder.MainProc.Name, finder.MainProc.Exe, finder.MainProc.PID)
-
-	tmplist := []*scraper.Domain{}
-	for _, domain := range finder.Domains {
-		tmplist = append(tmplist, &scraper.Domain{URL: domain.URL, IP: domain.IP})
-	}
 	crawler := &scraper.Crawler{Log: logger}
-	crawler.Cnf.Domains = tmplist
+	var err error
+
+	if conf.scan.manualList != "" {
+		logger.Println("manually supplied url list")
+		crawler.Cnf.Domains, err = parseManualList()
+		if err != nil {
+			out.Println("{red}Unable to parse --domains:{c}", err)
+			logger.Fatal("unable to parse domain list:", err)
+		}
+	} else {
+		logger.Println("checking for running webservers")
+
+		finder := &domfinder.Finder{Log: logger}
+		if err := finder.GetWebservers(); err != nil {
+			logger.Fatalf("unable to get process list: %s", err)
+		}
+
+		if outlist := ""; len(finder.Procs) > 0 {
+			for _, proc := range finder.Procs {
+				outlist += fmt.Sprintf("[%s:%s] ", proc.Name, proc.PID)
+			}
+			logger.Printf("found %d procs matching a webserver: %s", len(finder.Procs), outlist)
+			out.Printf("found %d procs matching a webserver\n", len(finder.Procs))
+		}
+
+		// start crawling for domains
+		if err := finder.GetDomains(); err != nil {
+			logger.Fatalf("unable to auto-fetch domain list: %s", err)
+		}
+
+		finder.Filter(domfinder.DomainFilter{
+			IgnoreHTTP:  conf.scan.ignoreHttp,
+			IgnoreHTTPS: conf.scan.ignoreHttps,
+			IgnoreMatch: conf.scan.ignoreMatch,
+			MatchOnly:   conf.scan.matchOnly,
+		})
+
+		logger.Printf("found %d domains on webserver %s (exe: %s, pid: %s)", len(finder.Domains), finder.MainProc.Name, finder.MainProc.Exe, finder.MainProc.PID)
+
+		for _, domain := range finder.Domains {
+			crawler.Cnf.Domains = append(crawler.Cnf.Domains, &scraper.Domain{URL: domain.URL, IP: domain.IP})
+		}
+	}
+
 	crawler.Cnf.Recursive = conf.scan.recursive
 
 	logger.Printf("starting crawler...")
-	out.Printf("Starting scan on %d domains...\n", len(tmplist))
+	out.Printf("Starting scan on %d domains...\n", len(crawler.Cnf.Domains))
 	crawler.Crawl()
 	out.Println("Scan complete.")
+
 	for _, dom := range crawler.Results {
 		if dom.Error != nil {
 			out.Printf("{red}[FAILURE]{c} [code: ---] [%15s] [{cyan}  0 resources{c}] [{green}     0ms{c}] %s ({red}%s{c})\n", dom.Request.IP, dom.Request.URL, dom.Error)
@@ -238,6 +295,11 @@ func main() {
 			Usage:       "Use `n` cores to fetch data (0 being server cores/2)",
 			Destination: &conf.scan.cores,
 		},
+		cli.StringFlag{
+			Name:        "domains",
+			Usage:       "Manually specify list of domains to scan in form: `DOMAIN:IP ...`, or DOMAIN:IP:PORT",
+			Destination: &conf.scan.manualList,
+		},
 		cli.BoolFlag{
 			Name:        "print-urls",
 			Usage:       "Print the list of urls as if they were going to be scanned",
@@ -246,22 +308,22 @@ func main() {
 		cli.BoolFlag{
 			Name:        "ignore-http",
 			Usage:       "Ignore http-based URLs during domain search",
-			Destination: &conf.scan.ignorehttp,
+			Destination: &conf.scan.ignoreHttp,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-https",
 			Usage:       "Ignore https-based URLs during domain search",
-			Destination: &conf.scan.ignorehttps,
+			Destination: &conf.scan.ignoreHttps,
 		},
 		cli.StringFlag{
 			Name:        "domain-ignore",
 			Usage:       "Ignore URLS during domain search that match `GLOB`",
-			Destination: &conf.scan.ignorematch,
+			Destination: &conf.scan.ignoreMatch,
 		},
 		cli.StringFlag{
 			Name:        "domain-match",
 			Usage:       "Allow URLS during domain search that match `GLOB`",
-			Destination: &conf.scan.matchonly,
+			Destination: &conf.scan.matchOnly,
 		},
 		cli.BoolFlag{
 			Name:        "recursive",
