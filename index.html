@@ -92,19 +92,20 @@ COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --debug, -d           Print debugging information to stdout
-   --quiet, -q           Do not print regular stdout messages
-   --no-color            Do not print with color
-   --log-file logfile    Log debugging information to logfile
-   --cores n             Use n cores to fetch data (0 being server cores/2) (default: 0)
-   --print-urls          Print the list of urls as if they were going to be scanned
-   --ignore-http         Ignore http-based URLs during domain search
-   --ignore-https        Ignore https-based URLs during domain search
-   --domain-ignore GLOB  Ignore URLS during domain search that match GLOB
-   --domain-match GLOB   Allow URLS during domain search that match GLOB
-   --recursive           Check all assets (css/js/images) for each page, recursively
-   --help, -h            show help
-   --version, -v         print the version
+   --debug, -d              Print debugging information to stdout
+   --quiet, -q              Do not print regular stdout messages
+   --no-color               Do not print with color
+   --log-file logfile       Log debugging information to logfile
+   --cores n                Use n cores to fetch data (0 being server cores/2) (default: 0)
+   --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
+   --print-urls             Print the list of urls as if they were going to be scanned
+   --ignore-http            Ignore http-based URLs during domain search
+   --ignore-https           Ignore https-based URLs during domain search
+   --domain-ignore GLOB     Ignore URLS during domain search that match GLOB
+   --domain-match GLOB      Allow URLS during domain search that match GLOB
+   --recursive              Check all assets (css/js/images) for each page, recursively
+   --help, -h               show help
+   --version, -v            print the version
 </code></pre>
 
 <h5>
