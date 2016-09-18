@@ -9,7 +9,7 @@ Marill -- Automated site testing utility
 [![Codebeat Badge](https://codebeat.co/badges/4653f785-83ec-4b21-bf0c-b519b20c89d6)](https://codebeat.co/projects/github-com-liamraystanley-marill)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Liamraystanley/marill)](https://goreportcard.com/report/github.com/Liamraystanley/marill)
 
-#### Project Status:
+## Project Status:
 At this stage, things are still in alpha/likely going to change quite a bit. This includes code, exported functions/tools, cli args, etc. This is what I intend to have completed for the beta release:
 
 - [x] crawling of pages recursively
@@ -27,7 +27,7 @@ Things I would like to have completed for the first major release:
 - [ ] scan server for possible issues (reference error_log files, webserver error logs, etc)
 
 
-#### Building:
+## Building:
 Marill supports building on 1.3+ (or even possibly older), however it is recommended to build on the latest go release. Note that you will not be able to use the Makefile to compile Marill if you are trying to build on go 1.4 or lower. You will need to manually compile it, due to limitations with ldflag support.
 
 ```
@@ -42,7 +42,7 @@ To run unit tests, then compile, simply run:
 $ make test all
 ```
 
-#### Usage:
+## Usage:
 This is very likely to change quite a bit until we're out of beta. Please use wisely.
 
 ```
@@ -72,6 +72,7 @@ GLOBAL OPTIONS:
    --print-urls             Print the list of urls as if they were going to be scanned
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
+   --ignore-remote          Ignore all resources that resolve to a remote IP (use with --recursive)
    --domain-ignore GLOB     Ignore URLS during domain search that match GLOB
    --domain-match GLOB      Allow URLS during domain search that match GLOB
    --recursive              Check all assets (css/js/images) for each page, recursively
@@ -79,7 +80,7 @@ GLOBAL OPTIONS:
    --version, -v            print the version
 ```
 
-##### License:
+## License:
 
     LICENSE: The MIT License (MIT)
     Copyright (c) 2016 Liam Stanley <me@liamstanley.io>

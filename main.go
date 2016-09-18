@@ -25,13 +25,14 @@ type outputConfig struct {
 }
 
 type scanConfig struct {
-	cores       int
-	manualList  string
-	ignoreHttp  bool
-	ignoreHttps bool
-	ignoreMatch string
-	matchOnly   string
-	recursive   bool
+	cores        int
+	manualList   string
+	ignoreHttp   bool
+	ignoreHttps  bool
+	ignoreRemote bool
+	ignoreMatch  string
+	matchOnly    string
+	recursive    bool
 }
 
 type appConfig struct {
@@ -229,6 +230,7 @@ func run() {
 	}
 
 	crawler.Cnf.Recursive = conf.scan.recursive
+	crawler.Cnf.NoRemote = conf.scan.ignoreRemote
 
 	logger.Printf("starting crawler...")
 	out.Printf("Starting scan on %d domains...\n", len(crawler.Cnf.Domains))
@@ -325,6 +327,11 @@ func main() {
 			Name:        "ignore-https",
 			Usage:       "Ignore https-based URLs during domain search",
 			Destination: &conf.scan.ignoreHttps,
+		},
+		cli.BoolFlag{
+			Name:        "ignore-remote",
+			Usage:       "Ignore all resources that resolve to a remote IP (use with --recursive)",
+			Destination: &conf.scan.ignoreRemote,
 		},
 		cli.StringFlag{
 			Name:        "domain-ignore",

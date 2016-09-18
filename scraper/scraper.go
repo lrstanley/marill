@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/url"
 	"strings"
 	"sync"
@@ -201,6 +202,19 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	if c.Cnf.Recursive {
 		for i := range urls {
+			if c.Cnf.NoRemote {
+				host, err := getHost(urls[i])
+				if err != nil {
+					c.Log.Printf("unable to get host of %s, skipping", urls[i])
+					continue
+				}
+
+				if c.IsRemote(host) {
+					c.Log.Printf("host %s (url: %s) resolves to a unknown remote ip, skipping", host, urls[i])
+					continue
+				}
+			}
+
 			resourcePool.Add(1)
 
 			rsrc := &Resource{Request: ResourceOrigin{URL: urls[i]}}
@@ -233,6 +247,7 @@ type Crawler struct {
 type CrawlerConfig struct {
 	Domains   []*Domain // list of domains to scan
 	Recursive bool      // if we want to pull the resources for the page too
+	NoRemote  bool
 }
 
 // Crawl represents the higher level functionality of scraper. Crawl should
@@ -306,4 +321,34 @@ func (c *Crawler) GetResults(URL, IP string) *Results {
 	}
 
 	return nil
+}
+
+// IsRemote checks to see if host is remote, and if it should be scanned
+func (c *Crawler) IsRemote(host string) bool {
+	if _, ok := c.ipmap[host]; ok {
+		// it is in our IP map, so it was already specified
+		return true
+	}
+
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		// not working, might as well return false in this case, and let it be thrown
+		return false
+	}
+
+	if len(ips) == 0 {
+		return false // let it fail manually.
+	}
+
+	// select the first IP address in the list
+	ip := ips[0].String()
+
+	// check to see if the IP is in our map as a local IP address
+	for _, v := range c.ipmap {
+		if v == ip {
+			return false
+		}
+	}
+
+	return true
 }
