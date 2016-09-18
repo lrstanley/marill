@@ -344,7 +344,7 @@ func main() {
 			Destination: &conf.scan.matchOnly,
 		},
 		cli.BoolFlag{
-			Name:        "recursive",
+			Name:        "recursive, r",
 			Usage:       "Check all assets (css/js/images) for each page, recursively",
 			Destination: &conf.scan.recursive,
 		},

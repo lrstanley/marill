@@ -75,7 +75,7 @@ GLOBAL OPTIONS:
    --ignore-remote          Ignore all resources that resolve to a remote IP (use with --recursive)
    --domain-ignore GLOB     Ignore URLS during domain search that match GLOB
    --domain-match GLOB      Allow URLS during domain search that match GLOB
-   --recursive              Check all assets (css/js/images) for each page, recursively
+   --recursive, -r          Check all assets (css/js/images) for each page, recursively
    --help, -h               show help
    --version, -v            print the version
 ```
