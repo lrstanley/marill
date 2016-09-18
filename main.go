@@ -141,24 +141,35 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 }
 
 func printUrls() error {
-	finder := &domfinder.Finder{Log: logger}
-	if err := finder.GetWebservers(); err != nil {
-		return fmt.Errorf("unable to get process list: %s", err)
-	}
+	if conf.scan.manualList != "" {
+		domains, err := parseManualList()
+		if err != nil {
+			return fmt.Errorf("unable to parse domain list: %s", err)
+		}
 
-	if err := finder.GetDomains(); err != nil {
-		return fmt.Errorf("unable to auto-fetch domain list: %s", err)
-	}
+		for _, domain := range domains {
+			out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
+		}
+	} else {
+		finder := &domfinder.Finder{Log: logger}
+		if err := finder.GetWebservers(); err != nil {
+			return fmt.Errorf("unable to get process list: %s", err)
+		}
 
-	finder.Filter(domfinder.DomainFilter{
-		IgnoreHTTP:  conf.scan.ignoreHttp,
-		IgnoreHTTPS: conf.scan.ignoreHttps,
-		IgnoreMatch: conf.scan.ignoreMatch,
-		MatchOnly:   conf.scan.matchOnly,
-	})
+		if err := finder.GetDomains(); err != nil {
+			return fmt.Errorf("unable to auto-fetch domain list: %s", err)
+		}
 
-	for _, domain := range finder.Domains {
-		out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
+		finder.Filter(domfinder.DomainFilter{
+			IgnoreHTTP:  conf.scan.ignoreHttp,
+			IgnoreHTTPS: conf.scan.ignoreHttps,
+			IgnoreMatch: conf.scan.ignoreMatch,
+			MatchOnly:   conf.scan.matchOnly,
+		})
+
+		for _, domain := range finder.Domains {
+			out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
+		}
 	}
 
 	return nil
