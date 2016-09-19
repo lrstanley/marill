@@ -244,6 +244,8 @@ func run() {
 			out.Printf("{green}[SUCCESS]{c} [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", dom.Resource.Response.Code, dom.Request.IP, len(dom.Resources), dom.Resource.Time.Milli, dom.Resource.URL)
 		}
 	}
+
+	checkTests(crawler.Results)
 }
 
 func main() {
