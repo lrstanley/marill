@@ -1,7 +1,5 @@
-# Marill
-Marill -- Automated site testing utility
-
---------------------------------------------------------
+![Marill -- Automated Site Testing Utility](http://i.imgur.com/HYZ3biA.png)
+<p align="center">Marill -- Automated site testing utility.</p>
 
 [![Build Status](https://travis-ci.org/Liamraystanley/marill.svg?branch=master)](https://travis-ci.org/Liamraystanley/marill)
 [![GitHub Issues](https://img.shields.io/github/issues/Liamraystanley/marill.svg)](https://github.com/Liamraystanley/marill/issues)
