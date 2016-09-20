@@ -1,4 +1,4 @@
-![Marill -- Automated Site Testing Utility](http://i.imgur.com/HYZ3biA.png)
+![Marill -- Automated Site Testing Utility](https://i.imgur.com/HYZ3biA.png)
 <p align="center">Marill -- Automated site testing utility.</p>
 
 [![Build Status](https://travis-ci.org/Liamraystanley/marill.svg?branch=master)](https://travis-ci.org/Liamraystanley/marill)
