@@ -25,12 +25,10 @@ type ResourceOrigin struct {
 // Response represents the data for the HTTP-based request, closely matching
 // http.Response
 type Response struct {
-	Host          string               // Host is the host derived by the original returned resource
 	Remote        bool                 // Remote is true if the origin is remote (unknown ip)
 	Code          int                  // Code is the numeric HTTP based status code
 	URL           *url.URL             // URL is the resulting static URL derived by the original result page
 	Body          string               // Body is the response body. Used for primary requests, ignored for Resource structs.
-	Scheme        string               // Scheme is the end scheme used to fetch the page. For example, https
 	Headers       http.Header          // Headers is a map[string][]string of headers
 	ContentLength int64                // ContentLength is the number of bytes in the body of the response
 	TLS           *tls.ConnectionState // TLS is the SSL/TLS session if the resource was loaded over SSL/TLS
@@ -69,16 +67,14 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	}
 
 	rsrc.Response = Response{
-		Host:          resp.Request.Host,
 		URL:           resp.URL,
 		Code:          resp.StatusCode,
-		Scheme:        resp.Request.URL.Scheme,
 		ContentLength: resp.ContentLength,
 		Headers:       resp.Header,
 		TLS:           resp.TLS,
 	}
 
-	if rsrc.Response.Host != rsrc.Request.Host {
+	if rsrc.Response.URL.Host != rsrc.Request.Host {
 		rsrc.Response.Remote = true
 	}
 
@@ -139,16 +135,14 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	}
 
 	res.Response = Response{
-		Host:          resp.Request.Host,
 		URL:           resp.URL,
 		Code:          resp.StatusCode,
-		Scheme:        resp.Request.URL.Scheme,
 		ContentLength: resp.ContentLength,
 		Headers:       resp.Header,
 		TLS:           resp.TLS,
 	}
 
-	if res.Response.Host != res.Request.Host {
+	if res.Response.URL.Host != res.Request.Host {
 		res.Response.Remote = true
 	}
 

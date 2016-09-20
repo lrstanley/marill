@@ -109,7 +109,7 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 				res.applyScore(t)
 			}
 		case "host":
-			if testMatch(t, dom.Response.Host) {
+			if testMatch(t, dom.Response.URL.Host) {
 				res.applyScore(t)
 			}
 		case "resource":
