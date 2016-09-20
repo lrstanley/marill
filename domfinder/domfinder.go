@@ -24,10 +24,9 @@ var webservers = map[string]bool{
 // Domain represents a domain we should be checking, including the necessary data
 // to fetch it, with the included host/port proxiable op, and public ip
 type Domain struct {
-	IP       string
-	Port     string
-	URL      *url.URL
-	PublicIP string
+	IP   string
+	Port string
+	URL  *url.URL
 }
 
 func (d *Domain) String() string {
