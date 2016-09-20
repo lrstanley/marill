@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
 	"net/url"
 	"strings"
 	"sync"
@@ -43,6 +44,9 @@ type Response struct {
 
 	// Scheme represents the end scheme used to fetch the page. For example, https
 	Scheme string
+
+	// Headers represents a map[string][]string of headers (comma separated if multiple)
+	Headers http.Header
 
 	// ContentLength represents the number of bytes in the body of the response
 	ContentLength int64
@@ -102,6 +106,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	rsrc.Response.Code = resp.StatusCode
 	rsrc.Response.Scheme = resp.Request.URL.Scheme
 	rsrc.Response.ContentLength = resp.ContentLength
+	rsrc.Response.Headers = resp.Header
 	rsrc.Response.TLS = resp.TLS
 	rsrc.Time = resp.Time
 
@@ -175,6 +180,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	res.Response.Code = resp.StatusCode
 	res.Response.Scheme = resp.Request.URL.Scheme
 	res.Response.ContentLength = resp.ContentLength
+	res.Response.Headers = resp.Header
 	res.Response.TLS = resp.TLS
 	res.Time = resp.Time
 
