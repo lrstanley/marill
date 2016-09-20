@@ -3,6 +3,8 @@ package domfinder
 import (
 	"strings"
 	"testing"
+
+	"github.com/Liamraystanley/marill/utils"
 )
 
 func TestFilter(t *testing.T) {
@@ -25,44 +27,44 @@ func TestFilter(t *testing.T) {
 
 	// should match all
 	run([]*Domain{
-		{IP: "1.2.3.4", Port: "80", URL: MustURL("domain.com", "80")},
-		{IP: "1.2.3.4", Port: "80", URL: MustURL("domain.com", "80")},
+		{IP: "1.2.3.4", Port: "80", URL: utils.MustURL("domain.com", "80")},
+		{IP: "1.2.3.4", Port: "80", URL: utils.MustURL("domain.com", "80")},
 	}, DomainFilter{IgnoreHTTP: true}, 0)
 
 	// should match none
 	run([]*Domain{
-		{IP: "1.2.3.4", Port: "80", URL: MustURL("domain.com", "80")},
-		{IP: "1.2.3.4", Port: "80", URL: MustURL("domain.com", "80")},
+		{IP: "1.2.3.4", Port: "80", URL: utils.MustURL("domain.com", "80")},
+		{IP: "1.2.3.4", Port: "80", URL: utils.MustURL("domain.com", "80")},
 	}, DomainFilter{IgnoreHTTPS: true}, 2)
 
 	// should match one
 	run([]*Domain{
-		{IP: "1.2.3.4", Port: "80", URL: MustURL("domain.com", "80")},
-		{IP: "1.2.3.4", Port: "443", URL: MustURL("domain.com", "443")},
+		{IP: "1.2.3.4", Port: "80", URL: utils.MustURL("domain.com", "80")},
+		{IP: "1.2.3.4", Port: "443", URL: utils.MustURL("domain.com", "443")},
 	}, DomainFilter{IgnoreHTTPS: true}, 1)
 
 	// should match * (all)
 	run([]*Domain{
-		{IP: "1.2.3.4", Port: "80", URL: MustURL("domain.com", "80")},
-		{IP: "1.2.3.4", Port: "443", URL: MustURL("domain.com", "443")},
+		{IP: "1.2.3.4", Port: "80", URL: utils.MustURL("domain.com", "80")},
+		{IP: "1.2.3.4", Port: "443", URL: utils.MustURL("domain.com", "443")},
 	}, DomainFilter{MatchOnly: "*"}, 2)
 
 	// should match none
 	run([]*Domain{
-		{IP: "1.2.3.4", Port: "80", URL: MustURL("domain.com", "80")},
-		{IP: "1.2.3.4", Port: "443", URL: MustURL("domain.com", "443")},
+		{IP: "1.2.3.4", Port: "80", URL: utils.MustURL("domain.com", "80")},
+		{IP: "1.2.3.4", Port: "443", URL: utils.MustURL("domain.com", "443")},
 	}, DomainFilter{IgnoreMatch: "*"}, 0)
 
 	// should match none
 	run([]*Domain{
-		{IP: "1.2.3.4", Port: "80", URL: MustURL("domain.com", "80")},
-		{IP: "1.2.3.4", Port: "443", URL: MustURL("domain.com", "443")},
+		{IP: "1.2.3.4", Port: "80", URL: utils.MustURL("domain.com", "80")},
+		{IP: "1.2.3.4", Port: "443", URL: utils.MustURL("domain.com", "443")},
 	}, DomainFilter{IgnoreMatch: "*domain.com*"}, 0)
 
 	// should match one
 	run([]*Domain{
-		{IP: "1.2.3.4", Port: "80", URL: MustURL("domain.com", "80")},
-		{IP: "1.2.3.4", Port: "443", URL: MustURL("domain.com", "443")},
+		{IP: "1.2.3.4", Port: "80", URL: utils.MustURL("domain.com", "80")},
+		{IP: "1.2.3.4", Port: "443", URL: utils.MustURL("domain.com", "443")},
 	}, DomainFilter{IgnoreMatch: "https://*"}, 1)
 
 	return

@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/Liamraystanley/marill/utils"
 )
 
 var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
@@ -61,7 +63,7 @@ func (f *Finder) ReadCpanelVars() error {
 			continue
 		}
 
-		domainURL, err := IsDomainURL(vhost.Servername, vhost.Port)
+		domainURL, err := utils.IsDomainURL(vhost.Servername, vhost.Port)
 		if err != nil {
 			// assume the actual domain is invalid
 			continue
@@ -74,7 +76,7 @@ func (f *Finder) ReadCpanelVars() error {
 		})
 
 		for _, subvhost := range strings.Split(vhost.Serveralias, " ") {
-			subURL, err := IsDomainURL(subvhost, vhost.Port)
+			subURL, err := utils.IsDomainURL(subvhost, vhost.Port)
 			if err != nil {
 				// assume bad domain
 				continue
@@ -105,7 +107,7 @@ func (f *Finder) ReadApacheVhosts(raw string) error {
 	original := raw
 
 	// we'll want to get the hostname to test against (e.g. we want to ignore hostname urls)
-	hostname := getHostname()
+	hostname := utils.GetHostname()
 
 	var domains []*Domain
 
@@ -182,7 +184,7 @@ func (f *Finder) ReadApacheVhosts(raw string) error {
 			}
 
 			// lets try and parse it into a URL
-			domainURL, err := IsDomainURL(domainName, domainPort)
+			domainURL, err := utils.IsDomainURL(domainName, domainPort)
 
 			if err != nil {
 				// assume they have an entry in apache that just simply isn't a valid

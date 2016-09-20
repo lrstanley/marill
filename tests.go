@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/Liamraystanley/marill/domfinder"
 	"github.com/Liamraystanley/marill/scraper"
+	"github.com/Liamraystanley/marill/utils"
 )
 
 var example = `
@@ -58,7 +58,7 @@ func generateTests() (tests []*Test) {
 
 func checkTests(results []*scraper.Results) {
 	tests := generateTests()
-	timer := scraper.NewTimer()
+	timer := utils.NewTimer()
 	logger.Print("starting test checks")
 
 	for _, dom := range results {
@@ -135,7 +135,7 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 func testMatch(test *Test, data string) bool {
 	// loop through test.Match as GLOB
 	for i := 0; i < len(test.Match); i++ {
-		if domfinder.Glob(data, test.Match[i]) {
+		if utils.Glob(data, test.Match[i]) {
 			return true
 		}
 	}

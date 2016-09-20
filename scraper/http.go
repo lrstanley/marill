@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/Liamraystanley/marill/utils"
 )
 
 // CustomClient is the state for our custom http wrapper, which houses
@@ -29,7 +31,7 @@ type CustomClient struct {
 // extras.
 type CustomResponse struct {
 	*http.Response
-	Time *TimerResult
+	Time *utils.TimerResult
 	URL  string
 }
 
@@ -251,7 +253,7 @@ func (c *CustomClient) getHandler() (*CustomResponse, error) {
 	c.requestWrap(req)
 
 	// start tracking how long the request is going to take
-	timer := NewTimer()
+	timer := utils.NewTimer()
 
 	// actually make the request here
 	resp, err := client.Do(req)
@@ -277,7 +279,7 @@ func (c *CustomClient) getHandler() (*CustomResponse, error) {
 
 // Get wraps GetHandler -- easy interface for making get requests
 func (c *Crawler) Get(url string) (*CustomResponse, error) {
-	host, err := getHost(url)
+	host, err := utils.GetHost(url)
 	if err != nil {
 		return nil, err
 	}

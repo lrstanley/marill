@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+
+	"github.com/Liamraystanley/marill/utils"
 )
 
 // ResourceOrigin represents data originally used to create this resource
@@ -66,7 +68,7 @@ type Resource struct {
 	Error error
 
 	// Time represents the time it took to complete the request
-	Time *TimerResult
+	Time *utils.TimerResult
 }
 
 // fetchResource fetches a singular resource from a page, returning a *Resource struct.
@@ -89,7 +91,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 		resp.Body.Close()
 	}
 
-	rsrc.Request.Host, err = getHost(rsrc.Request.URL)
+	rsrc.Request.Host, err = utils.GetHost(rsrc.Request.URL)
 	if err != nil {
 		rsrc.Error = err
 		return
@@ -121,10 +123,10 @@ type Results struct {
 	Resources []*Resource
 
 	// ResourceTime shows how long it took to fetch all resources
-	ResourceTime *TimerResult
+	ResourceTime *utils.TimerResult
 
 	// TotalTime represents the time it took to crawl the site
-	TotalTime *TimerResult
+	TotalTime *utils.TimerResult
 }
 
 func (r *Results) String() string {
@@ -141,12 +143,12 @@ var resourcePool sync.WaitGroup
 // providing a Results struct containing the entire crawl data needed
 func (c *Crawler) FetchURL(URL string) (res *Results) {
 	res = &Results{}
-	crawlTimer := NewTimer()
+	crawlTimer := utils.NewTimer()
 
 	var err error
 
 	res.Request.URL = URL
-	res.Request.Host, err = getHost(URL)
+	res.Request.Host, err = utils.GetHost(URL)
 	if err != nil {
 		res.Error = err
 		return
@@ -193,7 +195,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	c.Log.Printf("fetched %s in %dms with status %d", res.URL, res.Time.Milli, res.Response.Code)
 
-	resourceTime := NewTimer()
+	resourceTime := utils.NewTimer()
 
 	defer func() {
 		resourceTime.End()
@@ -203,7 +205,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	if c.Cnf.Recursive {
 		for i := range urls {
 			if c.Cnf.NoRemote {
-				host, err := getHost(urls[i])
+				host, err := utils.GetHost(urls[i])
 				if err != nil {
 					c.Log.Printf("unable to get host of %s, skipping", urls[i])
 					continue
@@ -256,7 +258,7 @@ type CrawlerConfig struct {
 func (c *Crawler) Crawl() {
 	var results []*Results
 	var wg sync.WaitGroup
-	timer := NewTimer()
+	timer := utils.NewTimer()
 
 	// strip all common duplicate domain/ip pairs
 	stripDups(&c.Cnf.Domains)

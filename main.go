@@ -11,6 +11,7 @@ import (
 
 	"github.com/Liamraystanley/marill/domfinder"
 	"github.com/Liamraystanley/marill/scraper"
+	"github.com/Liamraystanley/marill/utils"
 	"github.com/urfave/cli"
 )
 
@@ -127,7 +128,7 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 			return nil, fmt.Errorf("invalid domain manually provided: %s", item)
 		}
 
-		uri, err := domfinder.IsDomainURL(domain, port)
+		uri, err := utils.IsDomainURL(domain, port)
 		if err != nil {
 			return nil, fmt.Errorf("invalid domain manually provided: %s", err)
 		}

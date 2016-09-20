@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Liamraystanley/marill/procfinder"
+	"github.com/Liamraystanley/marill/utils"
 )
 
 // webservers represents the list of nice-name processes that we should be checking
@@ -65,10 +66,10 @@ func (f *Finder) Filter(cnf DomainFilter) {
 		if cnf.IgnoreHTTPS && f.Domains[i].URL.Scheme == "https" {
 			continue
 		}
-		if len(cnf.IgnoreMatch) > 0 && Glob(f.Domains[i].URL.String(), cnf.IgnoreMatch) {
+		if len(cnf.IgnoreMatch) > 0 && utils.Glob(f.Domains[i].URL.String(), cnf.IgnoreMatch) {
 			continue
 		}
-		if len(cnf.MatchOnly) > 0 && !Glob(f.Domains[i].URL.String(), cnf.MatchOnly) {
+		if len(cnf.MatchOnly) > 0 && !utils.Glob(f.Domains[i].URL.String(), cnf.MatchOnly) {
 			continue
 		}
 

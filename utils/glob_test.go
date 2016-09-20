@@ -1,4 +1,4 @@
-package domfinder
+package utils
 
 import (
 	"strings"
