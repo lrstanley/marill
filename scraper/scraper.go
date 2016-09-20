@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -298,18 +297,12 @@ func (c *Crawler) IsRemote(host string) bool {
 		return true
 	}
 
-	ips, err := net.LookupIP(host)
+	ip, err := utils.LookupIP(host)
 	if err != nil {
-		// not working, might as well return false in this case, and let it be thrown
+		// there is some form of issue, assume it's local so the error
+		// is returned during the scraping process
 		return false
 	}
-
-	if len(ips) == 0 {
-		return false // let it fail manually.
-	}
-
-	// select the first IP address in the list
-	ip := ips[0].String()
 
 	// check to see if the IP is in our map as a local IP address
 	for _, v := range c.ipmap {

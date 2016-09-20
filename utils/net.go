@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/url"
 	"strconv"
 	"strings"
@@ -113,4 +114,19 @@ func MustURL(host, port string) *url.URL {
 	}
 
 	return uri
+}
+
+// LookupIP returns the first IP address from the resolving A record
+func LookupIP(host string) (string, error) {
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return "", err
+	}
+
+	if len(ips) == 0 {
+		return "", fmt.Errorf("no a record was found for host: %s", host)
+	}
+
+	// select the first IP address in the list
+	return ips[0].String(), nil
 }
