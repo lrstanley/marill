@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/Liamraystanley/marill/scraper"
 	"github.com/Liamraystanley/marill/utils"
@@ -30,7 +31,7 @@ var example = `
 
 type Test struct {
 	Name       string   `json:"name"`        // the name of the test
-	Type       string   `json:"type"`        // type of test. e.g: url, host, resource, body, statuscode, ip
+	Type       string   `json:"type"`        // type of test. e.g: url, host, resource, body, statuscode, headers
 	Weight     float32  `json:"weight"`      // how much does this test decrease or increase the score
 	Bad        bool     `json:"bad"`         // decrease, or increase score if match?
 	Match      []string `json:"match"`       // list of glob based matches
@@ -92,6 +93,27 @@ func (res *TestResult) applyScore(test *Test) {
 	fmt.Printf("applied score for %s to: %s%.2f (now %.2f)\n", res.Domain.Resource.Response.URL.String(), visual, test.Weight, res.Score)
 }
 
+func (res *TestResult) testMatch(test *Test, data string) {
+	// loop through test.Match as GLOB
+	for i := 0; i < len(test.Match); i++ {
+		if utils.Glob(data, test.Match[i]) {
+			res.applyScore(test)
+			return
+		}
+	}
+
+	// ...and test.MatchRegex
+	for i := 0; i < len(test.MatchRegex); i++ {
+		re := regexp.MustCompile(test.MatchRegex[i])
+		if re.MatchString(data) {
+			res.applyScore(test)
+			return
+		}
+	}
+
+	return
+}
+
 func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 	res := &TestResult{Domain: dom, Score: 10.0}
 
@@ -100,53 +122,28 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 		return res
 	}
 
-	// TODO: Complete IP address lookups for use with "ip" type
-
 	for _, t := range tests {
 		switch t.Type {
 		case "url":
-			if testMatch(t, dom.Response.URL.String()) {
-				res.applyScore(t)
-			}
+			res.testMatch(t, dom.Response.URL.String())
 		case "host":
-			if testMatch(t, dom.Response.URL.Host) {
-				res.applyScore(t)
-			}
+			res.testMatch(t, dom.Response.URL.Host)
 		case "resource":
 			for i := 0; i < len(dom.Resources); i++ {
-				if testMatch(t, dom.Resources[i].Response.URL.String()) {
-					res.applyScore(t)
-				}
+				res.testMatch(t, dom.Resources[i].Response.URL.String())
 			}
 		case "body":
-			if testMatch(t, dom.Response.Body) {
-				res.applyScore(t)
-			}
+			res.testMatch(t, dom.Response.Body)
 		case "statuscode":
-			if testMatch(t, strconv.Itoa(dom.Response.Code)) {
-				res.applyScore(t)
+			res.testMatch(t, strconv.Itoa(dom.Response.Code))
+		case "headers":
+			for name, values := range dom.Response.Headers {
+				hv := fmt.Sprintf("%s: %s", name, strings.Join(values, " "))
+
+				res.testMatch(t, hv)
 			}
 		}
 	}
 
 	return res
-}
-
-func testMatch(test *Test, data string) bool {
-	// loop through test.Match as GLOB
-	for i := 0; i < len(test.Match); i++ {
-		if utils.Glob(data, test.Match[i]) {
-			return true
-		}
-	}
-
-	// ...and test.MatchRegex
-	for i := 0; i < len(test.MatchRegex); i++ {
-		re := regexp.MustCompile(test.MatchRegex[i])
-		if re.MatchString(data) {
-			return true
-		}
-	}
-
-	return false
 }
