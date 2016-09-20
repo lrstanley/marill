@@ -242,7 +242,7 @@ func run() {
 		if dom.Error != nil {
 			out.Printf("{red}[FAILURE]{c} [code: ---] [%15s] [{cyan}  0 resources{c}] [{green}     0ms{c}] %s ({red}%s{c})\n", dom.Request.IP, dom.Request.URL, dom.Error)
 		} else {
-			out.Printf("{green}[SUCCESS]{c} [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", dom.Resource.Response.Code, dom.Request.IP, len(dom.Resources), dom.Resource.Time.Milli, dom.Resource.URL)
+			out.Printf("{green}[SUCCESS]{c} [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", dom.Resource.Response.Code, dom.Request.IP, len(dom.Resources), dom.Resource.Time.Milli, dom.Resource.Response.URL)
 		}
 	}
 

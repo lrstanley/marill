@@ -15,7 +15,7 @@ import (
 	"github.com/Liamraystanley/marill/utils"
 )
 
-// ResourceOrigin represents data originally used to create this resource
+// ResourceOrigin represents data originally used to create the request
 type ResourceOrigin struct {
 	// URL represents the initial URL received by input
 	URL string
@@ -37,6 +37,9 @@ type Response struct {
 
 	// Code represents the numeric HTTP based status code
 	Code int
+
+	// URL represents the resulting static URL derived by the original result page
+	URL string
 
 	// Body represents a string implementation of the byte array returned by
 	// http.Response. Only used for primary requests, ignored for Resource structs.
@@ -64,9 +67,6 @@ type Resource struct {
 
 	// Response represents the end result/data/status/etc.
 	Response Response
-
-	// URL represents the resulting static URL derived by the original result page
-	URL string
 
 	// Error represents any errors that may have occurred when fetching the resource
 	Error error
@@ -102,7 +102,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	}
 
 	rsrc.Response.Host = resp.Request.Host
-	rsrc.URL = resp.URL
+	rsrc.Response.URL = resp.URL
 	rsrc.Response.Code = resp.StatusCode
 	rsrc.Response.Scheme = resp.Request.URL.Scheme
 	rsrc.Response.ContentLength = resp.ContentLength
@@ -114,7 +114,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 		rsrc.Response.Remote = true
 	}
 
-	c.Log.Printf("fetched %s in %dms with status %d", rsrc.URL, rsrc.Time.Milli, rsrc.Response.Code)
+	c.Log.Printf("fetched %s in %dms with status %d", rsrc.Response.URL, rsrc.Time.Milli, rsrc.Response.Code)
 
 	return
 }
@@ -136,7 +136,7 @@ type Results struct {
 
 func (r *Results) String() string {
 	if r.Resources != nil && r.ResourceTime != nil && r.TotalTime != nil {
-		return fmt.Sprintf("<url(%s) == %d, resources(%d), resourceTime(%dms), totalTime(%dms), err(%s)>", r.URL, r.Response.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
+		return fmt.Sprintf("<url(%s) == %d, resources(%d), resourceTime(%dms), totalTime(%dms), err(%s)>", r.Response.URL, r.Response.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
 	}
 
 	return fmt.Sprintf("<url(%s), ip(%s), err(%s)>", r.Request.URL, r.Request.IP, r.Error)
@@ -176,7 +176,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	defer resp.Body.Close()
 
 	res.Response.Host = resp.Request.Host
-	res.URL = resp.URL
+	res.Response.URL = resp.URL
 	res.Response.Code = resp.StatusCode
 	res.Response.Scheme = resp.Request.URL.Scheme
 	res.Response.ContentLength = resp.ContentLength
@@ -199,7 +199,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	urls := getSrc(b, resp.Request)
 
-	c.Log.Printf("fetched %s in %dms with status %d", res.URL, res.Time.Milli, res.Response.Code)
+	c.Log.Printf("fetched %s in %dms with status %d", res.Response.URL, res.Time.Milli, res.Response.Code)
 
 	resourceTime := utils.NewTimer()
 
