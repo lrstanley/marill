@@ -28,7 +28,7 @@ type Response struct {
 	Host          string               // Host is the host derived by the original returned resource
 	Remote        bool                 // Remote is true if the origin is remote (unknown ip)
 	Code          int                  // Code is the numeric HTTP based status code
-	URL           string               // URL is the resulting static URL derived by the original result page
+	URL           *url.URL             // URL is the resulting static URL derived by the original result page
 	Body          string               // Body is the response body. Used for primary requests, ignored for Resource structs.
 	Scheme        string               // Scheme is the end scheme used to fetch the page. For example, https
 	Headers       http.Header          // Headers is a map[string][]string of headers
@@ -84,7 +84,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 
 	rsrc.Time = resp.Time
 
-	c.Log.Printf("fetched %s in %dms with status %d", rsrc.Response.URL, rsrc.Time.Milli, rsrc.Response.Code)
+	c.Log.Printf("fetched %s in %dms with status %d", rsrc.Response.URL.String(), rsrc.Time.Milli, rsrc.Response.Code)
 
 	return
 }
@@ -99,7 +99,7 @@ type Results struct {
 
 func (r *Results) String() string {
 	if r.Resources != nil && r.ResourceTime != nil && r.TotalTime != nil {
-		return fmt.Sprintf("<url(%s) == %d, resources(%d), resourceTime(%dms), totalTime(%dms), err(%s)>", r.Response.URL, r.Response.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
+		return fmt.Sprintf("<url(%s) == %d, resources(%d), resourceTime(%dms), totalTime(%dms), err(%s)>", r.Response.URL.String(), r.Response.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
 	}
 
 	return fmt.Sprintf("<url(%s), ip(%s), err(%s)>", r.Request.URL, r.Request.IP, r.Error)
@@ -165,7 +165,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	urls := getSrc(b, resp.Request)
 
-	c.Log.Printf("fetched %s in %dms with status %d", res.Response.URL, res.Time.Milli, res.Response.Code)
+	c.Log.Printf("fetched %s in %dms with status %d", res.Response.URL.String(), res.Time.Milli, res.Response.Code)
 
 	resourceTime := utils.NewTimer()
 

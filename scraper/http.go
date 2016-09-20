@@ -32,7 +32,7 @@ type CustomClient struct {
 type CustomResponse struct {
 	*http.Response
 	Time *utils.TimerResult
-	URL  string
+	URL  *url.URL
 }
 
 var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
@@ -261,20 +261,17 @@ func (c *CustomClient) getHandler() (*CustomResponse, error) {
 	// stop tracking the request
 	timer.End()
 
-	var url string
-
 	if err == nil {
-		url = c.ResultURL.String()
 		if err = VerifyHostname(resp.TLS, c.ResultURL.Host); err != nil {
 			return nil, err
 		}
-	} else {
-		url = req.URL.String()
 	}
 
-	wrappedResp := &CustomResponse{resp, timer.Result, url}
+	if len(c.ResultURL.Host) > 0 {
+		return &CustomResponse{resp, timer.Result, &c.ResultURL}, err
+	}
 
-	return wrappedResp, err
+	return &CustomResponse{resp, timer.Result, req.URL}, err
 }
 
 // Get wraps GetHandler -- easy interface for making get requests

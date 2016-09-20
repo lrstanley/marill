@@ -89,7 +89,7 @@ func (res *TestResult) applyScore(test *Test) {
 	if !test.Bad {
 		visual = "+"
 	}
-	fmt.Printf("applied score for %s to: %s%.2f (now %.2f)\n", res.Domain.Resource.Response.URL, visual, test.Weight, res.Score)
+	fmt.Printf("applied score for %s to: %s%.2f (now %.2f)\n", res.Domain.Resource.Response.URL.String(), visual, test.Weight, res.Score)
 }
 
 func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
@@ -105,7 +105,7 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 	for _, t := range tests {
 		switch t.Type {
 		case "url":
-			if testMatch(t, dom.Response.URL) {
+			if testMatch(t, dom.Response.URL.String()) {
 				res.applyScore(t)
 			}
 		case "host":
@@ -114,7 +114,7 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 			}
 		case "resource":
 			for i := 0; i < len(dom.Resources); i++ {
-				if testMatch(t, dom.Resources[i].Response.URL) {
+				if testMatch(t, dom.Resources[i].Response.URL.String()) {
 					res.applyScore(t)
 				}
 			}
