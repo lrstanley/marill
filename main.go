@@ -1,3 +1,15 @@
+//
+//       O
+//    o 0  o        [ Marill -- Automated site testing utility ]
+//       O      ___      ___       __        _______    __    ___      ___
+//     o       |"  \    /"  |     /""\      /"      \  |" \  |"  |    |"  |
+//    [  ]      \   \  //   |    /    \    |:        | ||  | ||  |    ||  |
+//    / O\      /\\  \/.    |   /' /\  \   |_____/   ) |:  | |:  |    |:  |
+//   / o  \    |: \.        |  //  __'  \   //      /  |.  |  \  |___  \  |___
+//  / O  o \   |.  \    /:  | /   /  \\  \ |:  __   \  /\  |\( \_|:  \( \_|:  \
+// [________]  |___|\__/|___|(___/    \___)|__|  \___)(__\_|_)\_______)\_______)
+//
+
 package main
 
 import (
@@ -17,6 +29,19 @@ import (
 
 // these /SHOULD/ be defined during the make process. not always however.
 var version, commithash, compiledate = "", "", ""
+
+const motd = `
+{magenta}      {lightgreen}O{magenta}     {yellow}     [ Marill -- Automated site testing utility ]
+{magenta}   {lightgreen}o{magenta} {lightgreen}0{magenta}  {lightgreen}o{magenta}   {lightyellow}             %4s, rev %s
+{magenta}      {lightgreen}O{magenta}     {lightblue} ___      ___       __        _______    __    ___      ___
+{magenta}    {lightgreen}o{magenta}       {lightblue}|"  \    /"  |     /""\      /"      \  |" \  |"  |    |"  |
+{magenta}   [  ]     {lightblue} \   \  //   |    /    \    |:        | ||  | ||  |    ||  |
+{magenta}   / {lightmagenta}O{magenta}\     {lightblue} /\\  \/.    |   /' /\  \   |_____/   ) |:  | |:  |    |:  |
+{magenta}  / {lightmagenta}o{magenta}  \    {lightblue}|: \.        |  //  __'  \   //      /  |.  |  \  |___  \  |___
+{magenta} / {lightmagenta}O{magenta}  {lightmagenta}o{magenta} \   {lightblue}|.  \    /:  | /   /  \\  \ |:  __   \  /\  |\( \_|:  \( \_|:  \
+{magenta}[________]  {lightblue}|___|\__/|___|(___/    \___)|__|  \___)(__\_|_)\_______)\_______)
+
+`
 
 type outputConfig struct {
 	noColors   bool
@@ -179,8 +204,8 @@ func printUrls() error {
 
 func run() {
 	if len(version) != 0 && len(commithash) != 0 {
-		out.Printf("{bold}{blue}Running marill version %s (git revision %s){c}\n", version, commithash)
 		logger.Printf("marill: version:%s revision:%s\n", version, commithash)
+		out.Printf(motd, version, commithash)
 	} else {
 		out.Println("{bold}{blue}Running marill (unknown version){c}")
 	}
