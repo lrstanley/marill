@@ -34,3 +34,6 @@ bindata.go
 
 # release dirs
 release
+
+# upx failed compile files
+*.upx
