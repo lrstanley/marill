@@ -213,11 +213,25 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 			res.testMatch(t, dom.Response.Body)
 		case "code":
 			res.testMatch(t, strconv.Itoa(dom.Response.Code))
+		case "asset_code":
+			for i := 0; i < len(dom.Resources); i++ {
+				res.testMatch(t, strconv.Itoa(dom.Resources[i].Response.Code))
+			}
 		case "headers":
 			for name, values := range dom.Response.Headers {
 				hv := fmt.Sprintf("%s: %s", name, strings.Join(values, " "))
+				fmt.Printf("%#v\n", hv)
 
 				res.testMatch(t, hv)
+			}
+		case "asset_headers":
+			for i := 0; i < len(dom.Resources); i++ {
+				for name, values := range dom.Resources[i].Response.Headers {
+					hv := fmt.Sprintf("%s: %s", name, strings.Join(values, " "))
+					fmt.Printf("%#v\n", hv)
+
+					res.testMatch(t, hv)
+				}
 			}
 		}
 	}
