@@ -1,0 +1,7 @@
+{
+    "name": "cPanel sorry page",
+    "type": "body",
+    "weight": 10,
+    "bad": true,
+    "match": ["*URL=/cgi-sys/defaultwebpage.cgi*"]
+}

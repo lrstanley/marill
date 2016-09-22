@@ -1,8 +1,0 @@
-{
-    "name": "Example test x2",
-    "type": "url",
-    "weight": 0.5,
-    "bad": true,
-    "match": ["*liquid*"],
-    "match_regex": []
-}

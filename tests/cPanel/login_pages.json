@@ -1,0 +1,13 @@
+[{
+    "name": "cPanel login page",
+    "type": "body_html",
+    "weight": 5,
+    "bad": true,
+    "match": ["*<title>cPanel Login</title>*"]
+}, {
+    "name": "WHM login page",
+    "type": "body_html",
+    "weight": 5,
+    "bad": true,
+    "match": ["*<title>WHM Login</title>*"]
+}]

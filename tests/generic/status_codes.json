@@ -11,7 +11,7 @@
     ]
 }, {
     "name": "asset non-ok status code",
-    "type": "code",
+    "type": "asset_code",
     "weight": 0.5,
     "bad": true,
     "match": [

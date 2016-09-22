@@ -1,0 +1,7 @@
+{
+    "name": "blank page",
+    "type": "body_html",
+    "weight": 5,
+    "bad": true,
+    "match": [""]
+}
