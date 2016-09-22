@@ -87,4 +87,4 @@ all: clean fetch generate
 	go build -ldflags "${LD_FLAGS}" -x -v -o ${BINARY}
 
 	# cleanup afterwards as well
-	/bin/rm -fv bindata.go
+	# /bin/rm -fv bindata.go
