@@ -1,6 +1,6 @@
 {
-    "name": "bad status codes",
-    "type": "statuscode",
+    "name": "non-ok status code",
+    "type": "code",
     "weight": 8.0,
     "bad": true,
     "match": [
