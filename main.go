@@ -13,6 +13,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -210,6 +211,9 @@ func run() {
 		out.Println("{bold}{blue}Running marill (unknown version){c}")
 	}
 
+	// fetch the tests ahead of time to ensure there are no syntax errors or anything
+	tests := generateTests()
+
 	crawler := &scraper.Crawler{Log: logger}
 	var err error
 
@@ -263,15 +267,29 @@ func run() {
 	crawler.Crawl()
 	out.Println("Scan complete.")
 
-	for _, dom := range crawler.Results {
-		if dom.Error != nil {
-			out.Printf("{red}[FAILURE]{c} [code: ---] [%15s] [{cyan}  0 resources{c}] [{green}     0ms{c}] %s ({red}%s{c})\n", dom.Request.IP, dom.Request.URL, dom.Error)
-		} else {
-			out.Printf("{green}[SUCCESS]{c} [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", dom.Resource.Response.Code, dom.Request.IP, len(dom.Resources), dom.Resource.Time.Milli, dom.Resource.Response.URL.String())
+	testResults := checkTests(crawler.Results, tests)
+	for i := 0; i < len(testResults); i++ {
+		if testResults[i].Domain.Error != nil {
+			continue
+		}
+
+		if testResults[i].Score < 8.0 {
+			failedTests := []string{}
+			for k := range testResults[i].MatchedTests {
+				failedTests = append(failedTests, k)
+			}
+
+			testResults[i].Domain.Error = errors.New("failed tests: " + strings.Join(failedTests, ", "))
 		}
 	}
 
-	checkTests(crawler.Results)
+	for _, res := range testResults {
+		if res.Domain.Error != nil {
+			out.Printf("{red}[FAILURE]{c} %.2f/10 [code: ---] [%15s] [{cyan}  0 resources{c}] [{green}     0ms{c}] %s ({red}%s{c})\n", res.Score, res.Domain.Request.IP, res.Domain.Request.URL, res.Domain.Error)
+		} else {
+			out.Printf("{green}[SUCCESS]{c} %.2f/10 [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", res.Score, res.Domain.Resource.Response.Code, res.Domain.Request.IP, len(res.Domain.Resources), res.Domain.Resource.Time.Milli, res.Domain.Resource.Response.URL.String())
+		}
+	}
 }
 
 func main() {
