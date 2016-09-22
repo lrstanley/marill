@@ -33,7 +33,7 @@ lint: test
 	@echo "\n\033[0;36m [ Running linters ]\033[0;m"
 	$(GOPATH)/bin/gometalinter.v1 --cyclo-over=15 --min-confidence=.30 --deadline=10s --dupl-threshold=40 -E gofmt -E goimports -E misspell -E test ./...
 
-test: fetch
+test: clean fetch generate
 	@echo "\n\033[0;36m [ Running tests ]\033[0;m"
 	go test -v -timeout 2m ./...
 
