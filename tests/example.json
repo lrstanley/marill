@@ -1,19 +1,8 @@
-[{
-        "name": "Example test",
-        "type": "header",
-        "weight": 0.5,
-        "bad": false,
-        "checks": [
-            ".*example string.*"
-        ]
-    },
-    {
-        "name": "Example test x2",
-        "type": "body",
-        "weight": 0.5,
-        "bad": true,
-        "checks": [
-            ".*Fatal error: .*"
-        ]
-    }
-]
+{
+    "name": "Example test x2",
+    "type": "url",
+    "weight": 0.5,
+    "bad": true,
+    "match": ["*liquid*"],
+    "match_regex": []
+}
