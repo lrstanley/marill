@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -22,11 +23,22 @@ const (
 	defaultScore = 10.0
 )
 
+// supported tests:
+//  - url: resource url
+//  - host: resource host
+//  - body: resource html-stripped body
+//  - body_html: resource body
+//  - code: resource status code
+//  - headers: resource headers in string form
+//  - asset_url: asset (js/css/img/png) url
+//  - asset_code: asset status code
+//  - asset_headers: asset headers in string form
+
 // Test represents a type of check, comparing is the resource matches specific inputs
 type Test struct {
 	Name       string   `json:"name"`        // the name of the test
-	Type       string   `json:"type"`        // type of test. e.g: url, host, resource, body, body_html, statuscode, headers
-	Weight     float32  `json:"weight"`      // how much does this test decrease or increase the score
+	Type       string   `json:"type"`        // type of test (see above)
+	Weight     float64  `json:"weight"`      // how much does this test decrease or increase the score
 	Bad        bool     `json:"bad"`         // decrease, or increase score if match?
 	Match      []string `json:"match"`       // list of glob based matches
 	MatchRegex []string `json:"match_regex"` // list of regex based matches
@@ -100,14 +112,29 @@ func checkTests(results []*scraper.Results, tests []*Test) (completedTests []*Te
 	timer.End()
 	logger.Printf("finished tests, elapsed time: %ds\n", timer.Result.Seconds)
 
+	for i := 0; i < len(completedTests); i++ {
+		if completedTests[i].Domain.Error != nil {
+			continue
+		}
+
+		if completedTests[i].Score < conf.scan.minScore {
+			failedTests := []string{}
+			for k := range completedTests[i].MatchedTests {
+				failedTests = append(failedTests, k)
+			}
+
+			completedTests[i].Domain.Error = errors.New("failed tests: " + strings.Join(failedTests, ", "))
+		}
+	}
+
 	return completedTests
 }
 
 // TestResult represents the result of testing a single resource
 type TestResult struct {
 	Domain       *scraper.Results   // Origin domain/resource data
-	Score        float32            // resulting score, skewed off defaultScore
-	MatchedTests map[string]float32 // map of negative affecting tests that were applied
+	Score        float64            // resulting score, skewed off defaultScore
+	MatchedTests map[string]float64 // map of negative affecting tests that were applied
 }
 
 // applyScore applies the score from test to the result, assuming test matched
@@ -160,7 +187,7 @@ var reHTMLTag = regexp.MustCompile(`<[^>]+>`)
 
 // checkDomain loops through all tests and guages what test score the domain gets
 func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
-	res := &TestResult{Domain: dom, Score: defaultScore, MatchedTests: make(map[string]float32)}
+	res := &TestResult{Domain: dom, Score: defaultScore, MatchedTests: make(map[string]float64)}
 
 	if dom.Error != nil {
 		res.Score = 0
@@ -176,7 +203,7 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 			res.testMatch(t, dom.Response.URL.String())
 		case "host":
 			res.testMatch(t, dom.Response.URL.Host)
-		case "resource":
+		case "asset_url":
 			for i := 0; i < len(dom.Resources); i++ {
 				res.testMatch(t, dom.Resources[i].Response.URL.String())
 			}
@@ -184,7 +211,7 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 			res.testMatch(t, body_nohtml)
 		case "body_html":
 			res.testMatch(t, dom.Response.Body)
-		case "statuscode":
+		case "code":
 			res.testMatch(t, strconv.Itoa(dom.Response.Code))
 		case "headers":
 			for name, values := range dom.Response.Headers {

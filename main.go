@@ -13,7 +13,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -60,6 +59,7 @@ type scanConfig struct {
 	ignoreMatch  string
 	matchOnly    string
 	recursive    bool
+	minScore     float64
 }
 
 type appConfig struct {
@@ -268,20 +268,6 @@ func run() {
 	out.Println("Scan complete.")
 
 	testResults := checkTests(crawler.Results, tests)
-	for i := 0; i < len(testResults); i++ {
-		if testResults[i].Domain.Error != nil {
-			continue
-		}
-
-		if testResults[i].Score < 8.0 {
-			failedTests := []string{}
-			for k := range testResults[i].MatchedTests {
-				failedTests = append(failedTests, k)
-			}
-
-			testResults[i].Domain.Error = errors.New("failed tests: " + strings.Join(failedTests, ", "))
-		}
-	}
 
 	for _, res := range testResults {
 		if res.Domain.Error != nil {
@@ -358,6 +344,12 @@ func main() {
 			Name:        "domains",
 			Usage:       "Manually specify list of domains to scan in form: `DOMAIN:IP ...`, or DOMAIN:IP:PORT",
 			Destination: &conf.scan.manualList,
+		},
+		cli.Float64Flag{
+			Name:        "min-score",
+			Usage:       "",
+			Value:       8.0,
+			Destination: &conf.scan.minScore,
 		},
 		cli.BoolFlag{
 			Name:        "print-urls",
