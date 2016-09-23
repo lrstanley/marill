@@ -15,7 +15,9 @@ At this stage, things are still in alpha/likely going to change quite a bit. Thi
 - [x] scan **cPanel** based webservers for domains to fetch
 - [ ] scan **Nginx** based webservers for domains to fetch
 - [x] cli arg manager [**ACTIVELY BEING MODIFIED**]
-- [ ] scan any webserver based on manual cli input [**IN PROGRESS**]
+- [x] scan any webserver based on manual cli input
+- [x] write testing system
+- [ ] get basis tests out of the way [**IN PROGRESS**]
 - [ ] return results in a human readible format
 - [ ] return results in a bot/script readible format
 
