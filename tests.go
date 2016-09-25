@@ -1,12 +1,16 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Liamraystanley/marill/scraper"
 	"github.com/Liamraystanley/marill/utils"
@@ -56,7 +60,7 @@ func generateTests() (tests []*Test) {
 	for i := 0; i < len(fns); i++ {
 		file, err := Asset(fns[i])
 		if err != nil {
-			out.Fatalf("unable to load asset form file %s: %s", fns[i], err)
+			out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
 		}
 
 		testsFromFile := []*Test{}
@@ -77,6 +81,59 @@ func generateTests() (tests []*Test) {
 
 		for _, test := range testsFromFile {
 			test.Origin = "file:" + fns[i]
+			tmp = append(tmp, test)
+		}
+	}
+
+	if len(conf.scan.testsFromURL) > 0 {
+		transport := &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
+
+		client := &http.Client{
+			Timeout:   5 * time.Second,
+			Transport: transport,
+		}
+
+		req, err := http.NewRequest("GET", conf.scan.testsFromURL, nil)
+		if err != nil {
+			out.Fatalf("unable to load tests from %s: %s", conf.scan.testsFromURL, err)
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			out.Fatalf("in fetch of tests from %s: %s", conf.scan.testsFromURL, err)
+		}
+
+		if resp.Body != nil {
+			defer resp.Body.Close()
+		}
+
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			out.Fatalf("unable to parse JSON from %s: %s", conf.scan.testsFromURL, err)
+		}
+
+		testsFromURL := []*Test{}
+
+		// check to see if it's an array of json tests
+		err = json.Unmarshal(bodyBytes, &testsFromURL)
+		if err != nil {
+			t := &Test{}
+
+			// or just a single json test
+			err2 := json.Unmarshal(bodyBytes, &t)
+			if err2 != nil {
+				out.Fatalf("unable to load asset from url %s: %s", conf.scan.testsFromURL, err)
+			}
+
+			testsFromURL = append(testsFromURL, t)
+		}
+
+		for _, test := range testsFromURL {
+			test.Origin = "url:" + conf.scan.testsFromURL
 			tmp = append(tmp, test)
 		}
 	}
@@ -135,7 +192,7 @@ func generateTests() (tests []*Test) {
 	for i := 0; i < len(tests); i++ {
 		for n := 0; n < len(names); n++ {
 			if names[n] == tests[i].Name {
-				out.Fatalf("duplicate tests found for %s", tests[i].Name)
+				out.Fatalf("duplicate tests found for %s (origin: %s)", tests[i].Name, tests[i].Origin)
 			}
 		}
 		names = append(names, tests[i].Name)

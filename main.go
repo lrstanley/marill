@@ -51,17 +51,22 @@ type outputConfig struct {
 }
 
 type scanConfig struct {
-	cores        int
-	manualList   string
+	cores      int
+	manualList string
+	recursive  bool
+
+	// domain filter related
 	ignoreHttp   bool
 	ignoreHttps  bool
 	ignoreRemote bool
 	ignoreMatch  string
 	matchOnly    string
+
+	// test related
 	ignoreTest   string
 	matchTest    string
-	recursive    bool
 	minScore     float64
+	testsFromURL string
 }
 
 type appConfig struct {
@@ -410,6 +415,11 @@ func main() {
 			Name:        "test-match",
 			Usage:       "Allow tests that match `GLOB`, pipe separated list",
 			Destination: &conf.scan.matchTest,
+		},
+		cli.StringFlag{
+			Name:        "tests-url",
+			Usage:       "Import tests from a specified `URL`",
+			Destination: &conf.scan.testsFromURL,
 		},
 		cli.BoolFlag{
 			Name:        "recursive, r",

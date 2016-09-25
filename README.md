@@ -79,6 +79,7 @@ GLOBAL OPTIONS:
    --domain-match GLOB      Allow URLS during domain search that match GLOB
    --test-ignore GLOB       Ignore tests that match GLOB, pipe separated list
    --test-match GLOB        Allow tests that match GLOB, pipe separated list
+   --tests-url URL          Import tests from a specified URL
    --recursive, -r          Check all assets (css/js/images) for each page, recursively
    --help, -h               show help
    --version, -v            print the version
