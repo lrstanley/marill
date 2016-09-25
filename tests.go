@@ -54,7 +54,7 @@ func generateTests() (tests []*Test) {
 	for i := 0; i < len(fns); i++ {
 		file, err := Asset(fns[i])
 		if err != nil {
-			panic(err)
+			out.Fatalf("unable to load asset %s: %s", fns[i], err)
 		}
 
 		testsFromFile := []*Test{}
@@ -67,7 +67,7 @@ func generateTests() (tests []*Test) {
 			// or just a single json test
 			err2 := json.Unmarshal(file, &t)
 			if err2 != nil {
-				panic(err)
+				out.Fatalf("unable to load asset %s: %s", fns[i], err)
 			}
 
 			testsFromFile = append(testsFromFile, t)
@@ -75,9 +75,13 @@ func generateTests() (tests []*Test) {
 
 		for _, test := range testsFromFile {
 			test.OriginFile = fns[i]
+
+			// loop through the regexp and ensure it's valid
 			for re_i := 0; re_i < len(test.MatchRegex); re_i++ {
-				// TODO: manual error returns are more useful
-				_ = regexp.MustCompile(test.MatchRegex[re_i]) // make sure it is valid or panic
+				_, err := regexp.Compile(test.MatchRegex[re_i])
+				if err != nil {
+					out.Fatalf("test '%s' (%s) has invalid regex (%s): %s", test.Name, test.OriginFile, test.MatchRegex[re_i], err)
+				}
 			}
 
 			tests = append(tests, test)
@@ -89,7 +93,7 @@ func generateTests() (tests []*Test) {
 	for i := 0; i < len(tests); i++ {
 		for n := 0; n < len(names); n++ {
 			if names[n] == tests[i].Name {
-				panic(fmt.Errorf("duplicate tests found for %s", tests[i].Name))
+				out.Fatalf("duplicate tests found for %s", tests[i].Name)
 			}
 		}
 		names = append(names, tests[i].Name)
@@ -139,9 +143,7 @@ type TestResult struct {
 
 // applyScore applies the score from test to the result, assuming test matched
 func (res *TestResult) applyScore(test *Test) {
-	// TODO: add a list of score changes, useful for debugging?
-	// e.g. test "something here" had -3, test "other" had +3
-	// TODO: add a relation to the above. E.g. what did it match?
+	// TODO: what did it match?
 
 	if test.Bad {
 		res.Score = res.Score - test.Weight
