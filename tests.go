@@ -51,6 +51,8 @@ func generateTests() (tests []*Test) {
 	fns := AssetNames()
 	logger.Printf("found %d test files", len(fns))
 
+	tmp := []*Test{}
+
 	for i := 0; i < len(fns); i++ {
 		file, err := Asset(fns[i])
 		if err != nil {
@@ -73,53 +75,57 @@ func generateTests() (tests []*Test) {
 			testsFromFile = append(testsFromFile, t)
 		}
 
-		blacklist := strings.Split(conf.scan.ignoreTest, "|")
-		whitelist := strings.Split(conf.scan.matchTest, "|")
-
 		for _, test := range testsFromFile {
-			var matches bool
 			test.OriginFile = fns[i]
-
-			// check to see if it matches our blacklist. if so, ignore it
-			if len(conf.scan.ignoreTest) > 0 {
-				for _, match := range blacklist {
-					if utils.Glob(test.Name, match) {
-						matches = true
-						break
-					}
-				}
-
-				if matches {
-					continue
-				}
-			}
-
-			matches = false
-
-			// check to see if it matches our whitelist. if not, ignore it.
-			if len(conf.scan.matchTest) > 0 {
-				for _, match := range whitelist {
-					if utils.Glob(test.Name, match) {
-						matches = true
-						break
-					}
-				}
-
-				if !matches {
-					continue
-				}
-			}
-
-			// loop through the regexp and ensure it's valid
-			for re_i := 0; re_i < len(test.MatchRegex); re_i++ {
-				_, err := regexp.Compile(test.MatchRegex[re_i])
-				if err != nil {
-					out.Fatalf("test '%s' (%s) has invalid regex (%s): %s", test.Name, test.OriginFile, test.MatchRegex[re_i], err)
-				}
-			}
-
-			tests = append(tests, test)
+			tmp = append(tmp, test)
 		}
+	}
+
+	// loop through and filter unnecessary tests
+	blacklist := strings.Split(conf.scan.ignoreTest, "|")
+	whitelist := strings.Split(conf.scan.matchTest, "|")
+	for _, test := range tmp {
+		var matches bool
+
+		// check to see if it matches our blacklist. if so, ignore it
+		if len(conf.scan.ignoreTest) > 0 {
+			for _, match := range blacklist {
+				if utils.Glob(test.Name, match) {
+					matches = true
+					break
+				}
+			}
+
+			if matches {
+				continue
+			}
+		}
+
+		matches = false
+
+		// check to see if it matches our whitelist. if not, ignore it.
+		if len(conf.scan.matchTest) > 0 {
+			for _, match := range whitelist {
+				if utils.Glob(test.Name, match) {
+					matches = true
+					break
+				}
+			}
+
+			if !matches {
+				continue
+			}
+		}
+
+		// loop through the regexp and ensure it's valid
+		for re_i := 0; re_i < len(test.MatchRegex); re_i++ {
+			_, err := regexp.Compile(test.MatchRegex[re_i])
+			if err != nil {
+				out.Fatalf("test '%s' (%s) has invalid regex (%s): %s", test.Name, test.OriginFile, test.MatchRegex[re_i], err)
+			}
+		}
+
+		tests = append(tests, test)
 	}
 
 	// ensure there are no duplicate tests
