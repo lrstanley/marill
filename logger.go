@@ -72,20 +72,24 @@ var colors = []*Color{
 	{"lightmagenta", 95}, {"lightcyan", 96}, {"lightgray", 97},
 }
 
-func FmtColor(format *string, shouldStrip bool) {
+func StripColor(format *string) {
 	for _, clr := range colors {
-		if shouldStrip {
-			*format = strings.Replace(*format, "{"+clr.Name+"}", "", -1)
-		} else {
-			*format = strings.Replace(*format, "{"+clr.Name+"}", "\x1b["+strconv.Itoa(clr.ID)+"m", -1)
-		}
+		*format = strings.Replace(*format, "{"+clr.Name+"}", "", -1)
+	}
+}
+
+func FmtColor(format *string, shouldStrip bool) {
+	if shouldStrip {
+		StripColor(format)
+
+		return
 	}
 
-	if !shouldStrip {
-		*format = *format + "\x1b[0;m"
+	for _, clr := range colors {
+		*format = strings.Replace(*format, "{"+clr.Name+"}", "\x1b["+strconv.Itoa(clr.ID)+"m", -1)
 	}
 
-	return
+	*format = *format + "\x1b[0;m"
 }
 
 type Output struct{}
@@ -113,7 +117,7 @@ func (o Output) Println(a ...interface{}) (n int, err error) {
 	return fmt.Print(str)
 }
 
-// Fatalf interprets []*Color{} escape codes and prints them to stdout
+// Fatalf interprets []*Color{} escape codes and prints them to stdout/logger, and exits
 func (o Output) Fatalf(format string, a ...interface{}) {
 	// print to regular stdout
 	if !conf.out.ignoreStd {
@@ -122,5 +126,21 @@ func (o Output) Fatalf(format string, a ...interface{}) {
 		fmt.Print(str)
 	}
 
-	logger.Fatalf(format, a...)
+	// strip color from format
+	StripColor(&format)
+	logger.Fatalf("error: "+format, a...)
+}
+
+// Fatal interprets []*Color{} escape codes and prints them to stdout
+func (o Output) Fatal(a ...interface{}) {
+	// print to regular stdout
+	if !conf.out.ignoreStd {
+		str := fmt.Sprintf("{bold}{red}error:{c} %s", fmt.Sprintln(a...))
+		FmtColor(&str, conf.out.noColors)
+		fmt.Print(str)
+	}
+
+	str := fmt.Sprintln(a...)
+
+	logger.Fatal("error: " + str)
 }
