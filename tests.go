@@ -73,8 +73,42 @@ func generateTests() (tests []*Test) {
 			testsFromFile = append(testsFromFile, t)
 		}
 
+		blacklist := strings.Split(conf.scan.ignoreTest, "|")
+		whitelist := strings.Split(conf.scan.matchTest, "|")
+
 		for _, test := range testsFromFile {
+			var matches bool
 			test.OriginFile = fns[i]
+
+			// check to see if it matches our blacklist. if so, ignore it
+			if len(conf.scan.ignoreTest) > 0 {
+				for _, match := range blacklist {
+					if utils.Glob(test.Name, match) {
+						matches = true
+						break
+					}
+				}
+
+				if matches {
+					continue
+				}
+			}
+
+			matches = false
+
+			// check to see if it matches our whitelist. if not, ignore it.
+			if len(conf.scan.matchTest) > 0 {
+				for _, match := range whitelist {
+					if utils.Glob(test.Name, match) {
+						matches = true
+						break
+					}
+				}
+
+				if !matches {
+					continue
+				}
+			}
 
 			// loop through the regexp and ensure it's valid
 			for re_i := 0; re_i < len(test.MatchRegex); re_i++ {

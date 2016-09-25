@@ -58,6 +58,8 @@ type scanConfig struct {
 	ignoreRemote bool
 	ignoreMatch  string
 	matchOnly    string
+	ignoreTest   string
+	matchTest    string
 	recursive    bool
 	minScore     float64
 }
@@ -205,15 +207,14 @@ func printUrls() {
 func listTests() {
 	tests := generateTests()
 
-	// &main.Test{
-	//	Name:"cPanel login page", Type:"body_html", Weight:5, Bad:true, Match:[]string{"*<title>cPanel Login</title>*"},
-	//	MatchRegex:[]string(nil), OriginFile:"tests/cPanel/login_pages.json"}
+	out.Printf("{lightgreen}%d{c} total tests found:\n", len(tests))
 
 	for _, test := range tests {
 		weight_id := "-"
 		if !test.Bad {
 			weight_id = "+"
 		}
+
 		out.Printf("{lightblue}name:{c} %-25s {lightblue}type:{c} %-13s {lightblue}weight:{c} %s%-6.2f {lightblue}origin:{c} %s\n", test.Name, test.Type, weight_id, test.Weight, test.OriginFile)
 	}
 }
@@ -399,6 +400,16 @@ func main() {
 			Name:        "domain-match",
 			Usage:       "Allow URLS during domain search that match `GLOB`",
 			Destination: &conf.scan.matchOnly,
+		},
+		cli.StringFlag{
+			Name:        "test-ignore",
+			Usage:       "Ignore tests that match `GLOB`, pipe separated list",
+			Destination: &conf.scan.ignoreTest,
+		},
+		cli.StringFlag{
+			Name:        "test-match",
+			Usage:       "Allow tests that match `GLOB`, pipe separated list",
+			Destination: &conf.scan.matchTest,
 		},
 		cli.BoolFlag{
 			Name:        "recursive, r",
