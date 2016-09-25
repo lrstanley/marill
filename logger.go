@@ -112,3 +112,15 @@ func (o Output) Println(a ...interface{}) (n int, err error) {
 	FmtColor(&str, conf.out.noColors)
 	return fmt.Print(str)
 }
+
+// Fatalf interprets []*Color{} escape codes and prints them to stdout
+func (o Output) Fatalf(format string, a ...interface{}) {
+	// print to regular stdout
+	if !conf.out.ignoreStd {
+		str := fmt.Sprintf(fmt.Sprintf("{bold}{red}error:{c} %s\n", format), a...)
+		FmtColor(&str, conf.out.noColors)
+		fmt.Print(str)
+	}
+
+	logger.Fatalf(format, a...)
+}
