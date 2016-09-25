@@ -63,10 +63,11 @@ type scanConfig struct {
 	matchOnly    string
 
 	// test related
-	ignoreTest   string
-	matchTest    string
-	minScore     float64
-	testsFromURL string
+	ignoreTest     string
+	matchTest      string
+	minScore       float64
+	testsFromURL   string
+	ignoreStdTests bool
 }
 
 type appConfig struct {
@@ -420,6 +421,11 @@ func main() {
 			Name:        "tests-url",
 			Usage:       "Import tests from a specified `URL`",
 			Destination: &conf.scan.testsFromURL,
+		},
+		cli.BoolFlag{
+			Name:        "ignore-std-tests",
+			Usage:       "Ignores all built-in tests (useful with --tests-url)",
+			Destination: &conf.scan.ignoreStdTests,
 		},
 		cli.BoolFlag{
 			Name:        "recursive, r",

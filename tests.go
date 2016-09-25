@@ -52,36 +52,40 @@ type Test struct {
 
 // generateTests compiles a list of tests from bindata or a specified directory
 func generateTests() (tests []*Test) {
-	fns := AssetNames()
-	logger.Printf("found %d test files", len(fns))
-
 	tmp := []*Test{}
 
-	for i := 0; i < len(fns); i++ {
-		file, err := Asset(fns[i])
-		if err != nil {
-			out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
-		}
+	if conf.scan.ignoreStdTests {
+		logger.Print("ignoring all standard (built-in) tests per request")
+	} else {
+		fns := AssetNames()
+		logger.Printf("found %d test files", len(fns))
 
-		testsFromFile := []*Test{}
-
-		// check to see if it's an array of json tests
-		err = json.Unmarshal(file, &testsFromFile)
-		if err != nil {
-			t := &Test{}
-
-			// or just a single json test
-			err2 := json.Unmarshal(file, &t)
-			if err2 != nil {
+		for i := 0; i < len(fns); i++ {
+			file, err := Asset(fns[i])
+			if err != nil {
 				out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
 			}
 
-			testsFromFile = append(testsFromFile, t)
-		}
+			testsFromFile := []*Test{}
 
-		for _, test := range testsFromFile {
-			test.Origin = "file:" + fns[i]
-			tmp = append(tmp, test)
+			// check to see if it's an array of json tests
+			err = json.Unmarshal(file, &testsFromFile)
+			if err != nil {
+				t := &Test{}
+
+				// or just a single json test
+				err2 := json.Unmarshal(file, &t)
+				if err2 != nil {
+					out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
+				}
+
+				testsFromFile = append(testsFromFile, t)
+			}
+
+			for _, test := range testsFromFile {
+				test.Origin = "file:" + fns[i]
+				tmp = append(tmp, test)
+			}
 		}
 	}
 
