@@ -43,7 +43,7 @@ type Test struct {
 	Match      []string `json:"match"`       // list of glob based matches
 	MatchRegex []string `json:"match_regex"` // list of regex based matches
 
-	OriginFile string // where the test originated from
+	Origin string // where the test originated from
 }
 
 // generateTests compiles a list of tests from bindata or a specified directory
@@ -56,7 +56,7 @@ func generateTests() (tests []*Test) {
 	for i := 0; i < len(fns); i++ {
 		file, err := Asset(fns[i])
 		if err != nil {
-			out.Fatalf("unable to load asset %s: %s", fns[i], err)
+			out.Fatalf("unable to load asset form file %s: %s", fns[i], err)
 		}
 
 		testsFromFile := []*Test{}
@@ -69,21 +69,23 @@ func generateTests() (tests []*Test) {
 			// or just a single json test
 			err2 := json.Unmarshal(file, &t)
 			if err2 != nil {
-				out.Fatalf("unable to load asset %s: %s", fns[i], err)
+				out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
 			}
 
 			testsFromFile = append(testsFromFile, t)
 		}
 
 		for _, test := range testsFromFile {
-			test.OriginFile = fns[i]
+			test.Origin = "file:" + fns[i]
 			tmp = append(tmp, test)
 		}
 	}
 
-	// loop through and filter unnecessary tests
 	blacklist := strings.Split(conf.scan.ignoreTest, "|")
 	whitelist := strings.Split(conf.scan.matchTest, "|")
+
+	// loop through each test and ensure that they match our criteria, and are safe
+	// to start testing against
 	for _, test := range tmp {
 		var matches bool
 
@@ -121,7 +123,7 @@ func generateTests() (tests []*Test) {
 		for re_i := 0; re_i < len(test.MatchRegex); re_i++ {
 			_, err := regexp.Compile(test.MatchRegex[re_i])
 			if err != nil {
-				out.Fatalf("test '%s' (%s) has invalid regex (%s): %s", test.Name, test.OriginFile, test.MatchRegex[re_i], err)
+				out.Fatalf("test '%s' (%s) has invalid regex (%s): %s", test.Name, test.Origin, test.MatchRegex[re_i], err)
 			}
 		}
 
@@ -200,7 +202,7 @@ func (res *TestResult) applyScore(test *Test) {
 	if !test.Bad {
 		visual = "+"
 	}
-	logger.Printf("applied test [%s::%s] score against %s to: %s%.2f (now %.2f)\n", test.Name, test.OriginFile, res.Domain.Resource.Response.URL.String(), visual, test.Weight, res.Score)
+	logger.Printf("applied test [%s::%s] score against %s to: %s%.2f (now %.2f)\n", test.Name, test.Origin, res.Domain.Resource.Response.URL.String(), visual, test.Weight, res.Score)
 }
 
 // testMatch compares the input test match parameters with the input strings
@@ -239,7 +241,7 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 	body_nohtml := reHTMLTag.ReplaceAllString(dom.Response.Body, "")
 
 	for _, t := range tests {
-		logger.Printf("running test [%s::%s] against %s", t.Name, t.OriginFile, dom.Response.URL.String())
+		logger.Printf("running test [%s::%s] against %s", t.Name, t.Origin, dom.Response.URL.String())
 		switch t.Type {
 		case "url":
 			res.testMatch(t, dom.Response.URL.String())

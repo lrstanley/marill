@@ -215,7 +215,7 @@ func listTests() {
 			weight_id = "+"
 		}
 
-		out.Printf("{lightblue}name:{c} %-25s {lightblue}type:{c} %-13s {lightblue}weight:{c} %s%-6.2f {lightblue}origin:{c} %s\n", test.Name, test.Type, weight_id, test.Weight, test.OriginFile)
+		out.Printf("{lightblue}name:{c} %-25s {lightblue}type:{c} %-13s {lightblue}weight:{c} %s%-6.2f {lightblue}origin:{c} %s\n", test.Name, test.Type, weight_id, test.Weight, test.Origin)
 	}
 }
 
