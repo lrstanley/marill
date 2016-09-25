@@ -64,6 +64,7 @@ type scanConfig struct {
 
 type appConfig struct {
 	printUrls bool
+	listTests bool
 }
 
 type config struct {
@@ -168,11 +169,11 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 	return domlist, nil
 }
 
-func printUrls() error {
+func printUrls() {
 	if conf.scan.manualList != "" {
 		domains, err := parseManualList()
 		if err != nil {
-			return fmt.Errorf("unable to parse domain list: %s", err)
+			logger.Fatalf("unable to parse domain list: %s", err)
 		}
 
 		for _, domain := range domains {
@@ -181,11 +182,11 @@ func printUrls() error {
 	} else {
 		finder := &domfinder.Finder{Log: logger}
 		if err := finder.GetWebservers(); err != nil {
-			return fmt.Errorf("unable to get process list: %s", err)
+			logger.Fatalf("unable to get process list: %s", err)
 		}
 
 		if err := finder.GetDomains(); err != nil {
-			return fmt.Errorf("unable to auto-fetch domain list: %s", err)
+			logger.Fatalf("unable to auto-fetch domain list: %s", err)
 		}
 
 		finder.Filter(domfinder.DomainFilter{
@@ -199,8 +200,22 @@ func printUrls() error {
 			out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
 		}
 	}
+}
 
-	return nil
+func listTests() {
+	tests := generateTests()
+
+	// &main.Test{
+	//	Name:"cPanel login page", Type:"body_html", Weight:5, Bad:true, Match:[]string{"*<title>cPanel Login</title>*"},
+	//	MatchRegex:[]string(nil), OriginFile:"tests/cPanel/login_pages.json"}
+
+	for _, test := range tests {
+		weight_id := "-"
+		if !test.Bad {
+			weight_id = "+"
+		}
+		out.Printf("{lightblue}name:{c} %-25s {lightblue}type:{c} %-13s {lightblue}weight:{c} %s%-6.2f {lightblue}origin:{c} %s\n", test.Name, test.Type, weight_id, test.Weight, test.OriginFile)
+	}
 }
 
 func run() {
@@ -357,6 +372,11 @@ func main() {
 			Destination: &conf.app.printUrls,
 		},
 		cli.BoolFlag{
+			Name:        "list-tests",
+			Usage:       "Print the list of tests that are loaded and would be used",
+			Destination: &conf.app.listTests,
+		},
+		cli.BoolFlag{
 			Name:        "ignore-http",
 			Usage:       "Ignore http-based URLs during domain search",
 			Destination: &conf.scan.ignoreHttp,
@@ -406,11 +426,10 @@ func main() {
 		}()
 
 		if conf.app.printUrls {
-			if err := printUrls(); err != nil {
-				fmt.Printf("err: %s", err)
-				return err
-			}
-
+			printUrls()
+			os.Exit(0)
+		} else if conf.app.listTests {
+			listTests()
 			os.Exit(0)
 		}
 
