@@ -173,7 +173,7 @@ func printUrls() {
 	if conf.scan.manualList != "" {
 		domains, err := parseManualList()
 		if err != nil {
-			logger.Fatalf("unable to parse domain list: %s", err)
+			out.Fatalf("unable to parse domain list: %s", err)
 		}
 
 		for _, domain := range domains {
@@ -182,11 +182,11 @@ func printUrls() {
 	} else {
 		finder := &domfinder.Finder{Log: logger}
 		if err := finder.GetWebservers(); err != nil {
-			logger.Fatalf("unable to get process list: %s", err)
+			out.Fatalf("unable to get process list: %s", err)
 		}
 
 		if err := finder.GetDomains(); err != nil {
-			logger.Fatalf("unable to auto-fetch domain list: %s", err)
+			out.Fatalf("unable to auto-fetch domain list: %s", err)
 		}
 
 		finder.Filter(domfinder.DomainFilter{
@@ -236,15 +236,14 @@ func run() {
 		logger.Println("manually supplied url list")
 		crawler.Cnf.Domains, err = parseManualList()
 		if err != nil {
-			out.Println("{red}Unable to parse --domains:{c}", err)
-			logger.Fatal("unable to parse domain list:", err)
+			out.Fatal("unable to parse domain list:", err)
 		}
 	} else {
 		logger.Println("checking for running webservers")
 
 		finder := &domfinder.Finder{Log: logger}
 		if err := finder.GetWebservers(); err != nil {
-			logger.Fatalf("unable to get process list: %s", err)
+			out.Fatalf("unable to get process list: %s", err)
 		}
 
 		if outlist := ""; len(finder.Procs) > 0 {
@@ -257,7 +256,7 @@ func run() {
 
 		// start crawling for domains
 		if err := finder.GetDomains(); err != nil {
-			logger.Fatalf("unable to auto-fetch domain list: %s", err)
+			out.Fatalf("unable to auto-fetch domain list: %s", err)
 		}
 
 		finder.Filter(domfinder.DomainFilter{
