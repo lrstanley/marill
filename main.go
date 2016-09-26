@@ -71,8 +71,9 @@ type scanConfig struct {
 }
 
 type appConfig struct {
-	printUrls bool
-	listTests bool
+	printUrls          bool
+	printTests         bool
+	printTestsExtended bool
 }
 
 type config struct {
@@ -222,6 +223,18 @@ func listTests() {
 		}
 
 		out.Printf("{lightblue}n:{c} %-25s {lightblue}t:{c} %-13s {lightblue}w:{c} %s%-6.2f {lightblue}o:{c} %s\n", test.Name, test.Type, weight_id, test.Weight, test.Origin)
+
+		if conf.app.printTestsExtended {
+			if len(test.MatchRegex) > 0 {
+				out.Printf("    - {cyan}regex{c}: {yellow}[{c}%s{yellow}]{c}\n", strings.Join(test.MatchRegex, "{yellow}]{c}, {yellow}[{c}"))
+			}
+
+			if len(test.Match) > 0 {
+				out.Printf("    -  {cyan}glob{c}: {yellow}[{c}%s{yellow}]{c}\n", strings.Join(test.Match, "{yellow}]{c}, {yellow}[{c}"))
+			}
+
+			out.Println("")
+		}
 	}
 }
 
@@ -373,14 +386,19 @@ func main() {
 			Destination: &conf.scan.minScore,
 		},
 		cli.BoolFlag{
-			Name:        "print-urls",
+			Name:        "urls",
 			Usage:       "Print the list of urls as if they were going to be scanned",
 			Destination: &conf.app.printUrls,
 		},
 		cli.BoolFlag{
-			Name:        "list-tests",
+			Name:        "tests",
 			Usage:       "Print the list of tests that are loaded and would be used",
-			Destination: &conf.app.listTests,
+			Destination: &conf.app.printTests,
+		},
+		cli.BoolFlag{
+			Name:        "tests-extended",
+			Usage:       "Same as --tests, with extra information",
+			Destination: &conf.app.printTestsExtended,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-http",
@@ -454,7 +472,7 @@ func main() {
 		if conf.app.printUrls {
 			printUrls()
 			os.Exit(0)
-		} else if conf.app.listTests {
+		} else if conf.app.printTests || conf.app.printTestsExtended {
 			listTests()
 			os.Exit(0)
 		}

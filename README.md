@@ -70,8 +70,9 @@ GLOBAL OPTIONS:
    --cores n                Use n cores to fetch data (0 being server cores/2) (default: 0)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
    --min-score value        (default: 8)
-   --print-urls             Print the list of urls as if they were going to be scanned
-   --list-tests             Print the list of tests that are loaded and would be used
+   --urls                   Print the list of urls as if they were going to be scanned
+   --tests                  Print the list of tests that are loaded and would be used
+   --tests-extended         Same as --tests, with extra information
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
    --ignore-remote          Ignore all resources that resolve to a remote IP (use with --recursive)
