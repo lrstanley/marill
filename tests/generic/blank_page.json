@@ -1,7 +1,13 @@
-{
+[{
     "name": "blank page",
     "type": "body_html",
     "weight": 5,
     "bad": true,
     "match": [""]
-}
+}, {
+    "name": "blank-spaced page",
+    "type": "body_html",
+    "weight": 5,
+    "bad": true,
+    "match_regex": ["^\\s+$"]
+}]
