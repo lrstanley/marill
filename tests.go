@@ -27,16 +27,17 @@ const (
 	defaultScore = 10.0
 )
 
-// supported tests:
-//  - url: resource url
-//  - host: resource host
-//  - body: resource html-stripped body
-//  - body_html: resource body
-//  - code: resource status code
-//  - headers: resource headers in string form
-//  - asset_url: asset (js/css/img/png) url
-//  - asset_code: asset status code
-//  - asset_headers: asset headers in string form
+var defaultTestTypes = [...]string{
+	"url",           // resource url
+	"host",          // resource host
+	"body",          // resource html-stripped body
+	"body_html",     // resource body
+	"code",          // resource status code
+	"headers",       // resource headers in string form
+	"asset_url",     // asset (js/css/img/png) url
+	"asset_code",    // asset status code
+	"asset_headers", // asset headers in string form
+}
 
 // Test represents a type of check, comparing is the resource matches specific inputs
 type Test struct {
@@ -48,6 +49,32 @@ type Test struct {
 	MatchRegex []string `json:"match_regex"` // list of regex based matches
 
 	Origin string // where the test originated from
+}
+
+// parseTests parses a json object or array from a byte array (file, url, etc)
+func parseTests(raw []byte, originType, origin string) (tests []*Test, err error) {
+	tmp := []*Test{}
+
+	// check to see if it's an array of json tests
+	err = json.Unmarshal(raw, &tmp)
+	if err != nil {
+		t := &Test{}
+
+		// or just a single json test
+		err2 := json.Unmarshal(raw, &t)
+		if err2 != nil {
+			return nil, fmt.Errorf("unable to load asset from %s %s: %s", originType, origin, err)
+		}
+
+		tmp = append(tmp, t)
+	}
+
+	for i := range tmp {
+		tmp[i].Origin = fmt.Sprintf("%s:%s", originType, origin)
+		tests = append(tests, tmp[i])
+	}
+
+	return tests, nil
 }
 
 // generateTests compiles a list of tests from bindata or a specified directory
@@ -66,26 +93,12 @@ func generateTests() (tests []*Test) {
 				out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
 			}
 
-			testsFromFile := []*Test{}
-
-			// check to see if it's an array of json tests
-			err = json.Unmarshal(file, &testsFromFile)
+			tmp, err := parseTests(file, "file-builtin", fns[i])
 			if err != nil {
-				t := &Test{}
-
-				// or just a single json test
-				err2 := json.Unmarshal(file, &t)
-				if err2 != nil {
-					out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
-				}
-
-				testsFromFile = append(testsFromFile, t)
+				out.Fatal(err)
 			}
 
-			for _, test := range testsFromFile {
-				test.Origin = "file:" + fns[i]
-				tmp = append(tmp, test)
-			}
+			tests = append(tests, tmp...)
 		}
 	}
 
@@ -120,26 +133,12 @@ func generateTests() (tests []*Test) {
 			out.Fatalf("unable to parse JSON from %s: %s", conf.scan.testsFromURL, err)
 		}
 
-		testsFromURL := []*Test{}
-
-		// check to see if it's an array of json tests
-		err = json.Unmarshal(bodyBytes, &testsFromURL)
+		tmp, err := parseTests(bodyBytes, "url", conf.scan.testsFromURL)
 		if err != nil {
-			t := &Test{}
-
-			// or just a single json test
-			err2 := json.Unmarshal(bodyBytes, &t)
-			if err2 != nil {
-				out.Fatalf("unable to load asset from url %s: %s", conf.scan.testsFromURL, err)
-			}
-
-			testsFromURL = append(testsFromURL, t)
+			out.Fatal(err)
 		}
 
-		for _, test := range testsFromURL {
-			test.Origin = "url:" + conf.scan.testsFromURL
-			tmp = append(tmp, test)
-		}
+		tests = append(tests, tmp...)
 	}
 
 	blacklist := strings.Split(conf.scan.ignoreTest, "|")
