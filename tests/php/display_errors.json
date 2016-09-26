@@ -1,0 +1,31 @@
+[{
+    "name": "deprecated php",
+    "type": "body_html",
+    "weight": 3,
+    "bad": true,
+    "match": ["*<b>Deprecated</b>:  *<br />*"]
+}, {
+    "name": "php notice",
+    "type": "body_html",
+    "weight": 3,
+    "bad": true,
+    "match": ["*<b>Notice</b>:  *<br />*"]
+}, {
+    "name": "php warnings",
+    "type": "body_html",
+    "weight": 3.5,
+    "bad": true,
+    "match": ["*<b>Warning</b>:  *<br />*"]
+}, {
+    "name": "php parse error",
+    "type": "body_html",
+    "weight": 5,
+    "bad": true,
+    "match": ["*<b>Parse error</b>:  *<br />*"]
+}, {
+    "name": "php fatal error",
+    "type": "body_html",
+    "weight": 5,
+    "bad": true,
+    "match": ["*<b>Fatal error</b>:  *<br />*"]
+}]
