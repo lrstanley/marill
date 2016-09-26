@@ -93,12 +93,12 @@ func generateTests() (tests []*Test) {
 				out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
 			}
 
-			tmp, err := parseTests(file, "file-builtin", fns[i])
+			parsedTests, err := parseTests(file, "file-builtin", fns[i])
 			if err != nil {
 				out.Fatal(err)
 			}
 
-			tests = append(tests, tmp...)
+			tmp = append(tmp, parsedTests...)
 		}
 	}
 
@@ -133,12 +133,12 @@ func generateTests() (tests []*Test) {
 			out.Fatalf("unable to parse JSON from %s: %s", conf.scan.testsFromURL, err)
 		}
 
-		tmp, err := parseTests(bodyBytes, "url", conf.scan.testsFromURL)
+		parsedTests, err := parseTests(bodyBytes, "url", conf.scan.testsFromURL)
 		if err != nil {
 			out.Fatal(err)
 		}
 
-		tests = append(tests, tmp...)
+		tmp = append(tmp, parsedTests...)
 	}
 
 	blacklist := strings.Split(conf.scan.ignoreTest, "|")
@@ -159,7 +159,7 @@ func generateTests() (tests []*Test) {
 			}
 
 			if matches {
-				continue
+				continue // skip
 			}
 		}
 
@@ -168,15 +168,27 @@ func generateTests() (tests []*Test) {
 		// check to see if it matches our whitelist. if not, ignore it.
 		if len(conf.scan.matchTest) > 0 {
 			for _, match := range whitelist {
-				if utils.Glob(test.Name, match) {
+				if !utils.Glob(test.Name, match) {
 					matches = true
 					break
 				}
 			}
 
-			if !matches {
-				continue
+			if matches {
+				continue // skip
 			}
+		}
+
+		// check to see if the type matches the builtin list of types
+		var isin bool
+		for i := 0; i < len(defaultTestTypes); i++ {
+			if test.Type == defaultTestTypes[i] {
+				isin = true
+				break
+			}
+		}
+		if !isin {
+			out.Fatalf("test '%s' (%s) has invalid type", test.Name, test.Origin)
 		}
 
 		// loop through the regexp and ensure it's valid
