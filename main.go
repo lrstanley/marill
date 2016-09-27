@@ -72,8 +72,6 @@ type scanConfig struct {
 }
 
 type appConfig struct {
-	printUrls          bool
-	printTests         bool
 	printTestsExtended bool
 }
 
@@ -179,7 +177,7 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 	return domlist, nil
 }
 
-func printUrls() {
+func printUrls(c *cli.Context) error {
 	if conf.scan.manualList != "" {
 		domains, err := parseManualList()
 		if err != nil {
@@ -210,9 +208,11 @@ func printUrls() {
 			out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
 		}
 	}
+
+	return nil
 }
 
-func listTests() {
+func listTests(c *cli.Context) error {
 	tests := genTests()
 
 	out.Printf("{lightgreen}%d{c} total tests found:\n", len(tests))
@@ -237,9 +237,11 @@ func listTests() {
 			out.Println("")
 		}
 	}
+
+	return nil
 }
 
-func run() {
+func run(c *cli.Context) error {
 	if len(version) != 0 && len(commithash) != 0 {
 		logger.Printf("marill: version:%s revision:%s\n", version, commithash)
 		out.Printf(motd, version, commithash)
@@ -306,11 +308,13 @@ func run() {
 
 	for _, res := range testResults {
 		if res.Domain.Error != nil {
-			out.Printf("{red}[FAILURE]{c} %.2f/10 [code: ---] [%15s] [{cyan}  0 resources{c}] [{green}     0ms{c}] %s ({red}%s{c})\n", res.Score, res.Domain.Request.IP, res.Domain.Request.URL, res.Domain.Error)
+			out.Printf("{red}[FAILURE]{c} %5.1f/10 [code: ---] [%15s] [{cyan}  0 resources{c}] [{green}     0ms{c}] %s ({red}%s{c})\n", res.Score, res.Domain.Request.IP, res.Domain.Request.URL, res.Domain.Error)
 		} else {
-			out.Printf("{green}[SUCCESS]{c} %.2f/10 [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", res.Score, res.Domain.Resource.Response.Code, res.Domain.Request.IP, len(res.Domain.Resources), res.Domain.Resource.Time.Milli, res.Domain.Resource.Response.URL.String())
+			out.Printf("{green}[SUCCESS]{c} %5.1f/10 [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", res.Score, res.Domain.Resource.Response.Code, res.Domain.Request.IP, len(res.Domain.Resources), res.Domain.Resource.Time.Milli, res.Domain.Resource.Response.URL.String())
 		}
 	}
+
+	return nil
 }
 
 func main() {
@@ -340,23 +344,37 @@ func main() {
 		app.Version = "git revision " + commithash
 	}
 
-	app.Authors = []cli.Author{
-		cli.Author{
-			Name:  "Liam Stanley",
-			Email: "me@liamstanley.io",
-		},
-	}
-	app.Compiled = time.Now()
-	app.Usage = "Automated website testing utility"
+	// needed for stats look
+	done := make(chan struct{}, 1)
 
-	app.Flags = []cli.Flag{
+	app.Before = func(c *cli.Context) error {
+		// initialize the logger
+		initLogger()
+
+		// initialize some form of max go procs
+		numCores()
+
+		// initialize the stats data
+		go statsLoop(done)
+
+		return nil
+	}
+
+	app.After = func(c *cli.Context) error {
+		// close the stats data goroutine when we're complete.
+		done <- struct{}{}
+
+		return nil
+	}
+
+	appFlags := []cli.Flag{
 		cli.BoolFlag{
-			Name:        "debug, d",
+			Name:        "d, debug",
 			Usage:       "Print debugging information to stdout",
 			Destination: &conf.out.printDebug,
 		},
 		cli.BoolFlag{
-			Name:        "quiet, q",
+			Name:        "q, quiet",
 			Usage:       "Do not print regular stdout messages",
 			Destination: &conf.out.ignoreStd,
 		},
@@ -385,21 +403,6 @@ func main() {
 			Usage:       "",
 			Value:       8.0,
 			Destination: &conf.scan.minScore,
-		},
-		cli.BoolFlag{
-			Name:        "urls",
-			Usage:       "Print the list of urls as if they were going to be scanned",
-			Destination: &conf.app.printUrls,
-		},
-		cli.BoolFlag{
-			Name:        "tests",
-			Usage:       "Print the list of tests that are loaded and would be used",
-			Destination: &conf.app.printTests,
-		},
-		cli.BoolFlag{
-			Name:        "tests-extended",
-			Usage:       "Same as --tests, with extra information",
-			Destination: &conf.app.printTestsExtended,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-http",
@@ -452,41 +455,49 @@ func main() {
 			Destination: &conf.scan.ignoreStdTests,
 		},
 		cli.BoolFlag{
-			Name:        "recursive, r",
+			Name:        "r, recursive",
 			Usage:       "Check all assets (css/js/images) for each page, recursively",
 			Destination: &conf.scan.recursive,
 		},
 	}
 
-	app.Action = func(c *cli.Context) error {
-		// initialize the logger. ensure this only occurs after the cli args are
-		// pulled.
-		initLogger()
-
-		// initialize some form of max go procs
-		numCores()
-
-		// initialize the stats data
-		done := make(chan struct{}, 1)
-		go statsLoop(done)
-
-		// close the stats data goroutine when we're complete.
-		defer func() {
-			done <- struct{}{}
-		}()
-
-		if conf.app.printUrls {
-			printUrls()
-			os.Exit(0)
-		} else if conf.app.printTests || conf.app.printTestsExtended {
-			listTests()
-			os.Exit(0)
-		}
-
-		run()
-
-		return nil
+	app.Commands = []cli.Command{
+		{
+			Name:   "scan",
+			Usage:  "[DEFAULT] Start scan for all domains on server",
+			Action: run,
+		},
+		{
+			Name:   "urls",
+			Usage:  "Print the list of urls as if they were going to be scanned",
+			Action: printUrls,
+		},
+		{
+			Name:   "tests",
+			Usage:  "Print the list of tests that are loaded and would be used",
+			Action: listTests,
+		},
+		{
+			Name:  "tests-extended",
+			Usage: "Same as [tests], with extra information",
+			Action: func(c *cli.Context) error {
+				conf.app.printTestsExtended = true
+				return listTests(c)
+			},
+		},
 	}
+
+	app.Authors = []cli.Author{
+		cli.Author{
+			Name:  "Liam Stanley",
+			Email: "me@liamstanley.io",
+		},
+	}
+	app.Copyright = "(c) 2016 Liam Stanley"
+	app.Compiled = time.Now()
+	app.Usage = "Automated website testing utility"
+	app.Flags = appFlags
+	app.Action = run
 
 	app.Run(os.Args)
 }

@@ -44,22 +44,23 @@ VERSION:
    git revision XXXXXX
    
 AUTHOR(S):
-   Liam Stanley <me@liamstanley.io> 
+   Liam Stanley <user@domain.com> 
    
 COMMANDS:
-     help, h  Shows a list of commands or help for one command
+     scan            [DEFAULT] Start scan for all domains on server
+     urls            Print the list of urls as if they were going to be scanned
+     tests           Print the list of tests that are loaded and would be used
+     tests-extended  Same as [tests], with extra information
+     help, h         Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --debug, -d              Print debugging information to stdout
-   --quiet, -q              Do not print regular stdout messages
+   -d, --debug              Print debugging information to stdout
+   -q, --quiet              Do not print regular stdout messages
    --no-color               Do not print with color
    --log-file logfile       Log debugging information to logfile
    --cores n                Use n cores to fetch data (0 being server cores/2) (default: 0)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
    --min-score value        (default: 8)
-   --urls                   Print the list of urls as if they were going to be scanned
-   --tests                  Print the list of tests that are loaded and would be used
-   --tests-extended         Same as --tests, with extra information
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
    --ignore-remote          Ignore all resources that resolve to a remote IP (use with --recursive)
@@ -70,9 +71,12 @@ GLOBAL OPTIONS:
    --tests-url URL          Import tests from a specified URL
    --tests-path PATH        Import tests from a specified file-system PATH
    --ignore-std-tests       Ignores all built-in tests (useful with --tests-url)
-   --recursive, -r          Check all assets (css/js/images) for each page, recursively
+   -r, --recursive          Check all assets (css/js/images) for each page, recursively
    --help, -h               show help
    --version, -v            print the version
+   
+COPYRIGHT:
+   (c) 2016 Liam Stanley (see https://git.io/vPvUp)
 ```
 
 ## License:
