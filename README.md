@@ -81,6 +81,7 @@ GLOBAL OPTIONS:
    --test-ignore GLOB       Ignore tests that match GLOB, pipe separated list
    --test-match GLOB        Allow tests that match GLOB, pipe separated list
    --tests-url URL          Import tests from a specified URL
+   --tests-path PATH        Import tests from a specified file-system glob PATH
    --ignore-std-tests       Ignores all built-in tests (useful with --tests-url)
    --recursive, -r          Check all assets (css/js/images) for each page, recursively
    --help, -h               show help

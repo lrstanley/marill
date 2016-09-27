@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -77,69 +79,13 @@ func parseTests(raw []byte, originType, origin string) (tests []*Test, err error
 	return tests, nil
 }
 
-// generateTests compiles a list of tests from bindata or a specified directory
-func generateTests() (tests []*Test) {
+// genTests compiles a list of tests from various locations
+func genTests() (tests []*Test) {
 	tmp := []*Test{}
 
-	if conf.scan.ignoreStdTests {
-		logger.Print("ignoring all standard (built-in) tests per request")
-	} else {
-		fns := AssetNames()
-		logger.Printf("found %d test files", len(fns))
-
-		for i := 0; i < len(fns); i++ {
-			file, err := Asset(fns[i])
-			if err != nil {
-				out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
-			}
-
-			parsedTests, err := parseTests(file, "file-builtin", fns[i])
-			if err != nil {
-				out.Fatal(err)
-			}
-
-			tmp = append(tmp, parsedTests...)
-		}
-	}
-
-	if len(conf.scan.testsFromURL) > 0 {
-		transport := &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		}
-
-		client := &http.Client{
-			Timeout:   5 * time.Second,
-			Transport: transport,
-		}
-
-		req, err := http.NewRequest("GET", conf.scan.testsFromURL, nil)
-		if err != nil {
-			out.Fatalf("unable to load tests from %s: %s", conf.scan.testsFromURL, err)
-		}
-
-		resp, err := client.Do(req)
-		if err != nil {
-			out.Fatalf("in fetch of tests from %s: %s", conf.scan.testsFromURL, err)
-		}
-
-		if resp.Body != nil {
-			defer resp.Body.Close()
-		}
-
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			out.Fatalf("unable to parse JSON from %s: %s", conf.scan.testsFromURL, err)
-		}
-
-		parsedTests, err := parseTests(bodyBytes, "url", conf.scan.testsFromURL)
-		if err != nil {
-			out.Fatal(err)
-		}
-
-		tmp = append(tmp, parsedTests...)
-	}
+	genTestsFromStd(&tmp)
+	genTestsFromPath(&tmp)
+	genTestsFromURL(&tmp)
 
 	blacklist := strings.Split(conf.scan.ignoreTest, "|")
 	whitelist := strings.Split(conf.scan.matchTest, "|")
@@ -216,6 +162,120 @@ func generateTests() (tests []*Test) {
 	logger.Printf("found %d total tests", len(tests))
 
 	return tests
+}
+
+// genTestsFromStd reads from builtin tests (e.g. bindata)
+func genTestsFromStd(tests *[]*Test) {
+	if conf.scan.ignoreStdTests {
+		logger.Print("ignoring all standard (built-in) tests per request")
+	} else {
+		fns := AssetNames()
+		logger.Printf("found %d test files", len(fns))
+
+		for i := 0; i < len(fns); i++ {
+			file, err := Asset(fns[i])
+			if err != nil {
+				out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
+			}
+
+			parsedTests, err := parseTests(file, "file-builtin", fns[i])
+			if err != nil {
+				out.Fatal(err)
+			}
+
+			*tests = append(*tests, parsedTests...)
+		}
+	}
+}
+
+// genTestsFromPath reads tests from a user-specified path
+func genTestsFromPath(tests *[]*Test) {
+	if len(conf.scan.testsFromPath) == 0 {
+		return
+	}
+
+	var matches []string
+
+	var testPathCheck = func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			out.Fatalf("unable to open file '%s' for reading: %s", path, err)
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		if !strings.HasSuffix(path, ".json") {
+			return nil
+		}
+
+		matches = append(matches, path)
+
+		return nil
+	}
+
+	err := filepath.Walk(conf.scan.testsFromPath, testPathCheck)
+	if err != nil {
+		out.Fatalf("unable to scan path '%s' for tests: %s", conf.scan.testsFromPath, err)
+	}
+
+	for i := 0; i < len(matches); i++ {
+		file, err := ioutil.ReadFile(matches[i])
+		if err != nil {
+			out.Fatalf("unable to open file '%s' for reading: %s", matches[i], err)
+		}
+
+		parsedTests, err := parseTests(file, "file-path", matches[i])
+		if err != nil {
+			out.Fatalf("unable to parse JSON from file '%s': %s", matches[i], err)
+		}
+
+		*tests = append(*tests, parsedTests...)
+	}
+}
+
+// genTestsFromURL reads tests from a user-specified remote http-url
+func genTestsFromURL(tests *[]*Test) {
+	if len(conf.scan.testsFromURL) == 0 {
+		return
+	}
+
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+
+	client := &http.Client{
+		Timeout:   5 * time.Second,
+		Transport: transport,
+	}
+
+	req, err := http.NewRequest("GET", conf.scan.testsFromURL, nil)
+	if err != nil {
+		out.Fatalf("unable to load tests from %s: %s", conf.scan.testsFromURL, err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		out.Fatalf("in fetch of tests from %s: %s", conf.scan.testsFromURL, err)
+	}
+
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		out.Fatalf("unable to parse JSON from %s: %s", conf.scan.testsFromURL, err)
+	}
+
+	parsedTests, err := parseTests(bodyBytes, "url", conf.scan.testsFromURL)
+	if err != nil {
+		out.Fatal(err)
+	}
+
+	*tests = append(*tests, parsedTests...)
 }
 
 // checkTests iterates over all domains and runs checks across all domains

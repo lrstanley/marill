@@ -131,7 +131,7 @@ func (o Output) Fatalf(format string, a ...interface{}) {
 	logger.Fatalf("error: "+format, a...)
 }
 
-// Fatal interprets []*Color{} escape codes and prints them to stdout
+// Fatal interprets []*Color{} escape codes and prints them to stdout, and exits
 func (o Output) Fatal(a ...interface{}) {
 	// print to regular stdout
 	if !conf.out.ignoreStd {

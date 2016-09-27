@@ -67,6 +67,7 @@ type scanConfig struct {
 	matchTest      string
 	minScore       float64
 	testsFromURL   string
+	testsFromPath  string
 	ignoreStdTests bool
 }
 
@@ -212,7 +213,7 @@ func printUrls() {
 }
 
 func listTests() {
-	tests := generateTests()
+	tests := genTests()
 
 	out.Printf("{lightgreen}%d{c} total tests found:\n", len(tests))
 
@@ -247,7 +248,7 @@ func run() {
 	}
 
 	// fetch the tests ahead of time to ensure there are no syntax errors or anything
-	tests := generateTests()
+	tests := genTests()
 
 	crawler := &scraper.Crawler{Log: logger}
 	var err error
@@ -439,6 +440,11 @@ func main() {
 			Name:        "tests-url",
 			Usage:       "Import tests from a specified `URL`",
 			Destination: &conf.scan.testsFromURL,
+		},
+		cli.StringFlag{
+			Name:        "tests-path",
+			Usage:       "Import tests from a specified file-system glob `PATH`",
+			Destination: &conf.scan.testsFromPath,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-std-tests",
