@@ -23,8 +23,7 @@ At this stage, things are still in alpha/likely going to change quite a bit. Thi
 
 Things I would like to have completed for the first major release:
 
-- [ ] provide potential fixes
-- [ ] scan server for possible issues (reference error_log files, webserver error logs, etc)
+- [ ] provide potential fixes/allow tests to specify example commands/locations to fix
 
 
 ## Building:
