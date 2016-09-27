@@ -443,7 +443,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:        "tests-path",
-			Usage:       "Import tests from a specified file-system glob `PATH`",
+			Usage:       "Import tests from a specified file-system `PATH`",
 			Destination: &conf.scan.testsFromPath,
 		},
 		cli.BoolFlag{
