@@ -65,10 +65,10 @@ func (f *Finder) Filter(cnf DomainFilter) {
 		if cnf.IgnoreHTTPS && f.Domains[i].URL.Scheme == "https" {
 			continue
 		}
-		if len(cnf.IgnoreMatch) > 0 && utils.Glob(f.Domains[i].URL.String(), cnf.IgnoreMatch) {
+		if len(cnf.IgnoreMatch) > 0 && (utils.Glob(f.Domains[i].URL.String(), cnf.IgnoreMatch) || utils.Glob(f.Domains[i].URL.Host, cnf.IgnoreMatch)) {
 			continue
 		}
-		if len(cnf.MatchOnly) > 0 && !utils.Glob(f.Domains[i].URL.String(), cnf.MatchOnly) {
+		if len(cnf.MatchOnly) > 0 && !utils.Glob(f.Domains[i].URL.String(), cnf.MatchOnly) && !utils.Glob(f.Domains[i].URL.Host, cnf.MatchOnly) {
 			continue
 		}
 
