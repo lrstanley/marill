@@ -34,23 +34,22 @@
 
 <p>At this stage, things are still in alpha/likely going to change quite a bit. This includes code, exported functions/tools, cli args, etc. This is what I intend to have completed for the beta release:</p>
 
-<ul>
-<li>[x] crawling of pages recursively</li>
-<li>[x] scan <strong>Apache</strong>/<strong>Lightspeed</strong> based webservers for domains to fetch</li>
-<li>[x] scan <strong>cPanel</strong> based webservers for domains to fetch</li>
-<li>[ ] scan <strong>Nginx</strong> based webservers for domains to fetch</li>
-<li>[x] cli arg manager [<strong>ACTIVELY BEING MODIFIED</strong>]</li>
-<li>[ ] scan any webserver based on manual cli input [<strong>IN PROGRESS</strong>]</li>
-<li>[ ] return results in a human readible format</li>
-<li>[ ] return results in a bot/script readible format</li>
-</ul>
+<pre><code>- [x] crawling of pages recursively
+- [x] scan **Apache**/**Lightspeed** based webservers for domains to fetch
+- [x] scan **cPanel** based webservers for domains to fetch
+- [ ] scan **Nginx** based webservers for domains to fetch
+- [x] cli arg manager [**ACTIVELY CHANGING**]
+- [x] scan any webserver based on manual cli input
+- [x] write testing system
+- [ ] get basis tests out of the way [**IN PROGRESS**]
+- [ ] return results in a human readible format [**IN PROGRESS**]
+- [ ] return results in a bot/script readible format
+</code></pre>
 
 <p>Things I would like to have completed for the first major release:</p>
 
-<ul>
-<li>[ ] provide potential fixes</li>
-<li>[ ] scan server for possible issues (reference error_log files, webserver error logs, etc)</li>
-</ul>
+<pre><code>- [ ] provide potential fixes/allow tests to specify example commands/locations to fix
+</code></pre>
 
 <h2>
 <a id="building" class="anchor" href="#building" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Building:</h2>
@@ -95,12 +94,20 @@ GLOBAL OPTIONS:
    --log-file logfile       Log debugging information to logfile
    --cores n                Use n cores to fetch data (0 being server cores/2) (default: 0)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
-   --print-urls             Print the list of urls as if they were going to be scanned
+   --min-score value        (default: 8)
+   --urls                   Print the list of urls as if they were going to be scanned
+   --tests                  Print the list of tests that are loaded and would be used
+   --tests-extended         Same as --tests, with extra information
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
    --ignore-remote          Ignore all resources that resolve to a remote IP (use with --recursive)
    --domain-ignore GLOB     Ignore URLS during domain search that match GLOB
    --domain-match GLOB      Allow URLS during domain search that match GLOB
+   --test-ignore GLOB       Ignore tests that match GLOB, pipe separated list
+   --test-match GLOB        Allow tests that match GLOB, pipe separated list
+   --tests-url URL          Import tests from a specified URL
+   --tests-path PATH        Import tests from a specified file-system PATH
+   --ignore-std-tests       Ignores all built-in tests (useful with --tests-url)
    --recursive, -r          Check all assets (css/js/images) for each page, recursively
    --help, -h               show help
    --version, -v            print the version
