@@ -8,22 +8,10 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/Liamraystanley/marill)](https://goreportcard.com/report/github.com/Liamraystanley/marill)
 
 ## Project Status:
-At this stage, things are still in alpha/likely going to change quite a bit. This includes code, exported functions/tools, cli args, etc. This is what I intend to have completed for the beta release:
+At this stage, things are still in alpha/likely going to change quite a bit. This includes code, exported functions/tools, cli args, etc.
 
-- [x] crawling of pages recursively
-- [x] scan **Apache**/**Lightspeed** based webservers for domains to fetch
-- [x] scan **cPanel** based webservers for domains to fetch
-- [ ] scan **Nginx** based webservers for domains to fetch
-- [x] cli arg manager [**ACTIVELY CHANGING**]
-- [x] scan any webserver based on manual cli input
-- [x] write testing system
-- [ ] get basis tests out of the way [**IN PROGRESS**]
-- [ ] return results in a human readible format [**IN PROGRESS**]
-- [ ] return results in a bot/script readible format
-
-Things I would like to have completed for the first major release:
-
-- [ ] provide potential fixes/allow tests to specify example commands/locations to fix
+   * [See here](https://github.com/Liamraystanley/marill/projects/1) for what is being worked on/in my todo list for the first beta release.
+   * [See here](https://github.com/Liamraystanley/marill/projects/2) for what is being worked on/in my todo list for the first major release.
 
 
 ## Building:
