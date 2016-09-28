@@ -45,7 +45,7 @@ type Resource struct {
 // As we don't care much about the body of the resource, that can safely be ignored. We
 // must still close the body object, however.
 func (c *Crawler) fetchResource(rsrc *Resource) {
-	defer c.Pool.Free()
+	defer c.ResPool.Free()
 	var err error
 
 	resp, err := c.Get(rsrc.Request.URL)
@@ -165,6 +165,8 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 	}()
 
 	if c.Cnf.Recursive {
+		c.ResPool = utils.NewPool(4)
+
 		for i := range urls {
 			if c.Cnf.NoRemote {
 				host, err := utils.GetHost(urls[i])
@@ -179,12 +181,14 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 				}
 			}
 
-			c.Pool.Slot()
+			c.ResPool.Slot()
 
 			rsrc := &Resource{Request: ResourceOrigin{URL: urls[i]}}
 			res.Resources = append(res.Resources, rsrc)
 			go c.fetchResource(res.Resources[i])
 		}
+
+		c.ResPool.Wait()
 	}
 
 	return
@@ -202,7 +206,8 @@ type Crawler struct {
 	Log     *log.Logger       // output log
 	ipmap   map[string]string // domain -> ip map, to easily tell if something is local
 	Results []*Results        // scan results, should only be access when scan is complete
-	Pool    utils.Pool        // thread pool for fetching all resources
+	Pool    utils.Pool        // thread pool for fetching main resources
+	ResPool utils.Pool        // thread pool for fetching assets
 	Cnf     CrawlerConfig
 }
 
