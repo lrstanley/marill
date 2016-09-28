@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"sync"
 
 	"github.com/Liamraystanley/marill/utils"
 )
@@ -46,7 +45,7 @@ type Resource struct {
 // As we don't care much about the body of the resource, that can safely be ignored. We
 // must still close the body object, however.
 func (c *Crawler) fetchResource(rsrc *Resource) {
-	defer resourcePool.Done()
+	defer c.Pool.Free()
 	var err error
 
 	resp, err := c.Get(rsrc.Request.URL)
@@ -99,8 +98,6 @@ func (r *Results) String() string {
 
 	return fmt.Sprintf("<url(%s), ip(%s), err(%s)>", r.Request.URL, r.Request.IP, r.Error)
 }
-
-var resourcePool sync.WaitGroup
 
 // FetchURL manages the fetching of the main resource, as well as all child resources,
 // providing a Results struct containing the entire crawl data needed
@@ -182,14 +179,12 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 				}
 			}
 
-			resourcePool.Add(1)
+			c.Pool.Slot()
 
 			rsrc := &Resource{Request: ResourceOrigin{URL: urls[i]}}
 			res.Resources = append(res.Resources, rsrc)
 			go c.fetchResource(res.Resources[i])
 		}
-
-		resourcePool.Wait()
 	}
 
 	return
@@ -207,6 +202,7 @@ type Crawler struct {
 	Log     *log.Logger       // output log
 	ipmap   map[string]string // domain -> ip map, to easily tell if something is local
 	Results []*Results        // scan results, should only be access when scan is complete
+	Pool    utils.Pool        // thread pool for fetching all resources
 	Cnf     CrawlerConfig
 }
 
@@ -214,7 +210,8 @@ type Crawler struct {
 type CrawlerConfig struct {
 	Domains   []*Domain // list of domains to scan
 	Recursive bool      // if we want to pull the resources for the page too
-	NoRemote  bool
+	NoRemote  bool      // ignore all resources that match a remote IP
+	Threads   int       // total number of threads to run crawls in
 }
 
 // Crawl represents the higher level functionality of scraper. Crawl should
@@ -222,7 +219,7 @@ type CrawlerConfig struct {
 // the bypass of DNS lookups where necessary.
 func (c *Crawler) Crawl() {
 	var results []*Results
-	var wg sync.WaitGroup
+	c.Pool = utils.NewPool(c.Cnf.Threads)
 	timer := utils.NewTimer()
 
 	// strip all common duplicate domain/ip pairs
@@ -239,10 +236,10 @@ func (c *Crawler) Crawl() {
 
 	// loop through all supplied urls and send them to a worker to be fetched
 	for _, domain := range c.Cnf.Domains {
-		wg.Add(1)
+		c.Pool.Slot()
 
 		go func(domain *Domain) {
-			defer wg.Done()
+			defer c.Pool.Free()
 
 			result := c.FetchURL(domain.URL.String())
 			results = append(results, result)
@@ -256,7 +253,7 @@ func (c *Crawler) Crawl() {
 	}
 
 	// wait for all workers to complete their tasks
-	wg.Wait()
+	c.Pool.Wait()
 	timer.End()
 
 	c.Log.Printf("finished scanning %d urls in %d seconds", len(results), timer.Result.Seconds)
