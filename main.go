@@ -56,8 +56,8 @@ type scanConfig struct {
 	recursive  bool
 
 	// domain filter related
-	ignoreHttp   bool
-	ignoreHttps  bool
+	ignoreHTTP   bool
+	ignoreHTTPS  bool
 	ignoreRemote bool
 	ignoreMatch  string
 	matchOnly    string
@@ -199,8 +199,8 @@ func printUrls(c *cli.Context) error {
 		}
 
 		finder.Filter(domfinder.DomainFilter{
-			IgnoreHTTP:  conf.scan.ignoreHttp,
-			IgnoreHTTPS: conf.scan.ignoreHttps,
+			IgnoreHTTP:  conf.scan.ignoreHTTP,
+			IgnoreHTTPS: conf.scan.ignoreHTTPS,
 			IgnoreMatch: conf.scan.ignoreMatch,
 			MatchOnly:   conf.scan.matchOnly,
 		})
@@ -284,8 +284,8 @@ func run(c *cli.Context) error {
 		}
 
 		finder.Filter(domfinder.DomainFilter{
-			IgnoreHTTP:  conf.scan.ignoreHttp,
-			IgnoreHTTPS: conf.scan.ignoreHttps,
+			IgnoreHTTP:  conf.scan.ignoreHTTP,
+			IgnoreHTTPS: conf.scan.ignoreHTTPS,
 			IgnoreMatch: conf.scan.ignoreMatch,
 			MatchOnly:   conf.scan.matchOnly,
 		})
@@ -408,12 +408,12 @@ func main() {
 		cli.BoolFlag{
 			Name:        "ignore-http",
 			Usage:       "Ignore http-based URLs during domain search",
-			Destination: &conf.scan.ignoreHttp,
+			Destination: &conf.scan.ignoreHTTP,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-https",
 			Usage:       "Ignore https-based URLs during domain search",
-			Destination: &conf.scan.ignoreHttps,
+			Destination: &conf.scan.ignoreHTTPS,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-remote",
