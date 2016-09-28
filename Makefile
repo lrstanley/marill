@@ -31,7 +31,7 @@ lint: test
 	@echo "\n\033[0;36m [ Installng linters ]\033[0;m"
 	$(GOPATH)/bin/gometalinter.v1 -i > /dev/null
 	@echo "\n\033[0;36m [ Running linters ]\033[0;m"
-	$(GOPATH)/bin/gometalinter.v1 --cyclo-over=15 --min-confidence=.30 --deadline=10s --dupl-threshold=40 -E gofmt -E goimports -E misspell -E test ./...
+	$(GOPATH)/bin/gometalinter.v1 --exclude="bindata*" --cyclo-over=15 --min-confidence=.30 --deadline=10s --dupl-threshold=40 -E gofmt -E goimports -E misspell -E test ./...
 
 test: clean fetch generate
 	@echo "\n\033[0;36m [ Running tests ]\033[0;m"
