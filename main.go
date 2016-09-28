@@ -103,7 +103,7 @@ func statsLoop(done <-chan struct{}) {
 			}
 
 			logger.Printf(
-				"allocated mem: %dM, sys: %dM, threads: %d, cores: %d load5: %.2f load10: %.2f load15: %.2f",
+				"allocated mem: %dM, sys: %dM, routines: %d, cores: %d load5: %.2f load10: %.2f load15: %.2f",
 				mem.Alloc/1024/1024, mem.Sys/1024/1024, numRoutines, numCPU, load5, load10, load15)
 
 			time.Sleep(2 * time.Second)
@@ -155,18 +155,18 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 
 		results := reManualDomain.FindStringSubmatch(item)
 		if len(results) != 4 {
-			return nil, fmt.Errorf("invalid domain manually provided: %s", item)
+			return nil, NewErr{Code: ErrBadDomainFlag, value: item}
 		}
 
 		domain, ip, port := results[1], results[2], results[3]
 
 		if domain == "" {
-			return nil, fmt.Errorf("invalid domain manually provided: %s", item)
+			return nil, NewErr{Code: ErrBadDomainFlag, value: item}
 		}
 
 		uri, err := utils.IsDomainURL(domain, port)
 		if err != nil {
-			return nil, fmt.Errorf("invalid domain manually provided: %s", err)
+			return nil, NewErr{Code: ErrBadDomainFlag, deepErr: err}
 		}
 
 		domlist = append(domlist, &scraper.Domain{

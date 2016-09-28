@@ -50,9 +50,13 @@ func UpgradeErr(e error) *NewErr {
 // map each error name to a unique id
 const (
 	ErrUpgradedError = 1 << iota
+	ErrBadDomainFlag
 )
 
 // errMsg contains a map of error name id keys and error/deep error pairs
 var errMsg = map[int]string{
 	ErrUpgradedError: "Not a real error",
+
+	// cli parse errors
+	ErrBadDomainFlag: "invalid domain manually provided: %s",
 }
