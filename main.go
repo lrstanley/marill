@@ -51,7 +51,7 @@ type outputConfig struct {
 }
 
 type scanConfig struct {
-	cores      int
+	threads    int
 	manualList string
 	recursive  bool
 
@@ -111,25 +111,26 @@ func statsLoop(done <-chan struct{}) {
 	}
 }
 
-func numCores() {
-	if conf.scan.cores == 0 {
-		if runtime.NumCPU() == 1 {
-			conf.scan.cores = 1
+// numThreads calculates the number of threads to use
+func numThreads() {
+	// use runtime.NumCPU for judgement call
+	if conf.scan.threads < 1 {
+		if runtime.NumCPU() >= 2 {
+			conf.scan.threads = runtime.NumCPU() / 2
 		} else {
-			conf.scan.cores = runtime.NumCPU() / 2
+			conf.scan.threads = 1
 		}
-	} else if conf.scan.cores > runtime.NumCPU() {
-		logger.Printf("warning: using %d cores, which is more than the amount of cores", conf.scan.cores)
-		out.Printf("{yellow}warning: using %d cores, which is more than the amount of cores on the server!{c}\n", conf.scan.cores)
+	} else if conf.scan.threads > runtime.NumCPU() {
+		logger.Printf("warning: %d threads specified, which is more than the amount of cores", conf.scan.threads)
+		out.Printf("{yellow}warning: %d threads specified, which is more than the amount of cores on the server!{c}\n", conf.scan.threads)
 
 		// set it to the amount of cores on the server. go will do this regardless, so.
-		conf.scan.cores = runtime.NumCPU()
-		logger.Printf("limiting number of cores to %d", conf.scan.cores)
-		out.Printf("limiting number of cores to %d\n", conf.scan.cores)
+		conf.scan.threads = runtime.NumCPU()
+		logger.Printf("limiting number of threads to %d", conf.scan.threads)
+		out.Printf("limiting number of threads to %d\n", conf.scan.threads)
 	}
 
-	runtime.GOMAXPROCS(conf.scan.cores)
-	logger.Printf("using %d cores (max %d)", conf.scan.cores, runtime.NumCPU())
+	logger.Printf("using %d cores (max %d)", conf.scan.threads, runtime.NumCPU())
 
 	return
 }
@@ -218,12 +219,12 @@ func listTests(c *cli.Context) error {
 	out.Printf("{lightgreen}%d{c} total tests found:\n", len(tests))
 
 	for _, test := range tests {
-		weight_id := "-"
+		weightID := "-"
 		if !test.Bad {
-			weight_id = "+"
+			weightID = "+"
 		}
 
-		out.Printf("{lightblue}n:{c} %-25s {lightblue}t:{c} %-13s {lightblue}w:{c} %s%-6.2f {lightblue}o:{c} %s\n", test.Name, test.Type, weight_id, test.Weight, test.Origin)
+		out.Printf("{lightblue}n:{c} %-25s {lightblue}t:{c} %-13s {lightblue}w:{c} %s%-6.2f {lightblue}o:{c} %s\n", test.Name, test.Type, weightID, test.Weight, test.Origin)
 
 		if conf.app.printTestsExtended {
 			if len(test.MatchRegex) > 0 {
@@ -351,8 +352,8 @@ func main() {
 		// initialize the logger
 		initLogger()
 
-		// initialize some form of max go procs
-		numCores()
+		// initialize the max amount of threads to use
+		numThreads()
 
 		// initialize the stats data
 		go statsLoop(done)
@@ -389,9 +390,9 @@ func main() {
 			Destination: &conf.out.logFile,
 		},
 		cli.IntFlag{
-			Name:        "cores",
-			Usage:       "Use `n` cores to fetch data (0 being server cores/2)",
-			Destination: &conf.scan.cores,
+			Name:        "threads",
+			Usage:       "Use `n` threads to fetch data (0 defaults to server cores/2)",
+			Destination: &conf.scan.threads,
 		},
 		cli.StringFlag{
 			Name:        "domains",
