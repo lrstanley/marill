@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// GetHost obtains the host value from a url or domain
 func GetHost(uri string) (string, error) {
 	host, err := url.Parse(uri)
 
@@ -22,9 +23,11 @@ func GetHost(uri string) (string, error) {
 const (
 	kernHostname = "/proc/sys/kernel/hostname"
 	kernDomain   = "/proc/sys/kernel/domainname"
+	stdPort      = "80"
+	sslPort      = "443"
 )
 
-// getHostname returns the servers hostname which we should compare against webserver
+// GetHostname returns the servers hostname which we should compare against webserver
 // vhost entries. Also includes domain.
 func GetHostname() string {
 	host, herr := ioutil.ReadFile(kernHostname)
@@ -45,10 +48,9 @@ func GetHostname() string {
 // custom)
 func IsDomainURL(host, port string) (*url.URL, error) {
 	var uri *url.URL
-	var err error
 
 	if !strings.HasPrefix(host, "http") {
-		if port != "443" && port != "80" && port != "" {
+		if port != sslPort && port != stdPort && port != "" {
 			host = fmt.Sprintf("%s:%s", host, port)
 		}
 	}
@@ -56,28 +58,28 @@ func IsDomainURL(host, port string) (*url.URL, error) {
 	if port != "" {
 		intport, err := strconv.Atoi(port)
 		if err != nil {
-			return nil, fmt.Errorf("The host/port pair %s (port: %s) is invalid", host, port)
+			return nil, fmt.Errorf("the host/port pair %s (port: %s) is invalid", host, port)
 		}
 		strport := strconv.Itoa(intport)
 		if strport != port {
-			return nil, fmt.Errorf("The host/port pair %s (port: %s) is invalid", host, port)
+			return nil, fmt.Errorf("the host/port pair %s (port: %s) is invalid", host, port)
 		}
 	}
 
 	if strings.Contains(host, " ") {
-		return nil, fmt.Errorf("The host/port pair %s (port: %s) is invalid", host, port)
+		return nil, fmt.Errorf("the host/port pair %s (port: %s) is invalid", host, port)
 	}
 
 	if strings.HasPrefix(host, "http") {
-		uri, err = url.Parse(host)
+		uri, err := url.Parse(host)
 		if err != nil {
-			return nil, fmt.Errorf("The host/port pair %s (port: %s) is invalid", host, port)
+			return nil, fmt.Errorf("the host/port pair %s (port: %s) is invalid", host, port)
 		}
 
-		if port == "443" {
+		if port == sslPort {
 			uri.Scheme = "https"
 			port = ""
-		} else if port == "80" {
+		} else if port == stdPort {
 			uri.Scheme = "http"
 			port = ""
 		}
@@ -90,16 +92,18 @@ func IsDomainURL(host, port string) (*url.URL, error) {
 		//   - 443 -- https
 		//   - anything else -- http
 		var scheme string
-		if port == "443" {
+		if port == sslPort {
 			scheme = "https://"
 		} else {
 			scheme = "http://"
 		}
 		host = scheme + host
 
+		var err error
+
 		uri, err = url.Parse(host)
 		if err != nil {
-			return nil, fmt.Errorf("The host/port pair %s (port: %s) is invalid", host, port)
+			return nil, fmt.Errorf("the host/port pair %s (port: %s) is invalid", host, port)
 		}
 	}
 

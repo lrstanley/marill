@@ -22,8 +22,9 @@ func initLoggerWriter(w io.Writer) {
 }
 
 func initLogger() {
+	var err error
 	if conf.out.logFile != "" && conf.out.printDebug {
-		logf, err := os.OpenFile(conf.out.logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		logf, err = os.OpenFile(conf.out.logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			fmt.Printf("error opening log file: %s, %v", conf.out.logFile, err)
 			os.Exit(1)
@@ -34,7 +35,7 @@ func initLogger() {
 	}
 
 	if conf.out.logFile != "" {
-		logf, err := os.OpenFile(conf.out.logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		logf, err = os.OpenFile(conf.out.logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			fmt.Printf("error opening log file: %s, %v", conf.out.logFile, err)
 			os.Exit(1)
@@ -53,13 +54,12 @@ func initLogger() {
 }
 
 func closeLogger() {
-	if logf == nil {
-		return
+	if logf != nil {
+		logf.Close()
 	}
-
-	logf.Close()
 }
 
+// Color represents an ASCII color sequence for use with prettified output
 type Color struct {
 	Name string
 	ID   int
@@ -72,12 +72,14 @@ var colors = []*Color{
 	{"lightmagenta", 95}, {"lightcyan", 96}, {"lightgray", 97},
 }
 
+// StripColor strips all color {patterns} from input
 func StripColor(format *string) {
 	for _, clr := range colors {
 		*format = strings.Replace(*format, "{"+clr.Name+"}", "", -1)
 	}
 }
 
+// FmtColor adds (or removes) color output depending on user input
 func FmtColor(format *string, shouldStrip bool) {
 	if shouldStrip {
 		StripColor(format)
@@ -92,6 +94,7 @@ func FmtColor(format *string, shouldStrip bool) {
 	*format = *format + "\x1b[0;m"
 }
 
+// Output is the bare out struct for which stdout messages are passed to
 type Output struct{}
 
 // Printf interprets []*Color{} escape codes and prints them to stdout

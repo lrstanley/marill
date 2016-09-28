@@ -22,7 +22,7 @@ func getAttr(attr string, attrs []html.Attribute) (val string) {
 
 // getSrc crawls the body of the Results page, yielding all img/script/link resources
 // so they can later be fetched.
-func getSrc(b io.ReadCloser, req *http.Request) (urls []string) {
+func getSrc(b io.Reader, req *http.Request) (urls []string) {
 	urls = []string{}
 
 	z := html.NewTokenizer(b)

@@ -15,6 +15,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"regexp"
 	"runtime"
@@ -489,7 +490,7 @@ func main() {
 	}
 
 	app.Authors = []cli.Author{
-		cli.Author{
+		{
 			Name:  "Liam Stanley",
 			Email: "me@liamstanley.io",
 		},
@@ -500,5 +501,7 @@ func main() {
 	app.Flags = appFlags
 	app.Action = run
 
-	app.Run(os.Args)
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal("unable to instantiate app: ", err)
+	}
 }

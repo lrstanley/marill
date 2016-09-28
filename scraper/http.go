@@ -51,12 +51,12 @@ func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) e
 	}
 
 	if reIP.MatchString(req.Host) && req.Host != c.Host {
-		return errors.New("Redirected to IP that doesn't match proxy/origin request")
+		return errors.New("redirected to IP that doesn't match proxy/origin request")
 	}
 
 	if _, ok := c.ipmap[req.Host]; !ok {
 		if c.OriginURL.Path == "" {
-			return errors.New("Redirection does not match origin host")
+			return errors.New("redirection does not match origin host")
 		}
 	}
 

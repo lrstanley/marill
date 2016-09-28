@@ -55,6 +55,8 @@ type DomainFilter struct {
 	MatchOnly   string // ignore urls not matching glob
 }
 
+// Filter allows end users to filter out domains from the automated domain search
+// functionality
 func (f *Finder) Filter(cnf DomainFilter) {
 	new := []*Domain{}
 

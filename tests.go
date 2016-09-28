@@ -138,10 +138,10 @@ func genTests() (tests []*Test) {
 		}
 
 		// loop through the regexp and ensure it's valid
-		for re_i := 0; re_i < len(test.MatchRegex); re_i++ {
-			_, err := regexp.Compile(test.MatchRegex[re_i])
+		for i := 0; i < len(test.MatchRegex); i++ {
+			_, err := regexp.Compile(test.MatchRegex[i])
 			if err != nil {
-				out.Fatalf("test '%s' (%s) has invalid regex (%s): %s", test.Name, test.Origin, test.MatchRegex[re_i], err)
+				out.Fatalf("test '%s' (%s) has invalid regex (%s): %s", test.Name, test.Origin, test.MatchRegex[i], err)
 			}
 		}
 
@@ -370,7 +370,7 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 		return res
 	}
 
-	body_nohtml := reHTMLTag.ReplaceAllString(dom.Response.Body, "")
+	bodyNoHTML := reHTMLTag.ReplaceAllString(dom.Response.Body, "")
 
 	for _, t := range tests {
 		logger.Printf("running test [%s::%s] against %s", t.Name, t.Origin, dom.Response.URL.String())
@@ -384,7 +384,7 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 				res.testMatch(t, dom.Resources[i].Response.URL.String())
 			}
 		case "body":
-			res.testMatch(t, body_nohtml)
+			res.testMatch(t, bodyNoHTML)
 		case "body_html":
 			res.testMatch(t, dom.Response.Body)
 		case "code":
