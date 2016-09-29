@@ -54,9 +54,22 @@ func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) e
 		return errors.New("redirected to IP that doesn't match proxy/origin request")
 	}
 
+	// check to see if we're redirecting to a target which is possibly off this server
+	// or not in this session of crawls
 	if _, ok := c.ipmap[req.Host]; !ok {
 		if c.OriginURL.Path == "" {
-			return errors.New("redirection does not match origin host")
+			// it's not in as a host -> ip map, but let's check to see if it resolves to a target ip
+			var isin bool
+			for _, val := range c.ipmap {
+				if req.Host == val || req.URL.Host == val {
+					isin = true
+					break
+				}
+			}
+
+			if !isin {
+				return errors.New("redirection does not match origin host")
+			}
 		}
 	}
 
