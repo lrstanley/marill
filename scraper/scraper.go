@@ -249,7 +249,7 @@ func (c *Crawler) Crawl() {
 			defer c.Pool.Free()
 
 			// delay if they have a time set
-			if len(c.Cnf.Delay.String()) > 0 {
+			if c.Cnf.Delay.String() == "0s" {
 				c.Log.Printf("delaying %s before starting crawl on %s", c.Cnf.Delay.String(), domain.URL.String())
 				time.Sleep(c.Cnf.Delay)
 			}
