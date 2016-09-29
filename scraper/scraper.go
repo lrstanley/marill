@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/Liamraystanley/marill/utils"
 )
@@ -213,10 +214,11 @@ type Crawler struct {
 
 // CrawlerConfig is the configuration which changes Crawler
 type CrawlerConfig struct {
-	Domains   []*Domain // list of domains to scan
-	Recursive bool      // if we want to pull the resources for the page too
-	NoRemote  bool      // ignore all resources that match a remote IP
-	Threads   int       // total number of threads to run crawls in
+	Domains   []*Domain     // list of domains to scan
+	Recursive bool          // if we want to pull the resources for the page too
+	NoRemote  bool          // ignore all resources that match a remote IP
+	Delay     time.Duration // delay before each resource is crawled
+	Threads   int           // total number of threads to run crawls in
 }
 
 // Crawl represents the higher level functionality of scraper. Crawl should
@@ -245,6 +247,12 @@ func (c *Crawler) Crawl() {
 
 		go func(domain *Domain) {
 			defer c.Pool.Free()
+
+			// delay if they have a time set
+			if len(c.Cnf.Delay.String()) > 0 {
+				c.Log.Printf("delaying %s before starting crawl on %s", c.Cnf.Delay.String(), domain.URL.String())
+				time.Sleep(c.Cnf.Delay)
+			}
 
 			result := c.FetchURL(domain.URL.String())
 			results = append(results, result)

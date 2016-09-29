@@ -58,7 +58,8 @@ GLOBAL OPTIONS:
    -q, --quiet              Do not print regular stdout messages
    --no-color               Do not print with color
    --log-file logfile       Log debugging information to logfile
-   --cores n                Use n cores to fetch data (0 being server cores/2) (default: 0)
+   --threads n              Use n threads to fetch data (0 defaults to server cores/2) (default: 0)
+   --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
    --min-score value        (default: 8)
    --ignore-http            Ignore http-based URLs during domain search

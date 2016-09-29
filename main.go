@@ -44,38 +44,43 @@ const motd = `
 
 `
 
+// outputConfig handles what the user sees (stdout, debugging, logs, etc)
 type outputConfig struct {
-	noColors   bool
-	printDebug bool
-	ignoreStd  bool
-	logFile    string
+	noColors   bool   // don't print colors to stdout
+	printDebug bool   // print debugging information
+	ignoreStd  bool   // ignore regular stdout (human-formatted)
+	logFile    string // optional log file to dump debugging info
 }
 
+// scanConfig handles how and what is scanned/crawled
 type scanConfig struct {
-	threads    int
-	manualList string
-	recursive  bool
+	threads    int           // number of threads to run the scanner in
+	manualList string        // list of manually supplied domains
+	recursive  bool          // recursively pull resources, and their assets
+	delay      time.Duration // delay for the stasrt of each resource crawl
 
 	// domain filter related
-	ignoreHTTP   bool
-	ignoreHTTPS  bool
-	ignoreRemote bool
-	ignoreMatch  string
-	matchOnly    string
+	ignoreHTTP   bool   // ignore http://
+	ignoreHTTPS  bool   // ignore https://
+	ignoreRemote bool   // ignore resources where the domain is using remote ip
+	ignoreMatch  string // glob match of domains to blacklist
+	matchOnly    string // glob match of domains to whitelist
 
 	// test related
-	ignoreTest     string
-	matchTest      string
-	minScore       float64
-	testsFromURL   string
-	testsFromPath  string
-	ignoreStdTests bool
+	ignoreTest     string  // glob match of tests to blacklist
+	matchTest      string  // glob match of tests to whitelist
+	minScore       float64 // minimum score before a resource is considered "failed"
+	testsFromURL   string  // load tests from a remote url
+	testsFromPath  string  // load tests from a specified path
+	ignoreStdTests bool    // don't execute standard builtin tests
 }
 
+// appConfig handles what the app does (scans/crawls, printing data, some other task, etc)
 type appConfig struct {
 	printTestsExtended bool
 }
 
+// config is a wrapper for all the other configs to put them in one place
 type config struct {
 	app  appConfig
 	scan scanConfig
@@ -85,6 +90,7 @@ type config struct {
 var conf config
 var out = Output{}
 
+// statsLoop prints out memory/load/runtime statistics to debug output
 func statsLoop(done <-chan struct{}) {
 	mem := &runtime.MemStats{}
 	var numRoutines, numCPU int
@@ -179,6 +185,7 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 	return domlist, nil
 }
 
+// printUrls prints the urls that /would/ be scanned, if we were to start crawling
 func printUrls(c *cli.Context) error {
 	if conf.scan.manualList != "" {
 		domains, err := parseManualList()
@@ -214,6 +221,7 @@ func printUrls(c *cli.Context) error {
 	return nil
 }
 
+// listTests lists all loaded tests, based on supplied args to Marill
 func listTests(c *cli.Context) error {
 	tests := genTests()
 
@@ -300,6 +308,7 @@ func run(c *cli.Context) error {
 
 	crawler.Cnf.Recursive = conf.scan.recursive
 	crawler.Cnf.NoRemote = conf.scan.ignoreRemote
+	crawler.Cnf.Delay = conf.scan.delay
 
 	logger.Printf("starting crawler...")
 	out.Printf("Starting scan on %d domains...\n", len(crawler.Cnf.Domains))
@@ -394,6 +403,11 @@ func main() {
 			Name:        "threads",
 			Usage:       "Use `n` threads to fetch data (0 defaults to server cores/2)",
 			Destination: &conf.scan.threads,
+		},
+		cli.DurationFlag{
+			Name:        "delay",
+			Usage:       "Delay `DURATION` before each resource is crawled (e.g. 5s, 1m, 100ms)",
+			Destination: &conf.scan.delay,
 		},
 		cli.StringFlag{
 			Name:        "domains",
