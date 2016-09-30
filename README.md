@@ -57,6 +57,7 @@ GLOBAL OPTIONS:
    -d, --debug              Print debugging information to stdout
    -q, --quiet              Do not print regular stdout messages
    --no-color               Do not print with color
+   --no-banner              Do not print the colorful banner
    --log-file logfile       Log debugging information to logfile
    --threads n              Use n threads to fetch data (0 defaults to server cores/2) (default: 0)
    --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)

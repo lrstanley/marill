@@ -50,6 +50,7 @@ const motd = `
 // outputConfig handles what the user sees (stdout, debugging, logs, etc)
 type outputConfig struct {
 	noColors   bool   // don't print colors to stdout
+	noBanner   bool   // don't print the app banner
 	printDebug bool   // print debugging information
 	ignoreStd  bool   // ignore regular stdout (human-formatted)
 	logFile    string // optional log file to dump debugging info
@@ -190,6 +191,8 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 
 // printUrls prints the urls that /would/ be scanned, if we were to start crawling
 func printUrls(c *cli.Context) error {
+	printBanner()
+
 	if conf.scan.manualList != "" {
 		domains, err := parseManualList()
 		if err != nil {
@@ -226,6 +229,8 @@ func printUrls(c *cli.Context) error {
 
 // listTests lists all loaded tests, based on supplied args to Marill
 func listTests(c *cli.Context) error {
+	printBanner()
+
 	tests := genTests()
 
 	out.Printf("{lightgreen}%d{c} total tests found:\n", len(tests))
@@ -254,13 +259,21 @@ func listTests(c *cli.Context) error {
 	return nil
 }
 
-func run(c *cli.Context) error {
+func printBanner() {
 	if len(version) != 0 && len(commithash) != 0 {
 		logger.Printf("marill: version:%s revision:%s\n", version, commithash)
-		out.Printf(motd, version, commithash)
+		if conf.out.noBanner {
+			out.Printf("{bold}{blue}marill version: %s (rev %s)\n", version, commithash)
+		} else {
+			out.Printf(motd, version, commithash)
+		}
 	} else {
 		out.Println("{bold}{blue}Running marill (unknown version){c}")
 	}
+}
+
+func run(c *cli.Context) error {
+	printBanner()
 
 	// fetch the tests ahead of time to ensure there are no syntax errors or anything
 	tests := genTests()
@@ -402,6 +415,11 @@ func main() {
 			Name:        "no-color",
 			Usage:       "Do not print with color",
 			Destination: &conf.out.noColors,
+		},
+		cli.BoolFlag{
+			Name:        "no-banner",
+			Usage:       "Do not print the colorful banner",
+			Destination: &conf.out.noBanner,
 		},
 		cli.StringFlag{
 			Name:        "log-file",
