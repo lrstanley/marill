@@ -46,23 +46,20 @@ VERSION:
 AUTHOR(S):
    Liam Stanley <user@domain.com> 
    
-COMMANDS:
-     scan            [DEFAULT] Start scan for all domains on server
-     urls            Print the list of urls as if they were going to be scanned
-     tests           Print the list of tests that are loaded and would be used
-     tests-extended  Same as [tests], with extra information
-     help, h         Shows a list of commands or help for one command
-
 GLOBAL OPTIONS:
    -d, --debug              Print debugging information to stdout
    -q, --quiet              Do not print regular stdout messages
    --no-color               Do not print with color
    --no-banner              Do not print the colorful banner
    --log-file logfile       Log debugging information to logfile
+   --urls                   Print the list of urls as if they were going to be scanned
+   --tests                  Print the list of tests that are loaded and would be used
+   --tests-extended         Same as --tests, with extra information
    --threads n              Use n threads to fetch data (0 defaults to server cores/2) (default: 0)
    --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
    --min-score value        (default: 8)
+   -r, --recursive          Check all assets (css/js/images) for each page, recursively
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
    --ignore-remote          Ignore all resources that resolve to a remote IP (use with --recursive)
@@ -73,7 +70,6 @@ GLOBAL OPTIONS:
    --tests-url URL          Import tests from a specified URL
    --tests-path PATH        Import tests from a specified file-system PATH
    --ignore-std-tests       Ignores all built-in tests (useful with --tests-url)
-   -r, --recursive          Check all assets (css/js/images) for each page, recursively
    --help, -h               show help
    --version, -v            print the version
    
