@@ -64,18 +64,43 @@ type DomainFilter struct {
 func (f *Finder) Filter(cnf DomainFilter) {
 	new := []*Domain{}
 
+	blacklist := strings.Split(cnf.IgnoreMatch, "|")
+	whitelist := strings.Split(cnf.MatchOnly, "|")
+	var matches bool
+
 	for i := range f.Domains {
+		matches = false
 		if cnf.IgnoreHTTP && f.Domains[i].URL.Scheme == "http" {
 			continue
 		}
 		if cnf.IgnoreHTTPS && f.Domains[i].URL.Scheme == "https" {
 			continue
 		}
-		if len(cnf.IgnoreMatch) > 0 && (utils.Glob(f.Domains[i].URL.String(), cnf.IgnoreMatch) || utils.Glob(f.Domains[i].URL.Host, cnf.IgnoreMatch)) {
-			continue
+
+		if len(cnf.IgnoreMatch) > 0 {
+			for _, match := range blacklist {
+				if utils.Glob(f.Domains[i].URL.String(), match) || utils.Glob(f.Domains[i].URL.Host, match) {
+					matches = true
+					break
+				}
+			}
+			if matches {
+				continue // skip
+			}
 		}
-		if len(cnf.MatchOnly) > 0 && !utils.Glob(f.Domains[i].URL.String(), cnf.MatchOnly) && !utils.Glob(f.Domains[i].URL.Host, cnf.MatchOnly) {
-			continue
+
+		matches = false
+
+		if len(cnf.MatchOnly) > 0 {
+			for _, match := range whitelist {
+				if utils.Glob(f.Domains[i].URL.String(), match) || utils.Glob(f.Domains[i].URL.Host, match) {
+					matches = true
+					break
+				}
+			}
+			if !matches {
+				continue // skip
+			}
 		}
 
 		new = append(new, f.Domains[i])

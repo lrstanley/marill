@@ -459,7 +459,7 @@ func main() {
 		},
 		cli.Float64Flag{
 			Name:        "min-score",
-			Usage:       "",
+			Usage:       "Minimium score for domain",
 			Value:       8.0,
 			Destination: &conf.scan.minScore,
 		},
@@ -487,12 +487,12 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:        "domain-ignore",
-			Usage:       "Ignore URLS during domain search that match `GLOB`",
+			Usage:       "Ignore URLS during domain search that match `GLOB`, pipe separated list",
 			Destination: &conf.scan.ignoreMatch,
 		},
 		cli.StringFlag{
 			Name:        "domain-match",
-			Usage:       "Allow URLS during domain search that match `GLOB`",
+			Usage:       "Allow URLS during domain search that match `GLOB`, pipe separated list",
 			Destination: &conf.scan.matchOnly,
 		},
 
