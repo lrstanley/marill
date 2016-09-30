@@ -1,0 +1,7 @@
+{
+    "name": "database connection error",
+    "type": "body",
+    "weight": 5,
+    "bad": true,
+    "match": ["Error establishing a database connection"]
+}
