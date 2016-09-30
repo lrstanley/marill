@@ -81,6 +81,8 @@ type scanConfig struct {
 
 // appConfig handles what the app does (scans/crawls, printing data, some other task, etc)
 type appConfig struct {
+	printUrls          bool
+	printTests         bool
 	printTestsExtended bool
 }
 
@@ -190,7 +192,7 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 }
 
 // printUrls prints the urls that /would/ be scanned, if we were to start crawling
-func printUrls(c *cli.Context) error {
+func printUrls() {
 	printBanner()
 
 	if conf.scan.manualList != "" {
@@ -223,12 +225,10 @@ func printUrls(c *cli.Context) error {
 			out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
 		}
 	}
-
-	return nil
 }
 
 // listTests lists all loaded tests, based on supplied args to Marill
-func listTests(c *cli.Context) error {
+func listTests() {
 	printBanner()
 
 	tests := genTests()
@@ -255,8 +255,6 @@ func listTests(c *cli.Context) error {
 			out.Println("")
 		}
 	}
-
-	return nil
 }
 
 func printBanner() {
@@ -272,7 +270,7 @@ func printBanner() {
 	}
 }
 
-func run(c *cli.Context) error {
+func run() {
 	printBanner()
 
 	// fetch the tests ahead of time to ensure there are no syntax errors or anything
@@ -346,8 +344,6 @@ func run(c *cli.Context) error {
 			out.Printf("{green}[SUCCESS]{c} %5.1f/10 [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", res.Score, res.Domain.Resource.Response.Code, res.Domain.Request.IP, len(res.Domain.Resources), res.Domain.Resource.Time.Milli, url)
 		}
 	}
-
-	return nil
 }
 
 func main() {
@@ -400,7 +396,8 @@ func main() {
 		return nil
 	}
 
-	appFlags := []cli.Flag{
+	app.Flags = []cli.Flag{
+		// output style flags
 		cli.BoolFlag{
 			Name:        "d, debug",
 			Usage:       "Print debugging information to stdout",
@@ -426,6 +423,25 @@ func main() {
 			Usage:       "Log debugging information to `logfile`",
 			Destination: &conf.out.logFile,
 		},
+
+		// app related
+		cli.BoolFlag{
+			Name:        "urls",
+			Usage:       "Print the list of urls as if they were going to be scanned",
+			Destination: &conf.app.printUrls,
+		},
+		cli.BoolFlag{
+			Name:        "tests",
+			Usage:       "Print the list of tests that are loaded and would be used",
+			Destination: &conf.app.printTests,
+		},
+		cli.BoolFlag{
+			Name:        "tests-extended",
+			Usage:       "Same as --tests, with extra information",
+			Destination: &conf.app.printTestsExtended,
+		},
+
+		// scan configuration
 		cli.IntFlag{
 			Name:        "threads",
 			Usage:       "Use `n` threads to fetch data (0 defaults to server cores/2)",
@@ -447,6 +463,13 @@ func main() {
 			Value:       8.0,
 			Destination: &conf.scan.minScore,
 		},
+		cli.BoolFlag{
+			Name:        "r, recursive",
+			Usage:       "Check all assets (css/js/images) for each page, recursively",
+			Destination: &conf.scan.recursive,
+		},
+
+		// domain filtering
 		cli.BoolFlag{
 			Name:        "ignore-http",
 			Usage:       "Ignore http-based URLs during domain search",
@@ -472,6 +495,8 @@ func main() {
 			Usage:       "Allow URLS during domain search that match `GLOB`",
 			Destination: &conf.scan.matchOnly,
 		},
+
+		// test filtering
 		cli.StringFlag{
 			Name:        "test-ignore",
 			Usage:       "Ignore tests that match `GLOB`, pipe separated list",
@@ -497,37 +522,6 @@ func main() {
 			Usage:       "Ignores all built-in tests (useful with --tests-url)",
 			Destination: &conf.scan.ignoreStdTests,
 		},
-		cli.BoolFlag{
-			Name:        "r, recursive",
-			Usage:       "Check all assets (css/js/images) for each page, recursively",
-			Destination: &conf.scan.recursive,
-		},
-	}
-
-	app.Commands = []cli.Command{
-		{
-			Name:   "scan",
-			Usage:  "[DEFAULT] Start scan for all domains on server",
-			Action: run,
-		},
-		{
-			Name:   "urls",
-			Usage:  "Print the list of urls as if they were going to be scanned",
-			Action: printUrls,
-		},
-		{
-			Name:   "tests",
-			Usage:  "Print the list of tests that are loaded and would be used",
-			Action: listTests,
-		},
-		{
-			Name:  "tests-extended",
-			Usage: "Same as [tests], with extra information",
-			Action: func(c *cli.Context) error {
-				conf.app.printTestsExtended = true
-				return listTests(c)
-			},
-		},
 	}
 
 	app.Authors = []cli.Author{
@@ -539,8 +533,19 @@ func main() {
 	app.Copyright = "(c) 2016 Liam Stanley"
 	app.Compiled = time.Now()
 	app.Usage = "Automated website testing utility"
-	app.Flags = appFlags
-	app.Action = run
+	app.Action = func(c *cli.Context) error {
+		if conf.app.printUrls {
+			printUrls()
+			os.Exit(0)
+		} else if conf.app.printTests || conf.app.printTestsExtended {
+			listTests()
+			os.Exit(0)
+		}
+
+		run()
+
+		return nil
+	}
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(NewErr{Code: ErrInstantiateApp, deepErr: err})
