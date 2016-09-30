@@ -1,3 +1,6 @@
+// Author: Liam Stanley <me@liamstanley.io>
+// Docs: https://marill.liam.sh/
+// Repo: https://github.com/Liamraystanley/marill
 //
 //       O
 //    o 0  o        [ Marill -- Automated site testing utility ]
@@ -311,10 +314,11 @@ func run(c *cli.Context) error {
 	crawler.Cnf.Delay = conf.scan.delay
 
 	logger.Printf("starting crawler...")
-	out.Printf("Starting scan on %d domains...\n", len(crawler.Cnf.Domains))
+	out.Printf("starting scan on %d domains\n", len(crawler.Cnf.Domains))
 	crawler.Crawl()
-	out.Println("Scan complete.")
+	out.Println("{lightgreen}scan complete{c}")
 
+	out.Println("{lightblue}starting tests{c}")
 	testResults := checkTests(crawler.Results, tests)
 
 	for _, res := range testResults {

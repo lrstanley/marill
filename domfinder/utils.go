@@ -1,3 +1,7 @@
+// Author: Liam Stanley <me@liamstanley.io>
+// Docs: https://marill.liam.sh/
+// Repo: https://github.com/Liamraystanley/marill
+
 package domfinder
 
 // stripDups strips all domains that have the same resulting URL

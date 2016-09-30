@@ -1,3 +1,7 @@
+// Author: Liam Stanley <me@liamstanley.io>
+// Docs: https://marill.liam.sh/
+// Repo: https://github.com/Liamraystanley/marill
+
 package utils
 
 import (
