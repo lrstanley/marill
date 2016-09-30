@@ -221,6 +221,10 @@ func printUrls() {
 			MatchOnly:   conf.scan.matchOnly,
 		})
 
+		if len(finder.Domains) == 0 {
+			out.Fatal(NewErr{Code: ErrNoDomainsFound})
+		}
+
 		for _, domain := range finder.Domains {
 			out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
 		}
@@ -312,6 +316,10 @@ func run() {
 			IgnoreMatch: conf.scan.ignoreMatch,
 			MatchOnly:   conf.scan.matchOnly,
 		})
+
+		if len(finder.Domains) == 0 {
+			out.Fatal(NewErr{Code: ErrNoDomainsFound})
+		}
 
 		logger.Printf("found %d domains on webserver %s (exe: %s, pid: %s)", len(finder.Domains), finder.MainProc.Name, finder.MainProc.Exe, finder.MainProc.PID)
 

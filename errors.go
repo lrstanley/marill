@@ -65,6 +65,7 @@ const (
 
 	// domain fetching
 	ErrGetDomains
+	ErrNoDomainsFound
 )
 
 // errMsg contains a map of error name id keys and error/deep error pairs
@@ -80,5 +81,6 @@ var errMsg = map[int]string{
 	ErrProcList: "unable to get process list: %s",
 
 	// domain fetching
-	ErrGetDomains: "unable to auto-fetch domain list: %s",
+	ErrGetDomains:     "unable to auto-fetch domain list: %s",
+	ErrNoDomainsFound: "domain search found no results (domain filters?)",
 }
