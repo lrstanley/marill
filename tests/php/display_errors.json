@@ -1,21 +1,21 @@
 [{
     "name": "deprecated php",
     "weight": -3,
-    "match": ["glob:body_html:*<b>Deprecated</b>:  *<br />*"]
+    "match": ["glob:html:*<b>Deprecated</b>:  *<br />*"]
 }, {
     "name": "php notice",
     "weight": -3,
-    "match": ["glob:body_html:*<b>Notice</b>:  *<br />*"]
+    "match": ["glob:html:*<b>Notice</b>:  *<br />*"]
 }, {
     "name": "php warnings",
     "weight": -3.5,
-    "match": ["glob:body_html:*<b>Warning</b>:  *<br />*"]
+    "match": ["glob:html:*<b>Warning</b>:  *<br />*"]
 }, {
     "name": "php parse error",
     "weight": -5,
-    "match": ["glob:body_html:*<b>Parse error</b>:  *<br />*"]
+    "match": ["glob:html:*<b>Parse error</b>:  *<br />*"]
 }, {
     "name": "php fatal error",
     "weight": -5,
-    "match": ["glob:body_html:*<b>Fatal error</b>:  *<br />*"]
+    "match": ["glob:html:*<b>Fatal error</b>:  *<br />*"]
 }]

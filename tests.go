@@ -35,7 +35,7 @@ var defaultTestTypes = [...]string{
 	"url",           // resource url
 	"host",          // resource host
 	"body",          // resource html-stripped body
-	"body_html",     // resource body
+	"html",          // resource html
 	"code",          // resource status code
 	"headers",       // resource headers in string form
 	"asset_url",     // asset (js/css/img/png) url
@@ -110,7 +110,7 @@ func (t *Test) generateMatches() {
 			out.Fatal(err)
 		}
 
-		t.Match = append(t.Match, match)
+		t.MatchAll = append(t.MatchAll, match)
 	}
 }
 
@@ -439,7 +439,7 @@ func TestCompare(dom *scraper.Results, test *Test, mtype string) (out []string) 
 		}
 	case "body":
 		out = append(out, bodyNoHTML)
-	case "body_html":
+	case "html":
 		out = append(out, dom.Response.Body)
 	case "code":
 		out = append(out, strconv.Itoa(dom.Response.Code))
@@ -478,11 +478,11 @@ func (res *TestResult) TestMatch(dom *scraper.Results, test *Test) {
 		}
 	}
 
-	if len(test.Match) > 0 {
-		for i := 0; i < len(test.Match); i++ {
-			data := TestCompare(dom, test, test.Match[i].Against)
+	if len(test.MatchAll) > 0 {
+		for i := 0; i < len(test.MatchAll); i++ {
+			data := TestCompare(dom, test, test.MatchAll[i].Against)
 
-			if !test.Match[i].Compare(data) {
+			if !test.MatchAll[i].Compare(data) {
 				return // skip right to the end, no sense in continuing
 			}
 		}

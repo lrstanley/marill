@@ -1,9 +1,9 @@
 [{
     "name": "cPanel login page",
     "weight": -5,
-    "match": ["glob:body_html:*<title>cPanel Login</title>*"]
+    "match": ["glob:html:*<title>cPanel Login</title>*"]
 }, {
     "name": "WHM login page",
     "weight": -5,
-    "match": ["glob:body_html:*<title>WHM Login</title>*"]
+    "match": ["glob:html:*<title>WHM Login</title>*"]
 }]

@@ -1,5 +1,5 @@
 {
     "name": "blank page",
     "weight": -5,
-    "match": ["glob:body_html:", "regex:body_html:^\\s+$"]
+    "match": ["glob:html:", "regex:html:^\\s+$"]
 }

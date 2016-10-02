@@ -2,5 +2,5 @@
     "name": "possible 'index of' cache bug",
     "description": "this is a common issue with things like mod_cache, when Apache caches a link which leads to an 'Index of /' page, on index.html/index.php, even though index.html/php/etc exists.",
     "weight": -3,
-    "match_all": ["glob:body_html:*<title>Index of /</title>*", "regex:body_html:<a href=\"index\\.(php|php4|php5|php7|htm|html)\">"]
+    "match_all": ["glob:html:*<title>Index of /</title>*", "regex:html:<a href=\"index\\.(php|php4|php5|php7|htm|html)\">"]
 }
