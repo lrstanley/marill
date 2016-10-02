@@ -12,7 +12,7 @@ At this stage, things are still in alpha/likely going to change quite a bit. Thi
 
    * [See here](https://github.com/Liamraystanley/marill/projects/1) for what is being worked on/in my todo list for the first beta release.
    * [See here](https://github.com/Liamraystanley/marill/projects/2) for what is being worked on/in my todo list for the first major release.
-
+   * Head over to [release.liam.sh/marill](https://release.liam.sh/marill/?sort=time&order=desc) to get some testing bundled binaries, if your'e daring and willing to help test my latest pushes.
 
 ## Building:
 Marill supports building on 1.3+ (or even possibly older), however it is recommended to build on the latest go release. Note that you will not be able to use the Makefile to compile Marill if you are trying to build on go 1.4 or lower. You will need to manually compile it, due to limitations with ldflag support.
