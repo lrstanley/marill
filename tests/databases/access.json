@@ -1,7 +1,6 @@
 {
     "name": "database access error",
-    "type": "body",
     "weight": 5,
     "bad": true,
-    "match_regex": ["Access denied for user '.*?'@'.*?'"]
+    "match": ["regex:body:Access denied for user '.*?'@'.*?'"]
 }

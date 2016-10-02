@@ -31,6 +31,8 @@ import (
 
 const (
 	defaultScore = 10.0
+	typeGlob     = "glob"
+	typeRegex    = "regex"
 )
 
 var defaultTestTypes = [...]string{
@@ -47,14 +49,110 @@ var defaultTestTypes = [...]string{
 
 // Test represents a type of check, comparing is the resource matches specific inputs
 type Test struct {
-	Name       string   `json:"name"`        // the name of the test
-	Type       string   `json:"type"`        // type of test (see above)
-	Weight     float64  `json:"weight"`      // how much does this test decrease or increase the score
-	Bad        bool     `json:"bad"`         // decrease, or increase score if match?
-	Match      []string `json:"match"`       // list of glob based matches
-	MatchRegex []string `json:"match_regex"` // list of regex based matches
+	Name        string   `json:"name"`      // the name of the test
+	Weight      float64  `json:"weight"`    // how much does this test decrease or increase the score
+	Bad         bool     `json:"bad"`       // decrease, or increase score if match?
+	RawMatch    []string `json:"match"`     // list of glob/regex matches that any can match (OR)
+	RawMatchAll []string `json:"match_all"` // list of glob/regex matches that all must match (AND)
 
-	Origin string // where the test originated from
+	Origin   string       // where the test originated from
+	Match    []*TestMatch // the generated list of OR matches
+	MatchAll []*TestMatch // the generated list of AND matches
+}
+
+// String returns a string implementation of Test
+func (t *Test) String() string {
+	return fmt.Sprintf("<%s::%s>", t.Name, t.Origin)
+}
+
+// TestMatch represents the type of match and query that will be used to match
+type TestMatch struct {
+	Type    string         // the type of match. e.g. "glob" or "regex"
+	Against string         // what to match against (e.g. defaultTestTypes)
+	Query   string         // the actual query which we will be using to match with Type
+	Regex   *regexp.Regexp // The compiled regex, if the match is regex based
+}
+
+func (m *TestMatch) String() string {
+	return fmt.Sprintf("<type:%s against:%s query:%s>", m.Type, m.Against, m.Query)
+}
+
+// Compare matches data against TestMatch.Query
+func (m *TestMatch) Compare(data []string) bool {
+	if m.Type == typeGlob {
+		for i := 0; i < len(data); i++ {
+			if utils.Glob(data[i], m.Query) {
+				return true
+			}
+		}
+	} else {
+		for i := 0; i < len(data); i++ {
+			if m.Regex.MatchString(data[i]) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// generateMatches generates computational matches from RawMatch and RawMatchAll
+func (t *Test) generateMatches() {
+	// start with t.RawMatch (OR)
+	for i := 0; i < len(t.RawMatch); i++ {
+		match, err := StrToMatch(t, t.RawMatch[i])
+		if err != nil {
+			out.Fatal(err)
+		}
+
+		t.Match = append(t.Match, match)
+	}
+
+	// then t.RawMatchAll (AND)
+	for i := 0; i < len(t.RawMatch); i++ {
+		match, err := StrToMatch(t, t.RawMatch[i])
+		if err != nil {
+			out.Fatal(err)
+		}
+
+		t.Match = append(t.Match, match)
+	}
+}
+
+// StrToMatch converts a string based match element into a composed match query
+// e.g. from "glob:body:*something*" -> TestMatch
+func StrToMatch(test *Test, rawMatch string) (*TestMatch, error) {
+	in := strings.SplitN(rawMatch, ":", 3)
+	if len(in) != 3 {
+		return nil, fmt.Errorf("unable to parse test %s: invalid 'match' containing: %s", test, rawMatch)
+	}
+
+	match := &TestMatch{Type: in[0], Against: in[1], Query: in[2]}
+
+	if match.Type != "glob" && match.Type != "regex" {
+		return nil, fmt.Errorf("unable to parse test %s: invalid 'match' type: %s", test, match.Type)
+	}
+
+	var isin bool
+	for i := 0; i < len(defaultTestTypes); i++ {
+		if defaultTestTypes[i] == match.Against {
+			isin = true
+			break
+		}
+	}
+	if !isin {
+		return nil, fmt.Errorf("unable to parse test %s: invalid 'match' query: %s (doesn't exist!)", test, match.Against)
+	}
+
+	if match.Type == "regex" {
+		var err error
+		match.Regex, err = regexp.Compile(match.Query)
+		if err != nil {
+			return nil, fmt.Errorf("test %s has invalid regex (%s): %s", test, match.Query, err)
+		}
+	}
+
+	return match, nil
 }
 
 // parseTests parses a json object or array from a byte array (file, url, etc)
@@ -129,25 +227,8 @@ func genTests() (tests []*Test) {
 			}
 		}
 
-		// check to see if the type matches the builtin list of types
-		var isin bool
-		for i := 0; i < len(defaultTestTypes); i++ {
-			if test.Type == defaultTestTypes[i] {
-				isin = true
-				break
-			}
-		}
-		if !isin {
-			out.Fatalf("test '%s' (%s) has invalid type", test.Name, test.Origin)
-		}
-
-		// loop through the regexp and ensure it's valid
-		for i := 0; i < len(test.MatchRegex); i++ {
-			_, err := regexp.Compile(test.MatchRegex[i])
-			if err != nil {
-				out.Fatalf("test '%s' (%s) has invalid regex (%s): %s", test.Name, test.Origin, test.MatchRegex[i], err)
-			}
-		}
+		// generate matches
+		test.generateMatches()
 
 		tests = append(tests, test)
 	}
@@ -163,7 +244,7 @@ func genTests() (tests []*Test) {
 		names = append(names, tests[i].Name)
 	}
 
-	logger.Printf("found %d total tests", len(tests))
+	logger.Printf("loaded a total of %d tests", len(tests))
 
 	return tests
 }
@@ -175,7 +256,7 @@ func genTestsFromStd(tests *[]*Test) {
 	} else {
 		fns := AssetNames()
 		logger.Printf("found %d test files", len(fns))
-
+		count := 0
 		for i := 0; i < len(fns); i++ {
 			file, err := Asset(fns[i])
 			if err != nil {
@@ -188,7 +269,10 @@ func genTestsFromStd(tests *[]*Test) {
 			}
 
 			*tests = append(*tests, parsedTests...)
+			count += len(parsedTests)
 		}
+
+		logger.Printf("loaded %d built-in tests", count)
 	}
 }
 
@@ -223,6 +307,9 @@ func genTestsFromPath(tests *[]*Test) {
 		out.Fatalf("unable to scan path '%s' for tests: %s", conf.scan.testsFromPath, err)
 	}
 
+	logger.Printf("found %d test files within path: %s", len(matches), conf.scan.testsFromPath)
+
+	count := 0
 	for i := 0; i < len(matches); i++ {
 		file, err := ioutil.ReadFile(matches[i])
 		if err != nil {
@@ -235,7 +322,10 @@ func genTestsFromPath(tests *[]*Test) {
 		}
 
 		*tests = append(*tests, parsedTests...)
+		count++
 	}
+
+	logger.Printf("loaded %d tests from path: %s", count, conf.scan.testsFromPath)
 }
 
 // genTestsFromURL reads tests from a user-specified remote http-url
@@ -254,6 +344,8 @@ func genTestsFromURL(tests *[]*Test) {
 		Timeout:   5 * time.Second,
 		Transport: transport,
 	}
+
+	logger.Printf("attempting to pull tests from: %s", conf.scan.testsFromURL)
 
 	req, err := http.NewRequest("GET", conf.scan.testsFromURL, nil)
 	if err != nil {
@@ -280,6 +372,8 @@ func genTestsFromURL(tests *[]*Test) {
 	}
 
 	*tests = append(*tests, parsedTests...)
+
+	logger.Printf("loaded %d tests from url: %s", len(parsedTests), conf.scan.testsFromURL)
 }
 
 // checkTests iterates over all domains and runs checks across all domains
@@ -341,29 +435,75 @@ func (res *TestResult) applyScore(test *Test) {
 	logger.Printf("applied test [%s::%s] score against %s to: %s%.2f (now %.2f)\n", test.Name, test.Origin, res.Domain.Resource.Response.URL.String(), visual, test.Weight, res.Score)
 }
 
-// testMatch compares the input test match parameters with the input strings
-func (res *TestResult) testMatch(test *Test, data string) {
-	// loop through test.Match as GLOB
-	for i := 0; i < len(test.Match); i++ {
-		if utils.Glob(data, test.Match[i]) {
-			res.applyScore(test)
-			return
+var reHTMLTag = regexp.MustCompile(`<[^>]+>`)
+
+// TestCompare returns what input match type should compare against
+func TestCompare(dom *scraper.Results, test *Test, mtype string) (out []string) {
+	bodyNoHTML := reHTMLTag.ReplaceAllString(dom.Response.Body, "")
+
+	switch mtype {
+	case "url":
+		out = append(out, dom.Response.URL.String())
+	case "host":
+		out = append(out, dom.Response.URL.Host)
+	case "asset_url":
+		for i := 0; i < len(dom.Resources); i++ {
+			out = append(out, dom.Resources[i].Response.URL.String())
+		}
+	case "body":
+		out = append(out, bodyNoHTML)
+	case "body_html":
+		out = append(out, dom.Response.Body)
+	case "code":
+		out = append(out, strconv.Itoa(dom.Response.Code))
+	case "asset_code":
+		for i := 0; i < len(dom.Resources); i++ {
+			out = append(out, strconv.Itoa(dom.Resources[i].Response.Code))
+		}
+	case "headers":
+		for name, values := range dom.Response.Headers {
+			hv := fmt.Sprintf("%s: %s", name, strings.Join(values, " "))
+
+			out = append(out, hv)
+		}
+	case "asset_headers":
+		for i := 0; i < len(dom.Resources); i++ {
+			for name, values := range dom.Resources[i].Response.Headers {
+				hv := fmt.Sprintf("%s: %s", name, strings.Join(values, " "))
+
+				out = append(out, hv)
+			}
 		}
 	}
 
-	// ...and test.MatchRegex
-	for i := 0; i < len(test.MatchRegex); i++ {
-		re := regexp.MustCompile(test.MatchRegex[i])
-		if re.MatchString(data) {
-			res.applyScore(test)
-			return
-		}
-	}
-
-	return
+	return out
 }
 
-var reHTMLTag = regexp.MustCompile(`<[^>]+>`)
+// TestMatch compares the input test match parameters with the domain
+func (res *TestResult) TestMatch(dom *scraper.Results, test *Test) {
+	if len(test.Match) > 0 {
+		for i := 0; i < len(test.Match); i++ {
+			data := TestCompare(dom, test, test.Match[i].Against)
+
+			if test.Match[i].Compare(data) {
+				res.applyScore(test)
+			}
+		}
+	}
+
+	if len(test.Match) > 0 {
+		for i := 0; i < len(test.Match); i++ {
+			data := TestCompare(dom, test, test.Match[i].Against)
+
+			if !test.Match[i].Compare(data) {
+				return // skip right to the end, no sense in continuing
+			}
+		}
+
+		// assume each was matched properly.
+		res.applyScore(test)
+	}
+}
 
 // checkDomain loops through all tests and guages what test score the domain gets
 func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
@@ -374,46 +514,9 @@ func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
 		return res
 	}
 
-	bodyNoHTML := reHTMLTag.ReplaceAllString(dom.Response.Body, "")
-
 	for _, t := range tests {
-		logger.Printf("running test [%s::%s] against %s", t.Name, t.Origin, dom.Response.URL.String())
-		switch t.Type {
-		case "url":
-			res.testMatch(t, dom.Response.URL.String())
-		case "host":
-			res.testMatch(t, dom.Response.URL.Host)
-		case "asset_url":
-			for i := 0; i < len(dom.Resources); i++ {
-				res.testMatch(t, dom.Resources[i].Response.URL.String())
-			}
-		case "body":
-			res.testMatch(t, bodyNoHTML)
-		case "body_html":
-			res.testMatch(t, dom.Response.Body)
-		case "code":
-			res.testMatch(t, strconv.Itoa(dom.Response.Code))
-		case "asset_code":
-			for i := 0; i < len(dom.Resources); i++ {
-				res.testMatch(t, strconv.Itoa(dom.Resources[i].Response.Code))
-			}
-		case "headers":
-			for name, values := range dom.Response.Headers {
-				hv := fmt.Sprintf("%s: %s", name, strings.Join(values, " "))
-				fmt.Printf("%#v\n", hv)
-
-				res.testMatch(t, hv)
-			}
-		case "asset_headers":
-			for i := 0; i < len(dom.Resources); i++ {
-				for name, values := range dom.Resources[i].Response.Headers {
-					hv := fmt.Sprintf("%s: %s", name, strings.Join(values, " "))
-					fmt.Printf("%#v\n", hv)
-
-					res.testMatch(t, hv)
-				}
-			}
-		}
+		logger.Printf("running test %s against %s", t, dom.Response.URL.String())
+		res.TestMatch(dom, t)
 	}
 
 	return res

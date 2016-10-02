@@ -245,15 +245,21 @@ func listTests() {
 			weightID = "+"
 		}
 
-		out.Printf("{lightblue}n:{c} %-25s {lightblue}t:{c} %-13s {lightblue}w:{c} %s%-6.2f {lightblue}o:{c} %s\n", test.Name, test.Type, weightID, test.Weight, test.Origin)
+		out.Printf("{lightblue}name:{c} %-25s {lightblue}weight:{c} %s%-6.2f {lightblue}origin:{c} %s\n", test.Name, weightID, test.Weight, test.Origin)
 
 		if conf.app.printTestsExtended {
-			if len(test.MatchRegex) > 0 {
-				out.Printf("    - {cyan}regex{c}: {yellow}[{c}%s{yellow}]{c}\n", strings.Join(test.MatchRegex, "{yellow}]{c}, {yellow}[{c}"))
+			if len(test.Match) > 0 {
+				out.Println("    - {cyan}Match ANY{c}:")
+				for i := 0; i < len(test.Match); i++ {
+					out.Println("        -", test.Match[i])
+				}
 			}
 
-			if len(test.Match) > 0 {
-				out.Printf("    -  {cyan}glob{c}: {yellow}[{c}%s{yellow}]{c}\n", strings.Join(test.Match, "{yellow}]{c}, {yellow}[{c}"))
+			if len(test.MatchAll) > 0 {
+				out.Println("    - {cyan}Match ALL{c}:")
+				for i := 0; i < len(test.MatchAll); i++ {
+					out.Println("        -", test.MatchAll[i])
+				}
 			}
 
 			out.Println("")
