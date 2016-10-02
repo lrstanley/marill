@@ -104,8 +104,8 @@ func (t *Test) generateMatches() {
 	}
 
 	// then t.RawMatchAll (AND)
-	for i := 0; i < len(t.RawMatch); i++ {
-		match, err := StrToMatch(t, t.RawMatch[i])
+	for i := 0; i < len(t.RawMatchAll); i++ {
+		match, err := StrToMatch(t, t.RawMatchAll[i])
 		if err != nil {
 			out.Fatal(err)
 		}

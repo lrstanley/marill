@@ -240,7 +240,7 @@ func listTests() {
 	out.Printf("{lightgreen}%d{c} total tests found:\n", len(tests))
 
 	for _, test := range tests {
-		out.Printf("{lightblue}name:{c} %-25s {lightblue}weight:{c} %-6.2f {lightblue}origin:{c} %s\n", test.Name, test.Weight, test.Origin)
+		out.Printf("{lightblue}name:{c} %-30s {lightblue}weight:{c} %-6.2f {lightblue}origin:{c} %s\n", test.Name, test.Weight, test.Origin)
 
 		if conf.app.printTestsExtended {
 			if len(test.Match) > 0 {
