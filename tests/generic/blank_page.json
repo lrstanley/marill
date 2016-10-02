@@ -1,11 +1,9 @@
 [{
     "name": "blank page",
-    "weight": 5,
-    "bad": true,
+    "weight": -5,
     "match": ["glob:body_html:"]
 }, {
     "name": "blank-spaced page",
-    "weight": 5,
-    "bad": true,
+    "weight": -5,
     "match": ["regex:body_html:^\\s+$"]
 }]

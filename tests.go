@@ -23,11 +23,7 @@ import (
 )
 
 // TODO:
-//   Thinking about how test scores are going to be kept. Say, it starts off with a
-//   score of 10. each test will mark it up, or down.
-//
-//   Also:
-//      - if 25% of resources fail to load, or over 30 (for sites with 200+ assets), auto fail the result?
+// if 25% of resources fail to load, or over 30 (for sites with 200+ assets), auto fail the result?
 
 const (
 	defaultScore = 10.0
@@ -51,7 +47,6 @@ var defaultTestTypes = [...]string{
 type Test struct {
 	Name        string   `json:"name"`      // the name of the test
 	Weight      float64  `json:"weight"`    // how much does this test decrease or increase the score
-	Bad         bool     `json:"bad"`       // decrease, or increase score if match?
 	RawMatch    []string `json:"match"`     // list of glob/regex matches that any can match (OR)
 	RawMatchAll []string `json:"match_all"` // list of glob/regex matches that all must match (AND)
 
@@ -417,22 +412,14 @@ type TestResult struct {
 func (res *TestResult) applyScore(test *Test) {
 	// TODO: what did it match?
 
-	if test.Bad {
-		res.Score = res.Score - test.Weight
+	res.Score += test.Weight
 
-		if _, ok := res.MatchedTests[test.Name]; !ok {
-			res.MatchedTests[test.Name] = 0.0
-		}
-		res.MatchedTests[test.Name] = res.MatchedTests[test.Name] - test.Weight
-	} else {
-		res.Score = res.Score + test.Weight
+	if _, ok := res.MatchedTests[test.Name]; !ok {
+		res.MatchedTests[test.Name] = 0.0
 	}
+	res.MatchedTests[test.Name] += test.Weight
 
-	visual := "-"
-	if !test.Bad {
-		visual = "+"
-	}
-	logger.Printf("applied test [%s::%s] score against %s to: %s%.2f (now %.2f)\n", test.Name, test.Origin, res.Domain.Resource.Response.URL.String(), visual, test.Weight, res.Score)
+	logger.Printf("applied test %s score against %s to: %.2f (now %.2f)\n", test, res.Domain.Resource.Response.URL.String(), test.Weight, res.Score)
 }
 
 var reHTMLTag = regexp.MustCompile(`<[^>]+>`)
