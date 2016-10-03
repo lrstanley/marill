@@ -32,14 +32,16 @@ const (
 )
 
 var defaultTestTypes = [...]string{
-	"url",           // resource url
-	"host",          // resource host
+	"url",           // resource url (https://example.com/test)
+	"host",          // resource host (example.com)
+	"scheme",        // resource scheme (http/https/etc)
 	"body",          // resource html-stripped body
 	"html",          // resource html
-	"code",          // resource status code
-	"headers",       // resource headers in string form
+	"code",          // resource status code (e.g. 200, 500, etc)
+	"headers",       // resource headers in string form (tested against each one, being "Header: value")
 	"asset_url",     // asset (js/css/img/png) url
-	"asset_code",    // asset status code
+	"asset_scheme",  // asset scheme (http/https/etc)
+	"asset_code",    // asset status code (e.g. 200, 500, etc)
 	"asset_headers", // asset headers in string form
 }
 
@@ -431,11 +433,27 @@ func TestCompare(dom *scraper.Results, test *Test, mtype string) (out []string) 
 	switch mtype {
 	case "url":
 		out = append(out, dom.Response.URL.String())
-	case "host":
-		out = append(out, dom.Response.URL.Host)
 	case "asset_url":
 		for i := 0; i < len(dom.Resources); i++ {
 			out = append(out, dom.Resources[i].Response.URL.String())
+		}
+	case "host":
+		out = append(out, dom.Response.URL.Host)
+	case "asset_host":
+		for i := 0; i < len(dom.Resources); i++ {
+			out = append(out, dom.Resources[i].Response.URL.Host)
+		}
+	case "scheme":
+		out = append(out, dom.Response.URL.Scheme)
+	case "asset_scheme":
+		for i := 0; i < len(dom.Resources); i++ {
+			out = append(out, dom.Resources[i].Response.URL.Scheme)
+		}
+	case "path":
+		out = append(out, dom.Response.URL.Path)
+	case "asset_path":
+		for i := 0; i < len(dom.Resources); i++ {
+			out = append(out, dom.Resources[i].Response.URL.Path)
 		}
 	case "body":
 		out = append(out, bodyNoHTML)
