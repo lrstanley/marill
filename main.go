@@ -84,6 +84,7 @@ type appConfig struct {
 	printUrls          bool
 	printTests         bool
 	printTestsExtended bool
+	exitOnFail         bool // exit with a status code of 1 if any of the domains failed
 }
 
 // config is a wrapper for all the other configs to put them in one place
@@ -353,6 +354,22 @@ func run() {
 			out.Printf("{green}[SUCCESS]{c} %5.1f/10 [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", res.Score, res.Domain.Resource.Response.Code, res.Domain.Request.IP, len(res.Domain.Resources), res.Domain.Resource.Time.Milli, url)
 		}
 	}
+
+	var resSuccess, resError int
+	for i := 0; i < len(testResults); i++ {
+		if testResults[i].Domain.Error != nil {
+			resError++
+			continue
+		}
+
+		resSuccess++
+	}
+
+	out.Printf("%d successful, %d failed\n", resSuccess, resError)
+
+	if conf.app.exitOnFail && resError > 0 {
+		out.Fatalf("exit-on-error enabled, %d errors. giving status code 1.", resError)
+	}
 }
 
 func main() {
@@ -426,6 +443,11 @@ func main() {
 			Name:        "no-banner",
 			Usage:       "Do not print the colorful banner",
 			Destination: &conf.out.noBanner,
+		},
+		cli.BoolFlag{
+			Name:        "exit-on-fail",
+			Usage:       "Send exit code 1 if any domains fail tests",
+			Destination: &conf.app.exitOnFail,
 		},
 		cli.StringFlag{
 			Name:        "log-file",

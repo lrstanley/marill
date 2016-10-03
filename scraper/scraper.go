@@ -286,7 +286,7 @@ func (c *Crawler) Crawl() {
 		resSuccess++
 	}
 
-	c.Log.Printf("%d successful, %d errored", resSuccess, resError)
+	c.Log.Printf("%d successful, %d failed\n", resSuccess, resError)
 
 	c.Results = results
 
