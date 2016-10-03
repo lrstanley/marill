@@ -1,0 +1,11 @@
+[{
+    "name": "downloading php",
+    "description": "This occurs when an index.php or file being access is PHP based, however is downloading, rather than executing. The cause is usually related to invalid AddHandler lines within the .htaccess file.",
+    "weight": -5,
+    "match_all": ["glob:headers:Content-Type: application/*php*", "glob:headers:Accept-Ranges: *"]
+}, {
+    "name": "asset downloading php",
+    "description": "This occurs when an index.php or file being access is PHP based, however is downloading, rather than executing. The cause is usually related to invalid AddHandler lines within the .htaccess file.",
+    "weight": -0.5,
+    "match_all": ["glob:asset_headers:Content-Type: application/*php*", "glob:asset_headers:Accept-Ranges: *"]
+}]
