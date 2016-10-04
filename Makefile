@@ -57,7 +57,7 @@ cc: clean fetch generate
 ccsmall: clean fetch generate
 	@echo "\n\033[0;36m [ Cross compiling ]\033[0;m"
 	mkdir -p ${RELEASE_ROOT}/dist
-	$(GOPATH)/bin/gox -verbose -ldflags="${LD_FLAGS}" -os="linux" -arch="386 amd64" -output "${RELEASE_ROOT}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
+	$(GOPATH)/bin/gox -verbose -ldflags="${LD_FLAGS}" -os="linux" -arch="amd64" -output "${RELEASE_ROOT}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
 
 ccshrink:
 	@echo "\n\033[0;36m [ Stripping debugging into and symbol tables from binaries ]\033[0;m"
