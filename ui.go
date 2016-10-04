@@ -42,12 +42,8 @@ func uiLayout(g *ui.Gui) error {
 			return err
 		}
 
-		fmt.Fprint(v, "This is a test")
 		v.Wrap = true
-		v.Autoscroll = true
-		if err := g.SetCurrentView("main"); err != nil {
-			return err
-		}
+		fmt.Fprint(v, "This is a test")
 	}
 	if v, err := g.SetView("legend", maxX-25, 0, maxX-1, 8); err != nil {
 		if err != ui.ErrUnknownView {
@@ -80,10 +76,6 @@ func uiKeybindings(g *ui.Gui) error {
 		return err
 	}
 
-	if err := g.SetKeybinding("msg", ui.MouseLeft, ui.ModNone, delMsg); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -93,14 +85,18 @@ func uiQuit(g *ui.Gui, v *ui.View) error {
 
 func showMsg(g *ui.Gui, text string) error {
 	maxX, maxY := g.Size()
-	if v, err := g.SetView("msg", maxX/2-10, maxY/2, maxX/2+10, maxY/2+2); err != nil {
+	if v, err := g.SetView("msg", maxX/2-(len(text)/2)-1, maxY/2, maxX/2+(len(text)/2)+1, maxY/2+2); err != nil {
 		if err != ui.ErrUnknownView {
 			return err
 		}
 		fmt.Fprintln(v, text)
 	}
 
-	if err := g.SetCurrentView("main"); err != nil {
+	if err := g.SetKeybinding("main", ui.MouseLeft, ui.ModNone, delMsg); err != nil {
+		return err
+	}
+
+	if err := g.SetCurrentView("msg"); err != nil {
 		return err
 	}
 
@@ -108,6 +104,7 @@ func showMsg(g *ui.Gui, text string) error {
 }
 
 func delMsg(g *ui.Gui, v *ui.View) error {
+	g.DeleteKeybinding("main", ui.MouseLeft, ui.ModNone)
 	if err := g.DeleteView("msg"); err != nil {
 		return err
 	}
