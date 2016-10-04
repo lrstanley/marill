@@ -81,6 +81,7 @@ type scanConfig struct {
 
 // appConfig handles what the app does (scans/crawls, printing data, some other task, etc)
 type appConfig struct {
+	ui                 bool
 	printUrls          bool
 	printTests         bool
 	printTestsExtended bool
@@ -95,7 +96,6 @@ type config struct {
 }
 
 var conf config
-var out = Output{}
 
 // statsLoop prints out memory/load/runtime statistics to debug output
 func statsLoop(done <-chan struct{}) {
@@ -403,6 +403,8 @@ func main() {
 	done := make(chan struct{}, 1)
 
 	app.Before = func(c *cli.Context) error {
+		// initOut
+		initOut(os.Stdout)
 		// initialize the logger
 		initLogger()
 
@@ -456,6 +458,12 @@ func main() {
 		},
 
 		// app related
+		cli.BoolFlag{
+			Name:        "ui",
+			Usage:       "Display a GUI/TUI mouse-enabled UI that allows a more visual approach to Marill",
+			Destination: &conf.app.ui,
+			Hidden:      true,
+		},
 		cli.BoolFlag{
 			Name:        "urls",
 			Usage:       "Print the list of urls as if they were going to be scanned",
@@ -570,6 +578,9 @@ func main() {
 			os.Exit(0)
 		} else if conf.app.printTests || conf.app.printTestsExtended {
 			listTests()
+			os.Exit(0)
+		} else if conf.app.ui {
+			uiInit()
 			os.Exit(0)
 		}
 
