@@ -80,6 +80,7 @@ GLOBAL OPTIONS:
    -q, --quiet              Do not print regular stdout messages
    --no-color               Do not print with color
    --no-banner              Do not print the colorful banner
+   --exit-on-fail           Send exit code 1 if any domains fail tests
    --log-file logfile       Log debugging information to logfile
    --urls                   Print the list of urls as if they were going to be scanned
    --tests                  Print the list of tests that are loaded and would be used
@@ -87,13 +88,13 @@ GLOBAL OPTIONS:
    --threads n              Use n threads to fetch data (0 defaults to server cores/2) (default: 0)
    --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
-   --min-score value        (default: 8)
+   --min-score value        Minimium score for domain (default: 8)
    -r, --recursive          Check all assets (css/js/images) for each page, recursively
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
    --ignore-remote          Ignore all resources that resolve to a remote IP (use with --recursive)
-   --domain-ignore GLOB     Ignore URLS during domain search that match GLOB
-   --domain-match GLOB      Allow URLS during domain search that match GLOB
+   --domain-ignore GLOB     Ignore URLS during domain search that match GLOB, pipe separated list
+   --domain-match GLOB      Allow URLS during domain search that match GLOB, pipe separated list
    --test-ignore GLOB       Ignore tests that match GLOB, pipe separated list
    --test-match GLOB        Allow tests that match GLOB, pipe separated list
    --tests-url URL          Import tests from a specified URL
