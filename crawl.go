@@ -48,7 +48,7 @@ func crawl() (*Scan, error) {
 				outlist += fmt.Sprintf("[%s:%s] ", proc.Name, proc.PID)
 			}
 			logger.Printf("found %d procs matching a webserver: %s", len(finder.Procs), outlist)
-			out.Printf("found %d procs matching a webserver\n", len(finder.Procs))
+			out.Printf("found %d procs matching a webserver", len(finder.Procs))
 		}
 
 		// start crawling for domains
@@ -78,26 +78,13 @@ func crawl() (*Scan, error) {
 	res.crawler.Cnf.NoRemote = conf.scan.ignoreRemote
 	res.crawler.Cnf.Delay = conf.scan.delay
 
-	logger.Printf("starting crawler...")
-	out.Printf("starting scan on %d domains\n", len(res.crawler.Cnf.Domains))
+	logger.Print("starting crawler...")
+	out.Printf("starting scan on %d domains", len(res.crawler.Cnf.Domains))
 	res.crawler.Crawl()
 	out.Println("{lightgreen}scan complete{c}")
 
 	out.Println("{lightblue}starting tests{c}")
 	res.results = checkTests(res.crawler.Results, res.tests)
-
-	for _, res := range res.results {
-		if res.Domain.Error != nil {
-			out.Printf("{red}[FAILURE]{c} %5.1f/10 [code: ---] [%15s] [{cyan}  0 resources{c}] [{green}     0ms{c}] %s ({red}%s{c})\n", res.Score, res.Domain.Request.IP, res.Domain.Request.URL, res.Domain.Error)
-		} else {
-			url := res.Domain.Resource.Response.URL.String()
-			if url != res.Domain.Request.URL {
-				url = fmt.Sprintf("%s (result: %s)", res.Domain.Request.URL, url)
-			}
-
-			out.Printf("{green}[SUCCESS]{c} %5.1f/10 [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s\n", res.Score, res.Domain.Resource.Response.Code, res.Domain.Request.IP, len(res.Domain.Resources), res.Domain.Resource.Time.Milli, url)
-		}
-	}
 
 	for i := 0; i < len(res.results); i++ {
 		if res.results[i].Domain.Error != nil {
@@ -108,7 +95,7 @@ func crawl() (*Scan, error) {
 		res.successful++
 	}
 
-	out.Printf("%d successful, %d failed\n", res.successful, res.failed)
+	out.Printf("%d successful, %d failed", res.successful, res.failed)
 
 	return res, nil
 }

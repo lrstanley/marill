@@ -136,12 +136,12 @@ func numThreads() {
 		}
 	} else if conf.scan.threads > runtime.NumCPU() {
 		logger.Printf("warning: %d threads specified, which is more than the amount of cores", conf.scan.threads)
-		out.Printf("{yellow}warning: %d threads specified, which is more than the amount of cores on the server!{c}\n", conf.scan.threads)
+		out.Printf("{yellow}warning: %d threads specified, which is more than the amount of cores on the server!{c}", conf.scan.threads)
 
 		// set it to the amount of cores on the server. go will do this regardless, so.
 		conf.scan.threads = runtime.NumCPU()
 		logger.Printf("limiting number of threads to %d", conf.scan.threads)
-		out.Printf("limiting number of threads to %d\n", conf.scan.threads)
+		out.Printf("limiting number of threads to %d", conf.scan.threads)
 	}
 
 	logger.Printf("using %d cores (max %d)", conf.scan.threads, runtime.NumCPU())
@@ -203,7 +203,7 @@ func printUrls() {
 		}
 
 		for _, domain := range domains {
-			out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
+			out.Printf("{blue}%-40s{c} {green}%s{c}", domain.URL, domain.IP)
 		}
 	} else {
 		finder := &domfinder.Finder{Log: logger}
@@ -227,7 +227,7 @@ func printUrls() {
 		}
 
 		for _, domain := range finder.Domains {
-			out.Printf("{blue}%-40s{c} {green}%s{c}\n", domain.URL, domain.IP)
+			out.Printf("{blue}%-40s{c} {green}%s{c}", domain.URL, domain.IP)
 		}
 	}
 }
@@ -238,10 +238,10 @@ func listTests() {
 
 	tests := genTests()
 
-	out.Printf("{lightgreen}%d{c} total tests found:\n", len(tests))
+	out.Printf("{lightgreen}%d{c} total tests found:", len(tests))
 
 	for _, test := range tests {
-		out.Printf("{lightblue}name:{c} %-30s {lightblue}weight:{c} %-6.2f {lightblue}origin:{c} %s\n", test.Name, test.Weight, test.Origin)
+		out.Printf("{lightblue}name:{c} %-30s {lightblue}weight:{c} %-6.2f {lightblue}origin:{c} %s", test.Name, test.Weight, test.Origin)
 
 		if conf.app.printTestsExtended {
 			if len(test.Match) > 0 {
@@ -265,9 +265,9 @@ func listTests() {
 
 func printBanner() {
 	if len(version) != 0 && len(commithash) != 0 {
-		logger.Printf("marill: version:%s revision:%s\n", version, commithash)
+		logger.Printf("marill: version:%s revision:%s", version, commithash)
 		if conf.out.noBanner {
-			out.Printf("{bold}{blue}marill version: %s (rev %s)\n", version, commithash)
+			out.Printf("{bold}{blue}marill version: %s (rev %s)", version, commithash)
 		} else {
 			out.Printf(motd, version, commithash)
 		}
@@ -286,6 +286,19 @@ func run() {
 
 	if conf.app.exitOnFail && scan.failed > 0 {
 		out.Fatalf("exit-on-error enabled, %d errors. giving status code 1.", scan.failed)
+	}
+
+	for _, res := range scan.results {
+		if res.Domain.Error != nil {
+			out.Printf("{red}[FAILURE]{c} %5.1f/10 [code: ---] [%15s] [{cyan}  0 resources{c}] [{green}     0ms{c}] %s ({red}%s{c})", res.Score, res.Domain.Request.IP, res.Domain.Request.URL, res.Domain.Error)
+		} else {
+			url := res.Domain.Resource.Response.URL.String()
+			if url != res.Domain.Request.URL {
+				url = fmt.Sprintf("%s (result: %s)", res.Domain.Request.URL, url)
+			}
+
+			out.Printf("{green}[SUCCESS]{c} %5.1f/10 [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s", res.Score, res.Domain.Resource.Response.Code, res.Domain.Request.IP, len(res.Domain.Resources), res.Domain.Resource.Time.Milli, url)
+		}
 	}
 }
 
