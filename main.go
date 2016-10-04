@@ -497,7 +497,10 @@ func main() {
 			listTests()
 			os.Exit(0)
 		} else if conf.app.ui {
-			uiInit()
+			if err := uiInit(); err != nil {
+				initOut(os.Stdout)
+				out.Fatal(err)
+			}
 			os.Exit(0)
 		}
 

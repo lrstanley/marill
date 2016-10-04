@@ -22,45 +22,29 @@ var keybindText = [...]string{
 	"^C: Exit",
 }
 
-type guiCnf struct {
-	currentView string
-}
-
-type Gui struct {
-	g   *ui.Gui
-	cnf guiCnf
-
-	// views and scopes
-	main *ui.View
-	side *ui.View
-}
-
-var gui = Gui{}
-
 func uiLayout(g *ui.Gui) error {
-	var err error
 	maxX, maxY := g.Size()
-	if gui.side, err = g.SetView("side", -1, -1, 15, maxY); err != nil {
+	if v, err := g.SetView("side", -1, -1, 15, maxY); err != nil {
 		if err != ui.ErrUnknownView {
 			return err
 		}
 
-		gui.side.Highlight = true
-		fmt.Fprintln(gui.side, " ")
-		fmt.Fprintln(gui.side, "        Status ")
-		fmt.Fprintln(gui.side, "       Results ")
-		fmt.Fprintln(gui.side, "    Successful ")
-		fmt.Fprint(gui.side, "        Failed ")
-		gui.side.MoveCursor(1, 1, true)
+		v.Highlight = true
+		fmt.Fprintln(v, " ")
+		fmt.Fprintln(v, "        Status ")
+		fmt.Fprintln(v, "       Results ")
+		fmt.Fprintln(v, "    Successful ")
+		fmt.Fprint(v, "        Failed ")
+		v.MoveCursor(1, 1, true)
 	}
-	if gui.main, err = g.SetView("main", 15, -1, maxX, maxY); err != nil {
+	if v, err := g.SetView("main", 15, -1, maxX, maxY); err != nil {
 		if err != ui.ErrUnknownView {
 			return err
 		}
 
-		fmt.Fprint(gui.main, "This is a test")
-		gui.main.Wrap = true
-		gui.main.Autoscroll = true
+		fmt.Fprint(v, "This is a test")
+		v.Wrap = true
+		v.Autoscroll = true
 		if err := g.SetCurrentView("main"); err != nil {
 			return err
 		}
@@ -77,10 +61,15 @@ func uiLayout(g *ui.Gui) error {
 }
 
 func uiUpdateLog(g *ui.Gui) error {
-	gui.main.Clear()
+	main, err := g.View("main")
+	if err != nil {
+		return err
+	}
+
+	main.Clear()
 
 	for i := 0; i < len(out.buffer); i++ {
-		fmt.Fprint(gui.main, out.buffer[i])
+		fmt.Fprint(main, out.buffer[i])
 	}
 
 	return nil
@@ -91,6 +80,10 @@ func uiKeybindings(g *ui.Gui) error {
 		return err
 	}
 
+	if err := g.SetKeybinding("msg", ui.MouseLeft, ui.ModNone, delMsg); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -98,21 +91,44 @@ func uiQuit(g *ui.Gui, v *ui.View) error {
 	return ui.ErrQuit
 }
 
+func showMsg(g *ui.Gui, text string) error {
+	maxX, maxY := g.Size()
+	if v, err := g.SetView("msg", maxX/2-10, maxY/2, maxX/2+10, maxY/2+2); err != nil {
+		if err != ui.ErrUnknownView {
+			return err
+		}
+		fmt.Fprintln(v, text)
+	}
+
+	if err := g.SetCurrentView("main"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func delMsg(g *ui.Gui, v *ui.View) error {
+	if err := g.DeleteView("msg"); err != nil {
+		return err
+	}
+	return nil
+}
+
 func uiInit() error {
-	gui.g = ui.NewGui()
-	if err := gui.g.Init(); err != nil {
+	gui := ui.NewGui()
+	if err := gui.Init(); err != nil {
 		return err
 	}
-	defer gui.g.Close()
+	defer gui.Close()
 
-	gui.g.SetLayout(uiLayout)
-	if err := uiKeybindings(gui.g); err != nil {
+	gui.SetLayout(uiLayout)
+	if err := uiKeybindings(gui); err != nil {
 		return err
 	}
 
-	gui.g.SelBgColor = ui.ColorGreen
-	gui.g.SelFgColor = ui.ColorBlack
-	gui.g.Mouse = true
+	gui.SelBgColor = ui.ColorGreen
+	gui.SelFgColor = ui.ColorBlack
+	gui.Mouse = true
 
 	initOut(ioutil.Discard)
 	conf.out.noColors = true
@@ -120,13 +136,18 @@ func uiInit() error {
 		for {
 			time.Sleep(1 * time.Second)
 
-			gui.g.Execute(uiUpdateLog)
+			gui.Execute(uiUpdateLog)
 		}
 	}()
 
-	go run()
+	go func() {
+		time.Sleep(3 * time.Second)
+		showMsg(gui, "this is a test")
+	}()
 
-	if err := gui.g.MainLoop(); err != nil && err != ui.ErrQuit {
+	// go run()
+
+	if err := gui.MainLoop(); err != nil && err != ui.ErrQuit {
 		return err
 	}
 
