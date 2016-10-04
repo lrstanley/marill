@@ -127,11 +127,10 @@ func (o *Output) Printf(format string, a ...interface{}) {
 		return
 	}
 
-	str := fmt.Sprintf(format, a...)
-	FmtColor(&str, conf.out.noColors)
+	FmtColor(&format, conf.out.noColors)
 
-	out.log.Print(str)
-	o.AddLog(str)
+	out.log.Printf(format, a...)
+	o.AddLog(fmt.Sprintf(format, a...))
 }
 
 // Println interprets []*Color{} escape codes and prints them to stdout
@@ -140,7 +139,7 @@ func (o *Output) Println(a ...interface{}) {
 		return
 	}
 
-	str := fmt.Sprintln(a...)
+	str := fmt.Sprint(a...)
 	FmtColor(&str, conf.out.noColors)
 
 	out.log.Print(str)
