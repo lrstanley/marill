@@ -49,7 +49,7 @@ func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) e
 	uri.Host = via[len(via)-1].Host
 	req.Header.Set("Referer", uri.String())
 
-	if len(via) > 3 {
+	if len(via) > 10 {
 		// assume too many redirects
 		return errors.New("too many redirects (3)")
 	}

@@ -33,7 +33,7 @@ func TestFetch(t *testing.T) {
 		{"http://4.liamstanley.io", "1.1.1.1.", true},                           // invalid ip
 		{"http://some-domains-that-doesnt-exist.com/x", "", true},               // invalid domain/path
 		{"https://some-domains-that-doesnt-exist.com/x", "", true},              // invalid domain/path
-		{"https://httpbin.org/redirect/10", "", true},                           // we allow max of 3 redirects
+		{"https://httpbin.org/redirect/15", "", true},                           // we allow max of 10 redirects
 		{"https://httpbin.org/links/10", "", false},                             // provide some html links
 		{"https://httpbin.org/html", "", false},                                 // return some html
 		{"https://httpbin.org/drip?duration=5&numbytes=5&code=200", "", false},  // drip for 5 seconds
