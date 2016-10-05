@@ -12,11 +12,11 @@
 Often times during server administration, migrations, and large server changes, things can and will go wrong. Servers are complex systems with many working parts, and with that comes a lot of breakage.
 
 Creating an automated site testing utility, like Marill, allows:
-   * less human interaction to test sites.
-   * integration and flexibility to be built into other systems.
-   * clients to be at ease; you know they won't test all of their sites.
-   * administrators or developers to hate you less.
-   * you to be whitty and say "time is money!".
+   * Less human interaction to test sites.
+   * Integration and flexibility to be built into other systems.
+   * Clients to be at ease; you know they won't test all of their sites.
+   * Administrators or developers to hate you less.
+   * You to be whitty and say "time is money!".
 
 ## Features
 
