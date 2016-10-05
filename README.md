@@ -40,6 +40,9 @@ Here are a few examples of tests that are useful:
    * MySQL or PostgreSQL related errors.
    * cPanel "Sorry!" related pages (common if the incorrect IP is configured for example).
 
+Example running from my workstation (though, this would be best suited running from the server itself):
+[![asciicast](https://asciinema.org/a/bhnskk1s3vwdwgl2w52deioel.png)](https://asciinema.org/a/bhnskk1s3vwdwgl2w52deioel)
+
 ## Project Status:
 
    * [See here](https://github.com/Liamraystanley/marill/projects/1) for what is being worked on/in my todo list for the first beta release.
