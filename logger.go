@@ -109,10 +109,12 @@ func initOut(w io.Writer) {
 	out.log = log.New(w, "", 0)
 }
 
-func (o *Output) Write(b []byte) (int, error) {
+func (o Output) Write(b []byte) (int, error) {
 	str := fmt.Sprintf("%s", b)
-	o.log.Print(str)
 	o.AddLog(str)
+
+	FmtColor(&str, conf.out.noColors)
+	o.log.Print(str)
 
 	return len(b), nil
 }
