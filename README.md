@@ -61,6 +61,7 @@ GLOBAL OPTIONS:
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
    --min-score value        Minimium score for domain (default: 8)
    -r, --recursive          Check all assets (css/js/images) for each page, recursively
+   --ignore-success         Only print results if they are considered failed
    --tmpl value             Golang text/template string template for use with formatting scan output
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
@@ -74,6 +75,7 @@ GLOBAL OPTIONS:
    --ignore-std-tests       Ignores all built-in tests (useful with --tests-url)
    --help, -h               show help
    --version, -v            print the version
+
    
 COPYRIGHT:
    (c) 2016 Liam Stanley (see https://git.io/vPvUp)

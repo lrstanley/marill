@@ -84,10 +84,11 @@ type outputConfig struct {
 
 // scanConfig handles how and what is scanned/crawled
 type scanConfig struct {
-	threads    int           // number of threads to run the scanner in
-	manualList string        // list of manually supplied domains
-	recursive  bool          // recursively pull resources, and their assets
-	delay      time.Duration // delay for the stasrt of each resource crawl
+	threads       int           // number of threads to run the scanner in
+	manualList    string        // list of manually supplied domains
+	recursive     bool          // recursively pull resources, and their assets
+	delay         time.Duration // delay for the stasrt of each resource crawl
+	ignoreSuccess bool          // ignore urls/domains that were successfully fetched
 
 	// domain filter related
 	ignoreHTTP   bool   // ignore http://
@@ -329,6 +330,11 @@ func run() {
 	}
 
 	for _, res := range scan.results {
+		// ignore successful, per request
+		if conf.scan.ignoreSuccess && res.Domain.Error == nil {
+			continue
+		}
+
 		err := tmpl.Execute(os.Stdout, res)
 		if err != nil {
 			out.Println("")
@@ -471,6 +477,11 @@ func main() {
 			Name:        "r, recursive",
 			Usage:       "Check all assets (css/js/images) for each page, recursively",
 			Destination: &conf.scan.recursive,
+		},
+		cli.BoolFlag{
+			Name:        "ignore-success",
+			Usage:       "Only print results if they are considered failed",
+			Destination: &conf.scan.ignoreSuccess,
 		},
 		cli.StringFlag{
 			Name:        "tmpl",
