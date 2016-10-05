@@ -74,7 +74,7 @@ func crawl() (*Scan, error) {
 		}
 	}
 
-	res.crawler.Cnf.Recursive = conf.scan.recursive
+	res.crawler.Cnf.Resources = conf.scan.resources
 	res.crawler.Cnf.NoRemote = conf.scan.ignoreRemote
 	res.crawler.Cnf.Delay = conf.scan.delay
 

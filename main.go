@@ -86,7 +86,7 @@ type outputConfig struct {
 type scanConfig struct {
 	threads       int           // number of threads to run the scanner in
 	manualList    string        // list of manually supplied domains
-	recursive     bool          // recursively pull resources, and their assets
+	resources     bool          // pull all resources for the page, and their assets
 	delay         time.Duration // delay for the stasrt of each resource crawl
 	ignoreSuccess bool          // ignore urls/domains that were successfully fetched
 
@@ -474,9 +474,9 @@ func main() {
 			Destination: &conf.scan.minScore,
 		},
 		cli.BoolFlag{
-			Name:        "r, recursive",
-			Usage:       "Check all assets (css/js/images) for each page, recursively",
-			Destination: &conf.scan.recursive,
+			Name:        "r, resources",
+			Usage:       "Check all resources/assets (css/js/images) for each page",
+			Destination: &conf.scan.resources,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-success",
@@ -502,7 +502,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:        "ignore-remote",
-			Usage:       "Ignore all resources that resolve to a remote IP (use with --recursive)",
+			Usage:       "Ignore all resources that resolve to a remote IP (use with --resources)",
 			Destination: &conf.scan.ignoreRemote,
 		},
 		cli.StringFlag{

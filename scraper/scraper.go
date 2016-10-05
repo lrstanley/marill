@@ -183,7 +183,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 		res.ResourceTime = resourceTime.Result
 	}()
 
-	if c.Cnf.Recursive {
+	if c.Cnf.Resources {
 		c.ResPool = utils.NewPool(4)
 
 		for i := range urls {
@@ -233,7 +233,7 @@ type Crawler struct {
 // CrawlerConfig is the configuration which changes Crawler
 type CrawlerConfig struct {
 	Domains   []*Domain     // list of domains to scan
-	Recursive bool          // if we want to pull the resources for the page too
+	Resources bool          // if we want to pull the resources for the page too
 	NoRemote  bool          // ignore all resources that match a remote IP
 	Delay     time.Duration // delay before each resource is crawled
 	Threads   int           // total number of threads to run crawls in
