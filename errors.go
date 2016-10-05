@@ -66,6 +66,11 @@ const (
 	// domain fetching
 	ErrGetDomains
 	ErrNoDomainsFound
+
+	// update checks
+	ErrUpdateUnknownResp
+	ErrUpdate
+	ErrUpdateGeneric
 )
 
 // errMsg contains a map of error name id keys and error/deep error pairs
@@ -83,4 +88,9 @@ var errMsg = map[int]string{
 	// domain fetching
 	ErrGetDomains:     "unable to auto-fetch domain list: %s",
 	ErrNoDomainsFound: "domain search found no results (domain filters?)",
+
+	// update checks
+	ErrUpdateUnknownResp: "update check: received unknown response from Github: %s",
+	ErrUpdate:            "update check: error: %s: %s",
+	ErrUpdateGeneric:     "{red}an unknown error occurred while attempting to check for updates. see debugging for more info.{c}",
 }

@@ -16,12 +16,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -34,6 +37,8 @@ import (
 
 // these /SHOULD/ be defined during the make process. not always however.
 var version, commithash, compiledate = "", "", ""
+
+const updateUri = "https://api.github.com/repos/Liamraystanley/marill/releases/latest"
 
 const motd = `
 {magenta}      {lightgreen}O{magenta}     {yellow}     [ Marill -- Automated site testing utility ]
@@ -116,6 +121,7 @@ type appConfig struct {
 	printTests         bool
 	printTestsExtended bool
 	exitOnFail         bool // exit with a status code of 1 if any of the domains failed
+	noUpdateCheck      bool
 }
 
 // config is a wrapper for all the other configs to put them in one place
@@ -306,11 +312,115 @@ func printBanner() {
 	}
 }
 
+func updateCheck() {
+	if len(version) == 0 {
+		logger.Println("version not set, ignoring update check")
+		return
+	}
+
+	client := &http.Client{
+		Timeout: time.Duration(3) * time.Second,
+	}
+
+	req, err := http.NewRequest("GET", updateUri, nil)
+	if err != nil {
+		out.Println(NewErr{Code: ErrUpdateGeneric})
+		logger.Println(NewErr{Code: ErrUpdate, value: "during check", deepErr: err})
+		return
+	}
+
+	// set the necessary headers per Github's request.
+	req.Header.Set("User-Agent", "repo: Liamraystanley/marill (internal update check utility)")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		out.Println(NewErr{Code: ErrUpdateGeneric})
+		logger.Println(NewErr{Code: ErrUpdateUnknownResp, deepErr: err})
+		return
+	}
+
+	if resp.Body == nil {
+		out.Println(NewErr{Code: ErrUpdateGeneric})
+		logger.Println(NewErr{Code: ErrUpdateUnknownResp, value: "(no body?)"})
+		return
+	}
+	defer resp.Body.Close() // ensure the body is closed.
+
+	bbytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		out.Println(NewErr{Code: ErrUpdateGeneric})
+		logger.Println(NewErr{Code: ErrUpdate, value: "unable to convert body to bytes", deepErr: err})
+		return
+	}
+
+	rawRemaining := resp.Header.Get("X-RateLimit-Remaining")
+	if rawRemaining == "" {
+		logger.Println(NewErr{Code: ErrUpdateUnknownResp, value: fmt.Sprintf("%s", bbytes)})
+	}
+
+	remain, err := strconv.Atoi(rawRemaining)
+	if err != nil {
+		logger.Println(NewErr{Code: ErrUpdate, value: "unable to convert api limit remaining to int", deepErr: err})
+	}
+
+	if remain < 10 {
+		logger.Println("update check: warning, remaining api queries less than 10 (of 60!)")
+	}
+
+	if resp.StatusCode == 404 {
+		out.Println("{green}update check: no updates found{c}")
+		logger.Println("update check: no releases found.")
+		return
+	}
+
+	if resp.StatusCode == 403 {
+		// fail silently
+		logger.Println(NewErr{Code: ErrUpdateUnknownResp, value: "status code 403 (too many update checks?)"})
+		return
+	}
+
+	var data = struct {
+		URL  string `json:"html_url"`
+		Name string `json:"name"`
+		Tag  string `json:"tag_name"`
+	}{}
+
+	err = json.Unmarshal(bbytes, &data)
+	if err != nil {
+		out.Println(NewErr{Code: ErrUpdateGeneric})
+		logger.Println(NewErr{Code: ErrUpdate, value: "unable to unmarshal json body", deepErr: err})
+		return
+	}
+
+	logger.Printf("update check: update info: %#v", data)
+
+	if data.Tag == "" {
+		out.Println(NewErr{Code: ErrUpdateGeneric})
+		logger.Println(NewErr{Code: ErrUpdate, value: "unable to unmarshal json body", deepErr: err})
+		return
+	}
+
+	if data.Tag == version {
+		out.Println("{green}your version of marill is up to date{c}")
+		logger.Println("update check: up to date. current: %s, latest: %s (%s)", version, data.Tag, data.Name)
+		return
+	}
+
+	out.Println("{bold}{yellow}there is an update available for marill. current: %s new: %s (%s){c}", version, data.Tag, data.Name)
+	out.Println("release link: %s", data.URL)
+	logger.Printf("update check found update %s available (doesn't match current: %s): %s", data.Tag, version, data.URL)
+
+	return
+}
+
 func run() {
 	printBanner()
 
-	var text string
+	if !conf.app.noUpdateCheck {
+		updateCheck()
+	}
 
+	var text string
 	if len(conf.scan.outTmpl) > 0 {
 		text = conf.scan.outTmpl
 	} else {
@@ -426,6 +536,11 @@ func main() {
 			Name:        "log-file",
 			Usage:       "Log debugging information to `logfile`",
 			Destination: &conf.out.logFile,
+		},
+		cli.BoolFlag{
+			Name:        "no-updates",
+			Usage:       "Don't check to see if there are updates",
+			Destination: &conf.app.noUpdateCheck,
 		},
 
 		// app related
