@@ -117,6 +117,43 @@ COPYRIGHT:
    (c) 2016 Liam Stanley (see https://git.io/vPvUp)
 ```
 
+## Testing
+
+So, you want to help out, test, see how things work, and find possible bugs? Follow the below steps and you will be right on your way.
+
+### cPanel server steps:
+
+Head to [this page](https://release.liam.sh/marill/?sort=time&order=desc) and download the top item in the list. For example (replacing **YOUR-VERSION** with the latest download link):
+```bash
+$ cd /root/tmp && wget https://release.liam.sh/marill/marill_YOUR-VERSION.tar.gz
+```
+
+The archive only has a single binary in it. Extract it so we can get to work:
+```bash
+$ tar -xzvf marill_linux_amd64_YOUR-VERSION.tar.gz
+```
+
+You should now see a file named **marill** in the same directory. Feel free to look over the current flags and arguments:
+```bash
+$ /root/tmp/marill --help
+```
+
+The main arguments that may be useful are:
+   * `-r` or `--resources`: This will fetch all of the resources (css/javascript/images, etc)
+   * `-d` or `--debug`: This will enable debugging. It doesn't provide a whole lot more information, but can help if something isn't working.
+   * `--delay`: Utilize this if the load caused by the crawling is too high. E.g. `--delay 10s`.
+   * `--threads`: This is the amount of parallel scans will run at a single time. By default it will be 1/2 the amount of cores on the server.
+   * `--domain-ignore` and `--domain-match`: utilize these to skip or only scan certain domains during the crawl. E.g. `--domains-ignore "*domain.com|someotherdomain.com"`
+
+So, for example, to start off with:
+```bash
+$ /root/tmp/marill -r
+```
+
+**Things to note/Troubleshooting:**
+   * Please remove `/root/tmp/marill` once you are done. This utility is still in alpha stages, and as such, there is no update check functionality. Leaving in place may cause someone in the future to utilize an outdated version of the software.
+   * If there are any problems or bugs, **PLEASE LET ME KNOW!** You can submit bugs if you have a Github account [here](https://github.com/Liamraystanley/marill/issues/new) or [here if you do not](https://gitreports.com/issue/Liamraystanley/marill)
+
 ## License:
 
     LICENSE: The MIT License (MIT)
