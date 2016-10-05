@@ -74,6 +74,9 @@
 <li>cPanel "Sorry!" related pages (common if the incorrect IP is configured for example).</li>
 </ul>
 
+<p>Example running from my workstation (though, this would be best suited running from the server itself):
+<a href="https://asciinema.org/a/bhnskk1s3vwdwgl2w52deioel"><img src="https://asciinema.org/a/bhnskk1s3vwdwgl2w52deioel.png" alt="asciicast"></a></p>
+
 <h2>
 <a id="project-status" class="anchor" href="#project-status" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Project Status:</h2>
 
@@ -153,6 +156,54 @@ GLOBAL OPTIONS:
 COPYRIGHT:
    (c) 2016 Liam Stanley (see https://git.io/vPvUp)
 </code></pre>
+
+<h2>
+<a id="testing" class="anchor" href="#testing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Testing</h2>
+
+<p>So, you want to help out, test, see how things work, and find possible bugs? Follow the below steps and you will be right on your way.</p>
+
+<h3>
+<a id="cpanel-server-steps" class="anchor" href="#cpanel-server-steps" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>cPanel server steps:</h3>
+
+<p>Head to <a href="https://release.liam.sh/marill/?sort=time&amp;order=desc">this page</a> and download the top item in the list. For example (replacing <strong>YOUR-VERSION</strong> with the latest download link):</p>
+
+<div class="highlight highlight-source-shell"><pre>$ <span class="pl-c1">cd</span> /root/tmp <span class="pl-k">&amp;&amp;</span> wget https://release.liam.sh/marill/marill_YOUR-VERSION.tar.gz</pre></div>
+
+<p>The archive only has a single binary in it. Extract it so we can get to work:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ tar -xzvf marill_linux_amd64_YOUR-VERSION.tar.gz</pre></div>
+
+<p>You should now see a file named <strong>marill</strong> in the same directory. Feel free to look over the current flags and arguments:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ /root/tmp/marill --help</pre></div>
+
+<p>The main arguments that may be useful are:</p>
+
+<ul>
+<li>
+<code>-r</code> or <code>--resources</code>: This will fetch all of the resources (css/javascript/images, etc)</li>
+<li>
+<code>-d</code> or <code>--debug</code>: This will enable debugging. It doesn't provide a whole lot more information, but can help if something isn't working.</li>
+<li>
+<code>--delay</code>: Utilize this if the load caused by the crawling is too high. E.g. <code>--delay 10s</code>.</li>
+<li>
+<code>--threads</code>: This is the amount of parallel scans will run at a single time. By default it will be 1/2 the amount of cores on the server.</li>
+<li>
+<code>--domain-ignore</code> and <code>--domain-match</code>: utilize these to skip or only scan certain domains during the crawl. E.g. <code>--domains-ignore "*domain.com|someotherdomain.com"</code>
+</li>
+</ul>
+
+<p>So, for example, to start off with:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ /root/tmp/marill -r</pre></div>
+
+<p><strong>Things to note/Troubleshooting:</strong></p>
+
+<ul>
+<li>Please remove <code>/root/tmp/marill</code> once you are done. This utility is still in alpha stages, and as such, there is no update check functionality. Leaving in place may cause someone in the future to utilize an outdated version of the software.</li>
+<li>If there are any problems or bugs, <strong>PLEASE LET ME KNOW!</strong> You can submit bugs if you have a Github account <a href="https://github.com/Liamraystanley/marill/issues/new">here</a> or <a href="https://gitreports.com/issue/Liamraystanley/marill">here if you do not</a>
+</li>
+</ul>
 
 <h2>
 <a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License:</h2>
