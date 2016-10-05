@@ -66,6 +66,10 @@ var successTemplate = `
 
 {{- /* number of resources */}}
 {{- if .Domain.Resources }} [{cyan}{{ printf "%3d" (len .Domain.Resources) }} resources{c}]{{- end }}
+
+{{- /* response time for main resource */}}
+{{- if not .Domain.Error }} [{green}{{ .Domain.Resource.Time.Milli }}ms{c}]{{- end }}
+
 {{- " "}}{{- .Domain.URL }}
 {{- if .Domain.Error }} ({red}errors: {{ .Domain.Error }}{c}){{- end }}`
 
