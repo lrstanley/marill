@@ -16,7 +16,7 @@ Creating an automated site testing utility, like Marill, allows:
    * Integration and flexibility to be built into other systems.
    * Clients to be at ease; you know they won't test all of their sites.
    * Administrators or developers to hate you less.
-   * You to be whitty and say "time is money!".
+   * You to be witty and say "time is money!".
 
 ## Features
 
