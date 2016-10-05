@@ -61,6 +61,7 @@ GLOBAL OPTIONS:
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
    --min-score value        Minimium score for domain (default: 8)
    -r, --recursive          Check all assets (css/js/images) for each page, recursively
+   --tmpl value             Golang text/template string template for use with formatting scan output
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
    --ignore-remote          Ignore all resources that resolve to a remote IP (use with --recursive)

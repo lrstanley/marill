@@ -23,6 +23,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/Liamraystanley/marill/domfinder"
@@ -46,6 +47,27 @@ const motd = `
 {magenta}[________]  {lightblue}|___|\__/|___|(___/    \___)|__|  \___)(__\_|_)\_______)\_______)
 
 `
+
+var successTemplate = `
+{{- if .Domain.Error }}{red}{bold}[FAILURE]{c}{{- else }}{green}{bold}[SUCCESS]{c}{{- end }}
+
+{{- /* add colors for the score */}} [score:
+{{- if gt .Score 8.0 }}{green}{{- else }}{{- if (or (le .Score 8.0) (gt .Score 5.0)) }}{yellow}{{- end }}{{- end }}
+{{- if lt .Score 5.0 }}{red}{{- end }}
+
+{{- .Score | printf "%5.1f/10.0" }}{c}]
+
+{{- /* status code output */}}
+{{- if .Domain.Resource }} [code:{yellow}{{ if .Domain.Resource.Response.Code }}{{ .Domain.Resource.Response.Code }}{{ else }}---{{ end }}{c}]
+{{- else }} [code:{red}---{c}]{{- end }}
+
+{{- /* IP address */}}
+{{- if .Domain.Request.IP }} [{lightmagenta}{{ printf "%15s" .Domain.Request.IP }}{c}]{{- end }}
+
+{{- /* number of resources */}}
+{{- if .Domain.Resources }} [{cyan}{{ printf "%3d" (len .Domain.Resources) }} resources{c}]{{- end }}
+{{- " "}}{{- .Domain.URL }}
+{{- if .Domain.Error }} ({red}errors: {{ .Domain.Error }}{c}){{- end }}`
 
 // outputConfig handles what the user sees (stdout, debugging, logs, etc)
 type outputConfig struct {
@@ -77,6 +99,9 @@ type scanConfig struct {
 	testsFromURL   string  // load tests from a remote url
 	testsFromPath  string  // load tests from a specified path
 	ignoreStdTests bool    // don't execute standard builtin tests
+
+	// output related
+	outTmpl string // the output text/template template for use with printing results
 }
 
 // appConfig handles what the app does (scans/crawls, printing data, some other task, etc)
@@ -279,6 +304,17 @@ func printBanner() {
 func run() {
 	printBanner()
 
+	var text string
+
+	if len(conf.scan.outTmpl) > 0 {
+		text = conf.scan.outTmpl
+	} else {
+		text = successTemplate
+	}
+
+	FmtColor(&text, conf.out.noColors)
+	tmpl := template.Must(template.New("success").Parse(text + "\n"))
+
 	scan, err := crawl()
 	if err != nil {
 		out.Fatal(err)
@@ -289,15 +325,10 @@ func run() {
 	}
 
 	for _, res := range scan.results {
-		if res.Domain.Error != nil {
-			out.Printf("{red}[FAILURE]{c} %5.1f/10 [code: ---] [%15s] [{cyan}  0 resources{c}] [{green}     0ms{c}] %s ({red}%s{c})", res.Score, res.Domain.Request.IP, res.Domain.Request.URL, res.Domain.Error)
-		} else {
-			url := res.Domain.Resource.Response.URL.String()
-			if url != res.Domain.Request.URL {
-				url = fmt.Sprintf("%s (result: %s)", res.Domain.Request.URL, url)
-			}
-
-			out.Printf("{green}[SUCCESS]{c} %5.1f/10 [code: {yellow}%d{c}] [%15s] [{cyan}%3d resources{c}] [{green}%6dms{c}] %s", res.Score, res.Domain.Resource.Response.Code, res.Domain.Request.IP, len(res.Domain.Resources), res.Domain.Resource.Time.Milli, url)
+		err := tmpl.Execute(os.Stdout, res)
+		if err != nil {
+			out.Println("")
+			out.Fatal("executing template:", err)
 		}
 	}
 }
@@ -436,6 +467,11 @@ func main() {
 			Name:        "r, recursive",
 			Usage:       "Check all assets (css/js/images) for each page, recursively",
 			Destination: &conf.scan.recursive,
+		},
+		cli.StringFlag{
+			Name:        "tmpl",
+			Usage:       "Golang text/template string template for use with formatting scan output",
+			Destination: &conf.scan.outTmpl,
 		},
 
 		// domain filtering
