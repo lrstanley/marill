@@ -40,6 +40,7 @@ type Response struct {
 // Resource represents a single entity of many within a given crawl. These should
 // only be of type css, js, jpg, png, etc (static resources).
 type Resource struct {
+	URL      string             // the url -- this should exist regardless of failure
 	Request  ResourceOrigin     // request represents what we were provided before the request
 	Response Response           // Response represents the end result/data/status/etc.
 	Error    error              // Error represents an error of a completely failed request
@@ -52,6 +53,8 @@ type Resource struct {
 func (c *Crawler) fetchResource(rsrc *Resource) {
 	defer c.ResPool.Free()
 	var err error
+
+	rsrc.URL = rsrc.Request.URL
 
 	resp, err := c.Get(rsrc.Request.URL)
 	if err != nil {
@@ -79,6 +82,11 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 
 	if rsrc.Response.URL.Host != rsrc.Request.Host {
 		rsrc.Response.Remote = true
+	}
+
+	rsrc.URL = rsrc.Response.URL.String()
+	if rsrc.URL != rsrc.Request.URL {
+		rsrc.URL = fmt.Sprintf("%s (result: %s)", rsrc.Request.URL, rsrc.URL)
 	}
 
 	rsrc.Time = resp.Time
@@ -116,6 +124,7 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 		res.TotalTime = crawlTimer.Result
 	}()
 
+	res.URL = URL
 	res.Request.URL = URL
 	res.Request.Host, err = utils.GetHost(URL)
 	if err != nil {
@@ -145,6 +154,11 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 
 	if res.Response.URL.Host != res.Request.Host {
 		res.Response.Remote = true
+	}
+
+	res.URL = res.Response.URL.String()
+	if res.URL != res.Request.URL {
+		res.URL = fmt.Sprintf("%s (result: %s)", res.Request.URL, res.URL)
 	}
 
 	res.Time = resp.Time
