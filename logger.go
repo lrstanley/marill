@@ -152,7 +152,7 @@ func (o *Output) Println(a ...interface{}) {
 func (o *Output) Fatalf(format string, a ...interface{}) {
 	// print to regular stdout
 	if !conf.out.ignoreStd {
-		str := fmt.Sprintf(fmt.Sprintf("{bold}{red}error:{c} %s\n", format), a...)
+		str := fmt.Sprintf(fmt.Sprintf("{bold}{red}error:{c} %s", format), a...)
 		FmtColor(&str, conf.out.noColors)
 		out.log.Print(str)
 		o.AddLog(str)
