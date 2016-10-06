@@ -110,6 +110,8 @@ GLOBAL OPTIONS:
    --tests-url URL          Import tests from a specified URL
    --tests-path PATH        Import tests from a specified file-system PATH
    --ignore-std-tests       Ignores all built-in tests (useful with --tests-url)
+   --pass-text GLOB         Give sites a +10 score if body matches GLOB
+   --fail-text GLOB         Give sites a -10 score if body matches GLOB
    --help, -h               show help
    --version, -v            print the version
 

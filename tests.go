@@ -182,6 +182,24 @@ func parseTests(raw []byte, originType, origin string) (tests []*Test, err error
 func genTests() (tests []*Test) {
 	tmp := []*Test{}
 
+	if len(conf.scan.testPassText) != 0 {
+		tmp = append(tmp, &Test{
+			Name:     "--pass-text matched",
+			Weight:   10,
+			RawMatch: []string{fmt.Sprintf("glob:body:*%s*", conf.scan.testPassText)},
+			Origin:   "cli-args",
+		})
+	}
+
+	if len(conf.scan.testFailText) != 0 {
+		tmp = append(tmp, &Test{
+			Name:     "--fail-text matched",
+			Weight:   -10,
+			RawMatch: []string{fmt.Sprintf("glob:body:*%s*", conf.scan.testFailText)},
+			Origin:   "cli-args",
+		})
+	}
+
 	genTestsFromStd(&tmp)
 	genTestsFromPath(&tmp)
 	genTestsFromURL(&tmp)
@@ -195,7 +213,7 @@ func genTests() (tests []*Test) {
 		var matches bool
 
 		// check to see if it matches our blacklist. if so, ignore it
-		if len(conf.scan.ignoreTest) > 0 {
+		if len(conf.scan.ignoreTest) != 0 {
 			for _, match := range blacklist {
 				if utils.Glob(test.Name, match) {
 					matches = true
@@ -211,7 +229,7 @@ func genTests() (tests []*Test) {
 		matches = false
 
 		// check to see if it matches our whitelist. if not, ignore it.
-		if len(conf.scan.matchTest) > 0 {
+		if len(conf.scan.matchTest) != 0 {
 			for _, match := range whitelist {
 				if !utils.Glob(test.Name, match) {
 					matches = true

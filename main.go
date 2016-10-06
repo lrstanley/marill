@@ -110,6 +110,10 @@ type scanConfig struct {
 	testsFromPath  string  // load tests from a specified path
 	ignoreStdTests bool    // don't execute standard builtin tests
 
+	// user input tests
+	testPassText string // glob match against body, will give it a weight of 10
+	testFailText string // glob match against body, will take away a weight of 10
+
 	// output related
 	outTmpl string // the output text/template template for use with printing results
 }
@@ -656,6 +660,16 @@ func main() {
 			Name:        "ignore-std-tests",
 			Usage:       "Ignores all built-in tests (useful with --tests-url)",
 			Destination: &conf.scan.ignoreStdTests,
+		},
+		cli.StringFlag{
+			Name:        "pass-text",
+			Usage:       "Give sites a +10 score if body matches `GLOB`",
+			Destination: &conf.scan.testPassText,
+		},
+		cli.StringFlag{
+			Name:        "fail-text",
+			Usage:       "Give sites a -10 score if body matches `GLOB`",
+			Destination: &conf.scan.testFailText,
 		},
 	}
 
