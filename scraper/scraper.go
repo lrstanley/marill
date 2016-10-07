@@ -47,6 +47,14 @@ type Resource struct {
 	Time     *utils.TimerResult // Time is the time it took to complete the request
 }
 
+func (r *Resource) String() string {
+	if r.Response.URL != nil && r.Time != nil {
+		return fmt.Sprintf("<[Resource] request:%s response:%s ip:%q code:%d time:%dms err:%q>", r.Request.URL, r.Response.URL, r.Request.IP, r.Response.Code, r.Time.Milli, r.Error)
+	}
+
+	return fmt.Sprintf("<[Resource] request:%s ip:%q err:%q>", r.Request.URL, r.Request.IP, r.Error)
+}
+
 // fetchResource fetches a singular resource from a page, returning a *Resource struct.
 // As we don't care much about the body of the resource, that can safely be ignored. We
 // must still close the body object, however.
@@ -91,7 +99,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 
 	rsrc.Time = resp.Time
 
-	c.Log.Printf("fetched %s in %dms with status %d", rsrc.Response.URL.String(), rsrc.Time.Milli, rsrc.Response.Code)
+	c.Log.Printf("fetched %s in %dms with status %d", rsrc.Response.URL, rsrc.Time.Milli, rsrc.Response.Code)
 
 	return
 }
@@ -106,10 +114,10 @@ type Results struct {
 
 func (r *Results) String() string {
 	if r.Resources != nil && r.ResourceTime != nil && r.TotalTime != nil {
-		return fmt.Sprintf("<url(%s) == %d, resources(%d), resourceTime(%dms), totalTime(%dms), err(%s)>", r.Response.URL.String(), r.Response.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
+		return fmt.Sprintf("<[Results] request:%s response:%s ip:%q code:%d resources:%d resource-time:%dms total-time:%dms err:%q>", r.Request.URL, r.Response.URL, r.Request.IP, r.Response.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
 	}
 
-	return fmt.Sprintf("<url(%s), ip(%s), err(%s)>", r.Request.URL, r.Request.IP, r.Error)
+	return fmt.Sprintf("<[Results] request:%s response:%s ip:%q err:%q>", r.Request.URL, r.URL, r.Request.IP, r.Error)
 }
 
 // FetchURL manages the fetching of the main resource, as well as all child resources,

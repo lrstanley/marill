@@ -83,6 +83,15 @@ func crawl() (*Scan, error) {
 	res.crawler.Crawl()
 	out.Println("{lightgreen}scan complete{c}")
 
+	// print out a fairly large amount of debugging information here
+	for i := 0; i < len(res.crawler.Results); i++ {
+		logger.Print(res.crawler.Results[i])
+
+		for r := 0; r < len(res.crawler.Results[i].Resources); r++ {
+			logger.Printf("%s => %s", res.crawler.Results[i].URL, res.crawler.Results[i].Resources[r])
+		}
+	}
+
 	out.Println("{lightblue}starting tests{c}")
 	res.results = checkTests(res.crawler.Results, res.tests)
 
