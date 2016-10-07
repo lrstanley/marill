@@ -51,7 +51,7 @@ func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) e
 
 	if len(via) > 10 {
 		// assume too many redirects
-		return errors.New("too many redirects (3)")
+		return errors.New("too many redirects (10+)")
 	}
 
 	if reIP.MatchString(req.Host) && req.Host != c.Host {
