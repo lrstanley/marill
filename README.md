@@ -90,6 +90,7 @@ GLOBAL OPTIONS:
    --exit-on-fail           Send exit code 1 if any domains fail tests
    --log FILE               Log information to FILE
    --debug-log FILE         Log debugging information to FILE
+   --result-file FILE       Dump result template into FILE (will overwrite!)
    --no-updates             Don't check to see if there are updates
    --urls                   Print the list of urls as if they were going to be scanned
    --tests                  Print the list of tests that are loaded and would be used

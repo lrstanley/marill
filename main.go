@@ -86,6 +86,7 @@ type outputConfig struct {
 	ignoreStd  bool   // ignore regular stdout (human-formatted)
 	log        string // optional log file to dump regular logs
 	debugLog   string // optional log file to dump debugging info
+	resultFile string // filename/path of file which to dump results to
 }
 
 // scanConfig handles how and what is scanned/crawled
@@ -432,8 +433,27 @@ func run() {
 		text = successTemplate
 	}
 
-	FmtColor(&text, conf.out.noColors)
+	var resultFn *os.File
+	var err error
+	if len(conf.out.resultFile) > 0 {
+		// open up the requested resulting file
+		// make sure only to do this in write-only and creation mode
+		resultFn, err = os.OpenFile(conf.out.resultFile, os.O_CREATE|os.O_WRONLY, 0666)
+		if err != nil {
+			out.Fatal(err)
+		}
+	}
+
+	textFmt := text
+
+	// ensure we strip color from regular text (to output to a log file)
+	StripColor(&text)
+
+	// ensure we check to see if they want color with regular output
+	FmtColor(&textFmt, conf.out.noColors)
+
 	tmpl := template.Must(template.New("success").Parse(text + "\n"))
+	tmplFormatted := template.Must(template.New("success").Parse(textFmt + "\n"))
 
 	scan, err := crawl()
 	if err != nil {
@@ -450,10 +470,19 @@ func run() {
 			continue
 		}
 
-		err := tmpl.Execute(os.Stdout, res)
+		err := tmplFormatted.Execute(os.Stdout, res)
 		if err != nil {
 			out.Println("")
 			out.Fatal("executing template:", err)
+		}
+
+		if len(conf.out.resultFile) > 0 {
+			// pipe it to the result file as necessary.
+			err := tmpl.Execute(resultFn, res)
+			if err != nil {
+				out.Println("")
+				out.Fatal("executing template:", err)
+			}
 		}
 	}
 }
@@ -553,6 +582,11 @@ func main() {
 			Name:        "debug-log",
 			Usage:       "Log debugging information to `FILE`",
 			Destination: &conf.out.debugLog,
+		},
+		cli.StringFlag{
+			Name:        "result-file",
+			Usage:       "Dump result template into `FILE` (will overwrite!)",
+			Destination: &conf.out.resultFile,
 		},
 		cli.BoolFlag{
 			Name:        "no-updates",
