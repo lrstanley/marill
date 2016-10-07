@@ -429,8 +429,11 @@ type TestResult struct {
 }
 
 // applyScore applies the score from test to the result, assuming test matched
-func (res *TestResult) applyScore(test *Test) {
-	// TODO: what did it match?
+func (res *TestResult) applyScore(test *Test, data []string) {
+	matched := strings.Join(data, "::")
+	if len(matched) > 70 {
+		matched = matched[0:70] + "..."
+	}
 
 	res.Score += test.Weight
 
@@ -439,7 +442,7 @@ func (res *TestResult) applyScore(test *Test) {
 	}
 	res.MatchedTests[test.Name] += test.Weight
 
-	logger.Printf("applied test %s score against %s to: %.2f (now %.2f)\n", test, res.Domain.Resource.Response.URL.String(), test.Weight, res.Score)
+	logger.Printf("applied test %s score against %s to: %.2f (now %.2f). matched: '%s'\n", test, res.Domain.Resource.Response.URL, test.Weight, res.Score, matched)
 }
 
 var reHTMLTag = regexp.MustCompile(`<[^>]+>`)
@@ -509,22 +512,25 @@ func (res *TestResult) TestMatch(dom *scraper.Results, test *Test) {
 			data := TestCompare(dom, test, test.Match[i].Against)
 
 			if test.Match[i].Compare(data) {
-				res.applyScore(test)
+				res.applyScore(test, data)
 			}
 		}
 	}
 
 	if len(test.MatchAll) > 0 {
+		var alldata []string
 		for i := 0; i < len(test.MatchAll); i++ {
 			data := TestCompare(dom, test, test.MatchAll[i].Against)
 
 			if !test.MatchAll[i].Compare(data) {
 				return // skip right to the end, no sense in continuing
 			}
+
+			alldata = append(alldata, data...)
 		}
 
 		// assume each was matched properly.
-		res.applyScore(test)
+		res.applyScore(test, alldata)
 	}
 }
 
