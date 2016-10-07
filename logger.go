@@ -116,8 +116,8 @@ type Output struct {
 
 var out = Output{}
 
-func initOutWriter(w io.Writer) {
-	out.log = log.New(w, "", 0)
+func initOutWriter(w ...io.Writer) {
+	out.log = log.New(io.MultiWriter(w...), "", 0)
 }
 
 func initOut(w io.Writer) {
@@ -129,7 +129,7 @@ func initOut(w io.Writer) {
 			os.Exit(1)
 		}
 
-		initOutWriter(io.MultiWriter(utils.NewFuncWriter(StripColorBytes, out.logf), w))
+		initOutWriter(w, utils.NewFuncWriter(StripColorBytes, out.logf))
 		return
 	} else if conf.out.log != "" {
 		out.logf, err = os.OpenFile(conf.out.log, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
