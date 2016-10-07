@@ -84,7 +84,8 @@ type outputConfig struct {
 	noBanner   bool   // don't print the app banner
 	printDebug bool   // print debugging information
 	ignoreStd  bool   // ignore regular stdout (human-formatted)
-	logFile    string // optional log file to dump debugging info
+	log        string // optional log file to dump regular logs
+	debugLog   string // optional log file to dump debugging info
 }
 
 // scanConfig handles how and what is scanned/crawled
@@ -488,8 +489,9 @@ func main() {
 	done := make(chan struct{}, 1)
 
 	app.Before = func(c *cli.Context) error {
-		// initOut
+		// initialize the standard output
 		initOut(os.Stdout)
+
 		// initialize the logger
 		initLogger()
 
@@ -505,6 +507,12 @@ func main() {
 	app.After = func(c *cli.Context) error {
 		// close the stats data goroutine when we're complete.
 		done <- struct{}{}
+
+		// close Out log files or anything it has open
+		defer closeOut()
+
+		// as with the debug log
+		defer closeLogger()
 
 		return nil
 	}
@@ -537,9 +545,14 @@ func main() {
 			Destination: &conf.app.exitOnFail,
 		},
 		cli.StringFlag{
-			Name:        "log-file",
-			Usage:       "Log debugging information to `logfile`",
-			Destination: &conf.out.logFile,
+			Name:        "log",
+			Usage:       "Log information to `FILE`",
+			Destination: &conf.out.log,
+		},
+		cli.StringFlag{
+			Name:        "debug-log",
+			Usage:       "Log debugging information to `FILE`",
+			Destination: &conf.out.debugLog,
 		},
 		cli.BoolFlag{
 			Name:        "no-updates",
@@ -691,7 +704,8 @@ func main() {
 			os.Exit(0)
 		} else if conf.app.ui {
 			if err := uiInit(); err != nil {
-				initOut(os.Stdout)
+				closeOut()         // close any open files that Out has open
+				initOut(os.Stdout) //re-initialize with stdout so we can give them the error
 				out.Fatal(err)
 			}
 			os.Exit(0)

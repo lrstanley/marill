@@ -10,8 +10,11 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Liamraystanley/marill/utils"
 )
 
 // just setup a global logger, and change output during runtime...
@@ -26,10 +29,10 @@ func initLoggerWriter(w io.Writer) {
 
 func initLogger() {
 	var err error
-	if conf.out.logFile != "" && conf.out.printDebug {
-		logf, err = os.OpenFile(conf.out.logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if conf.out.debugLog != "" && conf.out.printDebug {
+		logf, err = os.OpenFile(conf.out.debugLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			fmt.Printf("error opening log file: %s, %v", conf.out.logFile, err)
+			fmt.Printf("error opening log file: %s, %v", conf.out.debugLog, err)
 			os.Exit(1)
 		}
 
@@ -37,10 +40,10 @@ func initLogger() {
 		return
 	}
 
-	if conf.out.logFile != "" {
-		logf, err = os.OpenFile(conf.out.logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if conf.out.debugLog != "" {
+		logf, err = os.OpenFile(conf.out.debugLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			fmt.Printf("error opening log file: %s, %v", conf.out.logFile, err)
+			fmt.Printf("error opening log file: %s, %v", conf.out.debugLog, err)
 			os.Exit(1)
 		}
 
@@ -82,6 +85,13 @@ func StripColor(format *string) {
 	}
 }
 
+var reNonASCII = regexp.MustCompile(`\x1b.*?m`)
+
+// StripColorBytes strips all color {patterns} from input (however, in bytes)
+func StripColorBytes(format *[]byte) {
+	*format = reNonASCII.ReplaceAll(*format, []byte("")) //re-apply back to the original format
+}
+
 // FmtColor adds (or removes) color output depending on user input
 func FmtColor(format *string, shouldStrip bool) {
 	if shouldStrip {
@@ -101,12 +111,49 @@ func FmtColor(format *string, shouldStrip bool) {
 type Output struct {
 	log    *log.Logger
 	buffer []string
+	logf   *os.File
 }
 
 var out = Output{}
 
-func initOut(w io.Writer) {
+func initOutWriter(w io.Writer) {
 	out.log = log.New(w, "", 0)
+}
+
+func initOut(w io.Writer) {
+	var err error
+	if conf.out.log != "" && !conf.out.ignoreStd {
+		out.logf, err = os.OpenFile(conf.out.log, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			fmt.Printf("error opening log file: %s, %v", conf.out.log, err)
+			os.Exit(1)
+		}
+
+		initOutWriter(io.MultiWriter(utils.NewFuncWriter(StripColorBytes, out.logf), w))
+		return
+	} else if conf.out.log != "" {
+		out.logf, err = os.OpenFile(conf.out.log, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			fmt.Printf("error opening log file: %s, %v", conf.out.log, err)
+			os.Exit(1)
+		}
+
+		initOutWriter(utils.NewFuncWriter(StripColorBytes, out.logf))
+		return
+	}
+
+	if !conf.out.ignoreStd {
+		initOutWriter(w)
+		return
+	}
+
+	initOutWriter(ioutil.Discard)
+}
+
+func closeOut() {
+	if out.logf != nil {
+		out.logf.Close()
+	}
 }
 
 func (o Output) Write(b []byte) (int, error) {
@@ -119,6 +166,7 @@ func (o Output) Write(b []byte) (int, error) {
 	return len(b), nil
 }
 
+// AddLog adds log line to log stack
 func (o *Output) AddLog(line string) {
 	o.buffer = append(o.buffer, line)
 }

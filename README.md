@@ -88,7 +88,8 @@ GLOBAL OPTIONS:
    --no-color               Do not print with color
    --no-banner              Do not print the colorful banner
    --exit-on-fail           Send exit code 1 if any domains fail tests
-   --log-file logfile       Log debugging information to logfile
+   --log FILE               Log information to FILE
+   --debug-log FILE         Log debugging information to FILE
    --no-updates             Don't check to see if there are updates
    --urls                   Print the list of urls as if they were going to be scanned
    --tests                  Print the list of tests that are loaded and would be used
