@@ -37,3 +37,8 @@ release
 
 # upx failed compile files
 *.upx
+
+
+# text files and logs
+*.txt
+*.log
