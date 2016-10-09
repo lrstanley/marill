@@ -1,0 +1,5 @@
+{
+    "name": "joomla exception page",
+    "weight": -3.0,
+    "match": ["glob:html:*alt=\"Joomla! Logo\"*This site is temporarily unavailable.*Please notify the System Administrator*"]
+}
