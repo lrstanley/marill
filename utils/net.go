@@ -52,6 +52,7 @@ func GetHostname() string {
 // custom)
 func IsDomainURL(host, port string) (*url.URL, error) {
 	var uri *url.URL
+	var err error
 
 	if !strings.HasPrefix(host, "http") {
 		if port != sslPort && port != stdPort && port != "" {
@@ -75,7 +76,7 @@ func IsDomainURL(host, port string) (*url.URL, error) {
 	}
 
 	if strings.HasPrefix(host, "http") {
-		uri, err := url.Parse(host)
+		uri, err = url.Parse(host)
 		if err != nil {
 			return nil, fmt.Errorf("the host/port pair %s (port: %s) is invalid", host, port)
 		}
@@ -102,8 +103,6 @@ func IsDomainURL(host, port string) (*url.URL, error) {
 			scheme = "http://"
 		}
 		host = scheme + host
-
-		var err error
 
 		uri, err = url.Parse(host)
 		if err != nil {
