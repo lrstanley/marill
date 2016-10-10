@@ -7,6 +7,25 @@
 [![Codebeat Badge](https://codebeat.co/badges/4653f785-83ec-4b21-bf0c-b519b20c89d6)](https://codebeat.co/projects/github-com-liamraystanley-marill)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Liamraystanley/marill)](https://goreportcard.com/report/github.com/Liamraystanley/marill)
 
+## Table of Contents
+- [Goal](#goal)
+- [Features](#features)
+- [How does it work?](#how-does-it-work)
+  - [Examples](#examples)
+- [Project Status](#project-status)
+- [Building](#building)
+- [Usage](#usage)
+- [Testing](#testing)
+  - [cPanel servers](#cpanel-server-steps)
+  - [Troubleshooting](#things-to-notetroubleshooting)
+- [Frequently Asked Questions](#faq)
+  - [Will it cause high load?](#faq)
+  - [How long does Marill take to crawl sites (e.g. 1,000 sites on a server)?](#faq)
+  - [Is it better to run Marill from inside of the server, or from a remote location?](#faq)
+  - [Can I give Marill a custom IP address for which to crawl a site (before it goes live and DNS is updated)?](#faq)
+  - [Can I give Marill a custom port for which to crawl a site?](#faq)
+  - [Can Marill crawl sub-domains and sub-folders?](#faq)
+
 ## Goal
 
 Often times during server administration, migrations, and large server changes, things can and will go wrong. Servers are complex systems with many working parts, and with that comes a lot of breakage.
@@ -31,6 +50,8 @@ _Disclaimer: Marill is still in early development, and this list is subject to c
 ## How does it work?
 
 The general idea is that you place Marill on the server you would like to test. Marill by default will then figure out the list of domains that server is hosting. Marill will then begin to act much like a browser, crawling each site (and all resources like images/css/javascript/etc if `--resources` is used). It will then pass each resource it fetches through the list of builtin, or external tests. Each domain is given a starting score of 10, and each test has a pre-defined weight. If the test matches, that score is applied to the main score. If the score falls below the minimum configured score, it is considered failed.
+
+### Examples:
 
 Here are a few examples of tests that are useful:
 
@@ -159,7 +180,7 @@ So, for example, to start off with:
 $ /root/tmp/marill -r
 ```
 
-**Things to note/Troubleshooting:**
+### Things to note/Troubleshooting:
    * Please remove `/root/tmp/marill` once you are done. This utility is still in alpha stages, and as such, there is no update check functionality. Leaving in place may cause someone in the future to utilize an outdated version of the software.
    * If there are any problems or bugs, **PLEASE LET ME KNOW!** You can submit bugs if you have a Github account [here](https://github.com/Liamraystanley/marill/issues/new) or [here if you do not](https://gitreports.com/issue/Liamraystanley/marill)
 
