@@ -201,7 +201,7 @@ $ /root/tmp/marill -r
       * or with a custom ip as well:
 
       ```bash
-      $ marill --domains "https://domain.com/sub/folder/some-page:1.2.3.4"`
+      $ marill --domains "https://domain.com/sub/folder/some-page:1.2.3.4"
       ```
 
 
