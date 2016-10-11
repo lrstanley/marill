@@ -19,6 +19,8 @@ import (
 	"github.com/Liamraystanley/marill/utils"
 )
 
+var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
+
 // ResourceOrigin represents data originally used to create the request
 type ResourceOrigin struct {
 	URL  string // URL is the initial URL received by input
@@ -56,7 +58,52 @@ func (r *Resource) String() string {
 	return fmt.Sprintf("<[Resource] request:%s ip:%q err:%q>", r.Request.URL, r.Request.IP, r.Error)
 }
 
-var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
+// Results -- struct returned by Crawl() to represent the entire crawl process
+type Results struct {
+	Resource                        // Inherit the Resource struct
+	Resources    []*Resource        // Resources containing the needed resources for the given URL
+	ResourceTime *utils.TimerResult // ResourceTime is the time it took to fetch all resources
+	TotalTime    *utils.TimerResult // TotalTime is the time it took to crawl the site
+}
+
+func (r *Results) String() string {
+	if r.Resources != nil && r.ResourceTime != nil && r.TotalTime != nil {
+		return fmt.Sprintf("<[Results] request:%s response:%s ip:%q code:%d resources:%d resource-time:%dms total-time:%dms err:%q>", r.Request.URL, r.Response.URL, r.Request.IP, r.Response.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
+	}
+
+	return fmt.Sprintf("<[Results] request:%s response:%s ip:%q err:%q>", r.Request.URL, r.URL, r.Request.IP, r.Error)
+}
+
+// Domain represents a url we need to fetch, including the items needed to
+// fetch said url. E.g: host, port, ip, scheme, path, etc.
+type Domain struct {
+	URL *url.URL
+	IP  string
+}
+
+func (d *Domain) String() string {
+	return fmt.Sprintf("<[Domain] url:%s ip:%s>", d.URL, d.IP)
+}
+
+// Crawler is the higher level struct which wraps the entire threaded crawl process
+type Crawler struct {
+	Log     *log.Logger       // output log
+	ipmap   map[string]string // domain -> ip map, to easily tell if something is local
+	Results []*Results        // scan results, should only be access when scan is complete
+	Pool    utils.Pool        // thread pool for fetching main resources
+	ResPool utils.Pool        // thread pool for fetching assets
+	Cnf     CrawlerConfig
+}
+
+// CrawlerConfig is the configuration which changes Crawler
+type CrawlerConfig struct {
+	Domains       []*Domain     // list of domains to scan
+	Resources     bool          // if we want to pull the resources for the page too
+	NoRemote      bool          // ignore all resources that match a remote IP
+	AllowInsecure bool          // if SSL errors should be ignored
+	Delay         time.Duration // delay before each resource is crawled
+	Threads       int           // total number of threads to run crawls in
+}
 
 // fetchResource fetches a singular resource from a page, returning a *Resource struct.
 // As we don't care much about the body of the resource, that can safely be ignored. We
@@ -105,22 +152,6 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	c.Log.Printf("fetched %s in %dms with status %d", rsrc.Response.URL, rsrc.Time.Milli, rsrc.Response.Code)
 
 	return
-}
-
-// Results -- struct returned by Crawl() to represent the entire crawl process
-type Results struct {
-	Resource                        // Inherit the Resource struct
-	Resources    []*Resource        // Resources containing the needed resources for the given URL
-	ResourceTime *utils.TimerResult // ResourceTime is the time it took to fetch all resources
-	TotalTime    *utils.TimerResult // TotalTime is the time it took to crawl the site
-}
-
-func (r *Results) String() string {
-	if r.Resources != nil && r.ResourceTime != nil && r.TotalTime != nil {
-		return fmt.Sprintf("<[Results] request:%s response:%s ip:%q code:%d resources:%d resource-time:%dms total-time:%dms err:%q>", r.Request.URL, r.Response.URL, r.Request.IP, r.Response.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
-	}
-
-	return fmt.Sprintf("<[Results] request:%s response:%s ip:%q err:%q>", r.Request.URL, r.URL, r.Request.IP, r.Error)
 }
 
 // Fetch manages the fetching of the main resource, as well as all child resources,
@@ -221,37 +252,6 @@ func (c *Crawler) Fetch(domain *Domain) (res *Results) {
 	return
 }
 
-// Domain represents a url we need to fetch, including the items needed to
-// fetch said url. E.g: host, port, ip, scheme, path, etc.
-type Domain struct {
-	URL *url.URL
-	IP  string
-}
-
-func (d *Domain) String() string {
-	return fmt.Sprintf("<[Domain] url:%s ip:%s>", d.URL, d.IP)
-}
-
-// Crawler is the higher level struct which wraps the entire threaded crawl process
-type Crawler struct {
-	Log     *log.Logger       // output log
-	ipmap   map[string]string // domain -> ip map, to easily tell if something is local
-	Results []*Results        // scan results, should only be access when scan is complete
-	Pool    utils.Pool        // thread pool for fetching main resources
-	ResPool utils.Pool        // thread pool for fetching assets
-	Cnf     CrawlerConfig
-}
-
-// CrawlerConfig is the configuration which changes Crawler
-type CrawlerConfig struct {
-	Domains       []*Domain     // list of domains to scan
-	Resources     bool          // if we want to pull the resources for the page too
-	NoRemote      bool          // ignore all resources that match a remote IP
-	AllowInsecure bool          // if SSL errors should be ignored
-	Delay         time.Duration // delay before each resource is crawled
-	Threads       int           // total number of threads to run crawls in
-}
-
 // Crawl represents the higher level functionality of scraper. Crawl should
 // concurrently request the needed resources for a list of domains, allowing
 // the bypass of DNS lookups where necessary.
@@ -314,17 +314,6 @@ func (c *Crawler) Crawl() {
 	c.Log.Printf("%d successful, %d failed\n", resSuccess, resError)
 
 	return
-}
-
-// GetResults gets the potential results of a given requested url/ip
-func (c *Crawler) GetResults(URL, IP string) *Results {
-	for i := 0; i < len(c.Results); i++ {
-		if c.Results[i].Request.URL == URL && c.Results[i].Request.IP == IP {
-			return c.Results[i]
-		}
-	}
-
-	return nil
 }
 
 // IsRemote checks to see if host is remote, and if it should be scanned

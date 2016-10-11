@@ -11,6 +11,17 @@ import (
 	"testing"
 )
 
+// GetResults gets the potential results of a given requested url/ip
+func GetResults(c *Crawler, URL, IP string) *Results {
+	for i := 0; i < len(c.Results); i++ {
+		if c.Results[i].Request.URL == URL && c.Results[i].Request.IP == IP {
+			return c.Results[i]
+		}
+	}
+
+	return nil
+}
+
 func TestFetch(t *testing.T) {
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
@@ -49,19 +60,19 @@ func TestFetch(t *testing.T) {
 		tmplist = append(tmplist, &Domain{URL: uri, IP: c.inx})
 	}
 
-	crawler := Crawler{Log: logger}
+	crawler := &Crawler{Log: logger}
 	crawler.Cnf.Domains = tmplist
 	crawler.Crawl()
 
 	for _, c := range cases {
-		dom := crawler.GetResults(c.in, c.inx)
+		dom := GetResults(crawler, c.in, c.inx)
 
 		if dom == nil && !c.want {
-			t.Fatalf("crawler.GetResults(%q, %q) == nil, wanted results", c.in, c.inx)
+			t.Fatalf("GetResults(crawler, %q, %q) == nil, wanted results", c.in, c.inx)
 		}
 
 		if dom == nil && c.want {
-			t.Fatalf("crawler.GetResults(%q, %q) == nil, wanted error", c.in, c.inx)
+			t.Fatalf("GetResults(crawler, %q, %q) == nil, wanted error", c.in, c.inx)
 		}
 
 		if dom.Error != nil && !c.want {
