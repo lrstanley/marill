@@ -21,13 +21,6 @@ import (
 
 var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
 
-// ResourceOrigin represents data originally used to create the request
-type ResourceOrigin struct {
-	URL  string // URL is the initial URL received by input
-	IP   string // IP is the initial IP address received by input
-	Host string // Host is the original requested hostname for the resource
-}
-
 // Response represents the data for the HTTP-based request, closely matching
 // http.Response
 type Response struct {
@@ -44,7 +37,7 @@ type Response struct {
 // only be of type css, js, jpg, png, etc (static resources).
 type Resource struct {
 	URL      string             // the url -- this should exist regardless of failure
-	Request  ResourceOrigin     // request represents what we were provided before the request
+	Request  *Domain            // request represents what we were provided before the request
 	Response Response           // Response represents the end result/data/status/etc.
 	Error    error              // Error represents an error of a completely failed request
 	Time     *utils.TimerResult // Time is the time it took to complete the request
@@ -112,9 +105,9 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	defer c.ResPool.Free()
 	var err error
 
-	rsrc.URL = rsrc.Request.URL
+	rsrc.URL = rsrc.Request.URL.String()
 
-	resp, err := c.Get(rsrc.Request.URL)
+	resp, err := c.Get(rsrc.Request.URL.String())
 	if err != nil {
 		rsrc.Error = err
 		return
@@ -122,12 +115,6 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 
 	if resp.Body != nil {
 		resp.Body.Close() // ensure the body stream is closed
-	}
-
-	rsrc.Request.Host, err = utils.GetHost(rsrc.Request.URL)
-	if err != nil {
-		rsrc.Error = err
-		return
 	}
 
 	rsrc.Response = Response{
@@ -138,42 +125,35 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 		TLS:           resp.TLS,
 	}
 
-	if rsrc.Response.URL.Host != rsrc.Request.Host {
+	if rsrc.Response.URL.Host != rsrc.Request.URL.Host {
 		rsrc.Response.Remote = true
 	}
 
 	rsrc.URL = rsrc.Response.URL.String()
-	if rsrc.URL != rsrc.Request.URL {
-		rsrc.URL = fmt.Sprintf("%s (result: %s)", rsrc.Request.URL, rsrc.URL)
+	if rsrc.URL != rsrc.Request.URL.String() {
+		rsrc.URL = fmt.Sprintf("%s (-> %s)", rsrc.Request.URL, rsrc.URL)
 	}
 
 	rsrc.Time = resp.Time
 
 	c.Log.Printf("fetched %s in %dms with status %d", rsrc.Response.URL, rsrc.Time.Milli, rsrc.Response.Code)
-
-	return
 }
 
 // Fetch manages the fetching of the main resource, as well as all child resources,
 // providing a FetchResult struct containing the entire crawl data needed
-func (c *Crawler) Fetch(domain *Domain) (res *FetchResult) {
+func (c *Crawler) Fetch(res *FetchResult) {
 	var err error
 
-	res = &FetchResult{}
 	crawlTimer := utils.NewTimer()
 	defer func() {
 		crawlTimer.End()
 		res.TotalTime = crawlTimer.Result
 	}()
 
-	res.URL = domain.URL.String()
-	res.Request.URL = domain.URL.String()
-	res.Request.Host = domain.URL.Host
-
-	res.Request.IP = domain.IP
+	res.URL = res.Request.URL.String()
 
 	// actually fetch the request
-	resp, err := c.Get(domain.URL.String())
+	resp, err := c.Get(res.Request.URL.String())
 	if err != nil {
 		res.Error = err
 		return
@@ -191,13 +171,13 @@ func (c *Crawler) Fetch(domain *Domain) (res *FetchResult) {
 		TLS:           resp.TLS,
 	}
 
-	if res.Response.URL.Host != res.Request.Host {
+	if res.Response.URL.Host != res.Request.URL.Host {
 		res.Response.Remote = true
 	}
 
 	res.URL = res.Response.URL.String()
-	if res.URL != res.Request.URL {
-		res.URL = fmt.Sprintf("%s (result: %s)", res.Request.URL, res.URL)
+	if res.URL != res.Request.URL.String() {
+		res.URL = fmt.Sprintf("%s (-> %s)", res.Request.URL, res.URL)
 	}
 
 	res.Time = resp.Time
@@ -211,8 +191,6 @@ func (c *Crawler) Fetch(domain *Domain) (res *FetchResult) {
 		res.Response.Body = string(bbytes[:])
 	}
 
-	urls := getSrc(b, resp.Request)
-
 	c.Log.Printf("fetched %s in %dms with status %d", res.Response.URL.String(), res.Time.Milli, res.Response.Code)
 
 	resourceTime := utils.NewTimer()
@@ -223,26 +201,32 @@ func (c *Crawler) Fetch(domain *Domain) (res *FetchResult) {
 	}()
 
 	if c.Cnf.Assets {
+		urls := []*url.URL{}
+
+		for _, uri := range getSrc(b, resp.Request) {
+			parsedUri, err := url.Parse(uri)
+			if err != nil {
+				c.Log.Printf("unable to parse asset uri [%s], resource: %s: %s", uri, res.Request, err)
+				continue
+			}
+
+			urls = append(urls, parsedUri)
+		}
+
 		c.ResPool = utils.NewPool(4)
 
 		for i := range urls {
 			if c.Cnf.NoRemote {
-				host, err := utils.GetHost(urls[i])
-				if err != nil {
-					c.Log.Printf("unable to get host of %s, skipping", urls[i])
-					continue
-				}
-
-				if c.IsRemote(host) {
-					c.Log.Printf("host %s (url: %s) resolves to a unknown remote ip, skipping", host, urls[i])
+				if c.IsRemote(urls[i].Host) {
+					c.Log.Printf("host %s (url: %s) resolves to a unknown remote ip, skipping", urls[i].Host, urls[i])
 					continue
 				}
 			}
 
 			c.ResPool.Slot()
 
-			rsrc := &Resource{Request: ResourceOrigin{URL: urls[i]}}
-			res.Assets = append(res.Assets, rsrc)
+			asset := &Resource{Request: &Domain{URL: urls[i]}}
+			res.Assets = append(res.Assets, asset)
 			go c.fetchResource(res.Assets[i])
 		}
 
@@ -284,7 +268,10 @@ func (c *Crawler) Crawl() {
 				time.Sleep(c.Cnf.Delay)
 			}
 
-			result := c.Fetch(domain)
+			result := &FetchResult{}
+			result.Request = domain
+
+			c.Fetch(result)
 			c.Results = append(c.Results, result)
 
 			if result.Error != nil {

@@ -14,7 +14,7 @@ import (
 // GetResults gets the potential results of a given requested url/ip
 func GetResults(c *Crawler, URL, IP string) *FetchResult {
 	for i := 0; i < len(c.Results); i++ {
-		if c.Results[i].Request.URL == URL && c.Results[i].Request.IP == IP {
+		if c.Results[i].Request.URL.String() == URL && c.Results[i].Request.IP == IP {
 			return c.Results[i]
 		}
 	}
