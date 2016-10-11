@@ -50,7 +50,6 @@ const motd = `
 {magenta}  / {lightmagenta}o{magenta}  \    {lightblue}|: \.        |  //  __'  \   //      /  |.  |  \  |___  \  |___
 {magenta} / {lightmagenta}O{magenta}  {lightmagenta}o{magenta} \   {lightblue}|.  \    /:  | /   /  \\  \ |:  __   \  /\  |\( \_|:  \( \_|:  \
 {magenta}[________]  {lightblue}|___|\__/|___|(___/    \___)|__|  \___)(__\_|_)\_______)\_______)
-
 `
 
 var successTemplate = `
@@ -316,6 +315,8 @@ func printBanner() {
 	} else {
 		out.Println("{bold}{blue}Running marill (unknown version){c}")
 	}
+
+	out.Println("{black}{bold}\x1b[43m!! [WARNING] !!{c} {bold}{yellow}THIS IS AN ALPHA VERSION OF MARILL. NOTIFY IF ANYTHING IS BROKEN.{c}")
 }
 
 func updateCheck() {
