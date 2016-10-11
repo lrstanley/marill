@@ -75,22 +75,22 @@ func (m *TestMatch) String() string {
 }
 
 // Compare matches data against TestMatch.Query
-func (m *TestMatch) Compare(data []string) bool {
+func (m *TestMatch) Compare(data []string) (matched int) {
 	if m.Type == typeGlob {
 		for i := 0; i < len(data); i++ {
 			if utils.Glob(data[i], m.Query) {
-				return true
+				matched++
 			}
 		}
 	} else {
 		for i := 0; i < len(data); i++ {
 			if m.Regex.MatchString(data[i]) {
-				return true
+				matched++
 			}
 		}
 	}
 
-	return false
+	return matched
 }
 
 // generateMatches generates computational matches from RawMatch and RawMatchAll
@@ -426,21 +426,28 @@ type TestResult struct {
 	Domain       *scraper.Results   // Origin domain/resource data
 	Score        float64            // resulting score, skewed off defaultScore
 	MatchedTests map[string]float64 // map of negative affecting tests that were applied
+	TestCount    map[string]int     // map of times the negative affecting tests matched
 }
 
 // applyScore applies the score from test to the result, assuming test matched
-func (res *TestResult) applyScore(test *Test, data []string) {
+func (res *TestResult) applyScore(test *Test, data []string, multiplier int) {
 	matched := strings.Join(data, "::")
 	if len(matched) > 70 {
 		matched = matched[0:70] + "..."
 	}
 
-	res.Score += test.Weight
+	res.Score += float64(multiplier) * test.Weight
 
 	if _, ok := res.MatchedTests[test.Name]; !ok {
 		res.MatchedTests[test.Name] = 0.0
 	}
-	res.MatchedTests[test.Name] += test.Weight
+	res.MatchedTests[test.Name] += float64(multiplier) * test.Weight
+
+	// also raise the counter
+	if _, ok := res.TestCount[test.Name]; !ok {
+		res.TestCount[test.Name] = 0.0
+	}
+	res.TestCount[test.Name] += multiplier
 
 	logger.Printf("applied test %s score against %s to: %.2f (now %.2f). matched: '%s'\n", test, res.Domain.Resource.Response.URL, test.Weight, res.Score, matched)
 }
@@ -511,8 +518,8 @@ func (res *TestResult) TestMatch(dom *scraper.Results, test *Test) {
 		for i := 0; i < len(test.Match); i++ {
 			data := TestCompare(dom, test, test.Match[i].Against)
 
-			if test.Match[i].Compare(data) {
-				res.applyScore(test, data)
+			if matched := test.Match[i].Compare(data); matched > 0 {
+				res.applyScore(test, data, matched)
 			}
 		}
 	}
@@ -522,7 +529,7 @@ func (res *TestResult) TestMatch(dom *scraper.Results, test *Test) {
 		for i := 0; i < len(test.MatchAll); i++ {
 			data := TestCompare(dom, test, test.MatchAll[i].Against)
 
-			if !test.MatchAll[i].Compare(data) {
+			if matched := test.MatchAll[i].Compare(data); matched == 0 {
 				return // skip right to the end, no sense in continuing
 			}
 
@@ -530,13 +537,18 @@ func (res *TestResult) TestMatch(dom *scraper.Results, test *Test) {
 		}
 
 		// assume each was matched properly.
-		res.applyScore(test, alldata)
+		res.applyScore(test, alldata, 1)
 	}
 }
 
 // checkDomain loops through all tests and guages what test score the domain gets
 func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
-	res := &TestResult{Domain: dom, Score: defaultScore, MatchedTests: make(map[string]float64)}
+	res := &TestResult{
+		Domain:       dom,
+		Score:        defaultScore,
+		MatchedTests: make(map[string]float64),
+		TestCount:    make(map[string]int),
+	}
 
 	if dom.Error != nil {
 		res.Score = 0
