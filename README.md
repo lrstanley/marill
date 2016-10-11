@@ -150,19 +150,13 @@ So, you want to help out, test, see how things work, and find possible bugs? Fol
 
 ### cPanel server steps:
 
-Head to [this page](https://release.liam.sh/marill/?sort=time&order=desc) and download the top item in the list. For example (replacing **YOUR-VERSION** with the latest download link):
+Head to [this page](https://release.liam.sh/marill/?sort=time&order=desc) and download the top item in the list. For example, using the latest version:
 
 ```bash
-$ cd /root/tmp && wget https://release.liam.sh/marill/marill_YOUR-VERSION.tar.gz
+$ wget -q -O- https://release.liam.sh/marill/latest.tar.gz | tar -zx -C /root/tmp/
 ```
 
-The archive only has a single binary in it. Extract it so we can get to work:
-
-```bash
-$ tar -xzvf marill_linux_amd64_YOUR-VERSION.tar.gz
-```
-
-You should now see a file named **marill** in the same directory. Feel free to look over the current flags and arguments:
+You should now see a file named **marill** in `/root/tmp/`. Feel free to look over the current flags and arguments:
 
 ```bash
 $ /root/tmp/marill --help
