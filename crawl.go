@@ -33,7 +33,7 @@ func crawl() (*Scan, error) {
 		logger.Println("manually supplied url list")
 		res.crawler.Cnf.Domains, err = parseManualList()
 		if err != nil {
-			return nil, NewErr{Code: ErrDomainFlag, deepErr: err}
+			return nil, NewErr{Code: ErrDomains, deepErr: err}
 		}
 	} else {
 		logger.Println("checking for running webservers")

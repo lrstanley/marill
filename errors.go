@@ -57,8 +57,8 @@ const (
 
 	// cli parse errors
 	ErrInstantiateApp
-	ErrBadDomainFlag
-	ErrDomainFlag
+	ErrBadDomains
+	ErrDomains
 
 	// process fetching
 	ErrProcList
@@ -79,8 +79,8 @@ var errMsg = map[int]string{
 
 	// cli parse errors
 	ErrInstantiateApp: "unable to instantiate app: %s",
-	ErrBadDomainFlag:  "invalid domain manually provided: %s",
-	ErrDomainFlag:     "unable to parse domain list: %s",
+	ErrBadDomains:     "invalid domain manually provided: %s",
+	ErrDomains:        "unable to parse domain list: %s",
 
 	// process fetching
 	ErrProcList: "unable to get process list: %s",

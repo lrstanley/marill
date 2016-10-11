@@ -211,18 +211,18 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 
 		results := reManualDomain.FindStringSubmatch(item)
 		if len(results) != 4 {
-			return nil, NewErr{Code: ErrBadDomainFlag, value: item}
+			return nil, NewErr{Code: ErrBadDomains, value: item}
 		}
 
 		domain, ip, port := results[1], results[2], results[3]
 
 		if domain == "" {
-			return nil, NewErr{Code: ErrBadDomainFlag, value: item}
+			return nil, NewErr{Code: ErrBadDomains, value: item}
 		}
 
 		uri, err := utils.IsDomainURL(domain, port)
 		if err != nil {
-			return nil, NewErr{Code: ErrBadDomainFlag, deepErr: err}
+			return nil, NewErr{Code: ErrBadDomains, deepErr: err}
 		}
 
 		domlist = append(domlist, &scraper.Domain{
@@ -241,7 +241,7 @@ func printUrls() {
 	if conf.scan.manualList != "" {
 		domains, err := parseManualList()
 		if err != nil {
-			out.Fatal(NewErr{Code: ErrDomainFlag, deepErr: err})
+			out.Fatal(NewErr{Code: ErrDomains, deepErr: err})
 		}
 
 		for _, domain := range domains {
@@ -730,6 +730,10 @@ func main() {
 	app.Compiled = time.Now()
 	app.Usage = "Automated website testing utility"
 	app.Action = func(c *cli.Context) error {
+		if len(conf.scan.manualList) == 0 {
+			conf.scan.manualList = strings.Join(c.Args(), " ")
+		}
+
 		if conf.app.printUrls {
 			printUrls()
 			os.Exit(0)
