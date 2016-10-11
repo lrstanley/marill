@@ -88,8 +88,8 @@ func crawl() (*Scan, error) {
 	for i := 0; i < len(res.crawler.Results); i++ {
 		logger.Print(res.crawler.Results[i])
 
-		for r := 0; r < len(res.crawler.Results[i].Resources); r++ {
-			logger.Printf("%s => %s", res.crawler.Results[i].URL, res.crawler.Results[i].Resources[r])
+		for r := 0; r < len(res.crawler.Results[i].Assets); r++ {
+			logger.Printf("%s => %s", res.crawler.Results[i].URL, res.crawler.Results[i].Assets[r])
 		}
 	}
 

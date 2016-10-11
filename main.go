@@ -62,17 +62,17 @@ var successTemplate = `
 {{- .Score | printf "%5.1f/10.0" }}{c}]
 
 {{- /* status code output */}}
-{{- if .Domain.Resource }} [code:{yellow}{{ if .Domain.Resource.Response.Code }}{{ .Domain.Resource.Response.Code }}{{ else }}---{{ end }}{c}]
+{{- if .Domain.Resource }} [code:{yellow}{{ if .Domain.Response.Code }}{{ .Domain.Response.Code }}{{ else }}---{{ end }}{c}]
 {{- else }} [code:{red}---{c}]{{- end }}
 
 {{- /* IP address */}}
-{{- if .Domain.Request.IP }} [{lightmagenta}{{ printf "%15s" .Domain.Request.IP }}{c}]{{- end }}
+{{- if .Domain.Request.IP }} [{lightmagenta}{{ printf "%s" .Domain.Request.IP }}{c}]{{- end }}
 
-{{- /* number of resources */}}
-{{- if .Domain.Resources }} [{cyan}{{ printf "%3d" (len .Domain.Resources) }} resources{c}]{{- end }}
+{{- /* number of assets */}}
+{{- if .Domain.Assets }} [{cyan}{{ printf "%d" (len .Domain.Assets) }} assets{c}]{{- end }}
 
 {{- /* response time for main resource */}}
-{{- if not .Domain.Error }} [{green}{{ .Domain.Resource.Time.Milli }}ms{c}]{{- end }}
+{{- if not .Domain.Error }} [{green}{{ .Domain.Time.Milli }}ms{c}]{{- end }}
 
 {{- " "}}{{- .Domain.URL }}
 {{- if .Domain.Error }} ({red}errors: {{ .Domain.Error }}{c}){{- end }}`

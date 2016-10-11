@@ -61,14 +61,14 @@ func (r *Resource) String() string {
 // Results -- struct returned by Crawl() to represent the entire crawl process
 type Results struct {
 	Resource                        // Inherit the Resource struct
-	Resources    []*Resource        // Resources containing the needed resources for the given URL
+	Assets       []*Resource        // Assets containing the needed resources for the given URL
 	ResourceTime *utils.TimerResult // ResourceTime is the time it took to fetch all resources
 	TotalTime    *utils.TimerResult // TotalTime is the time it took to crawl the site
 }
 
 func (r *Results) String() string {
-	if r.Resources != nil && r.ResourceTime != nil && r.TotalTime != nil {
-		return fmt.Sprintf("<[Results] request:%s response:%s ip:%q code:%d resources:%d resource-time:%dms total-time:%dms err:%q>", r.Request.URL, r.Response.URL, r.Request.IP, r.Response.Code, len(r.Resources), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
+	if r.Assets != nil && r.ResourceTime != nil && r.TotalTime != nil {
+		return fmt.Sprintf("<[Results] request:%s response:%s ip:%q code:%d resources:%d resource-time:%dms total-time:%dms err:%q>", r.Request.URL, r.Response.URL, r.Request.IP, r.Response.Code, len(r.Assets), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
 	}
 
 	return fmt.Sprintf("<[Results] request:%s response:%s ip:%q err:%q>", r.Request.URL, r.URL, r.Request.IP, r.Error)
@@ -242,8 +242,8 @@ func (c *Crawler) Fetch(domain *Domain) (res *Results) {
 			c.ResPool.Slot()
 
 			rsrc := &Resource{Request: ResourceOrigin{URL: urls[i]}}
-			res.Resources = append(res.Resources, rsrc)
-			go c.fetchResource(res.Resources[i])
+			res.Assets = append(res.Assets, rsrc)
+			go c.fetchResource(res.Assets[i])
 		}
 
 		c.ResPool.Wait()

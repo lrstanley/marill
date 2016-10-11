@@ -453,7 +453,7 @@ func (res *TestResult) applyScore(test *Test, data []string, multiplier int) {
 	}
 	res.TestCount[test.Name] += multiplier
 
-	logger.Printf("applied test %s score against %s to: %.2f (now %.2f). matched: '%s'\n", test, res.Domain.Resource.Response.URL, test.Weight, res.Score, matched)
+	logger.Printf("applied test %s score against %s to: %.2f (now %.2f). matched: '%s'\n", test, res.Domain.Response.URL, test.Weight, res.Score, matched)
 }
 
 var reHTMLTag = regexp.MustCompile(`<[^>]+>`)
@@ -466,26 +466,26 @@ func TestCompare(dom *scraper.Results, test *Test, mtype string) (out []string) 
 	case "url":
 		out = append(out, dom.Response.URL.String())
 	case "asset_url":
-		for i := 0; i < len(dom.Resources); i++ {
-			out = append(out, dom.Resources[i].Response.URL.String())
+		for i := 0; i < len(dom.Assets); i++ {
+			out = append(out, dom.Assets[i].Response.URL.String())
 		}
 	case "host":
 		out = append(out, dom.Response.URL.Host)
 	case "asset_host":
-		for i := 0; i < len(dom.Resources); i++ {
-			out = append(out, dom.Resources[i].Response.URL.Host)
+		for i := 0; i < len(dom.Assets); i++ {
+			out = append(out, dom.Assets[i].Response.URL.Host)
 		}
 	case "scheme":
 		out = append(out, dom.Response.URL.Scheme)
 	case "asset_scheme":
-		for i := 0; i < len(dom.Resources); i++ {
-			out = append(out, dom.Resources[i].Response.URL.Scheme)
+		for i := 0; i < len(dom.Assets); i++ {
+			out = append(out, dom.Assets[i].Response.URL.Scheme)
 		}
 	case "path":
 		out = append(out, dom.Response.URL.Path)
 	case "asset_path":
-		for i := 0; i < len(dom.Resources); i++ {
-			out = append(out, dom.Resources[i].Response.URL.Path)
+		for i := 0; i < len(dom.Assets); i++ {
+			out = append(out, dom.Assets[i].Response.URL.Path)
 		}
 	case "body":
 		out = append(out, bodyNoHTML)
@@ -494,8 +494,8 @@ func TestCompare(dom *scraper.Results, test *Test, mtype string) (out []string) 
 	case "code":
 		out = append(out, strconv.Itoa(dom.Response.Code))
 	case "asset_code":
-		for i := 0; i < len(dom.Resources); i++ {
-			out = append(out, strconv.Itoa(dom.Resources[i].Response.Code))
+		for i := 0; i < len(dom.Assets); i++ {
+			out = append(out, strconv.Itoa(dom.Assets[i].Response.Code))
 		}
 	case "headers":
 		for name, values := range dom.Response.Headers {
@@ -504,8 +504,8 @@ func TestCompare(dom *scraper.Results, test *Test, mtype string) (out []string) 
 			out = append(out, hv)
 		}
 	case "asset_headers":
-		for i := 0; i < len(dom.Resources); i++ {
-			for name, values := range dom.Resources[i].Response.Headers {
+		for i := 0; i < len(dom.Assets); i++ {
+			for name, values := range dom.Assets[i].Response.Headers {
 				hv := fmt.Sprintf("%s: %s", name, strings.Join(values, " "))
 
 				out = append(out, hv)
