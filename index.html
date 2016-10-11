@@ -30,6 +30,44 @@
 <a href="https://goreportcard.com/report/github.com/Liamraystanley/marill"><img src="https://goreportcard.com/badge/github.com/Liamraystanley/marill" alt="Go Report Card"></a></p>
 
 <h2>
+<a id="table-of-contents" class="anchor" href="#table-of-contents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table of Contents</h2>
+
+<ul>
+<li><a href="#goal">Goal</a></li>
+<li><a href="#features">Features</a></li>
+<li>
+<a href="#how-does-it-work">How does it work?</a>
+
+<ul>
+<li><a href="#examples">Examples</a></li>
+</ul>
+</li>
+<li><a href="#project-status">Project Status</a></li>
+<li><a href="#building">Building</a></li>
+<li><a href="#usage">Usage</a></li>
+<li>
+<a href="#testing">Testing</a>
+
+<ul>
+<li><a href="#cpanel-server-steps">cPanel servers</a></li>
+<li><a href="#things-to-notetroubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+<li>
+<a href="#faq">Frequently Asked Questions</a>
+
+<ul>
+<li><a href="#faq">Will it cause high load?</a></li>
+<li><a href="#faq">How long does Marill take to crawl sites (e.g. 1,000 sites on a server)?</a></li>
+<li><a href="#faq">Is it better to run Marill from inside of the server, or from a remote location?</a></li>
+<li><a href="#faq">Can I give Marill a custom IP address for which to crawl a site (before it goes live and DNS is updated)?</a></li>
+<li><a href="#faq">Can I give Marill a custom port for which to crawl a site?</a></li>
+<li><a href="#faq">Can Marill crawl sub-domains and sub-folders?</a></li>
+</ul>
+</li>
+</ul>
+
+<h2>
 <a id="goal" class="anchor" href="#goal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Goal</h2>
 
 <p>Often times during server administration, migrations, and large server changes, things can and will go wrong. Servers are complex systems with many working parts, and with that comes a lot of breakage.</p>
@@ -60,7 +98,10 @@
 <h2>
 <a id="how-does-it-work" class="anchor" href="#how-does-it-work" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How does it work?</h2>
 
-<p>The general idea is that you place Marill on the server you would like to test. Marill by default will then figure out the list of domains that server is hosting. Marill will then begin to act much like a browser, crawling each site (and all resources like images/css/javascript/etc if <code>--resources</code> is used). It will then pass each resource it fetches through the list of builtin, or external tests. Each domain is given a starting score of 10, and each test has a pre-defined weight. If the test matches, that score is applied to the main score. If the score falls below the minimum configured score, it is considered failed.</p>
+<p>The general idea is that you place Marill on the server you would like to test. Marill by default will then figure out the list of domains that server is hosting. Marill will then begin to act much like a browser, crawling each site (and all resources like images/css/javascript/etc if <code>--assets</code> is used). It will then pass each resource it fetches through the list of builtin, or external tests. Each domain is given a starting score of 10, and each test has a pre-defined weight. If the test matches, that score is applied to the main score. If the score falls below the minimum configured score, it is considered failed.</p>
+
+<h3>
+<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples:</h3>
 
 <p>Here are a few examples of tests that are useful:</p>
 
@@ -137,12 +178,13 @@ GLOBAL OPTIONS:
    --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
    --min-score value        Minimium score for domain (default: 8)
-   -r, --resources          Check all resources/assets (css/js/images) for each page
+   -a, --assets             Crawl assets (css/js/images) for each page
    --ignore-success         Only print results if they are considered failed
+   --allow-insecure         Ignore SSL certificate errors
    --tmpl value             Golang text/template string template for use with formatting scan output
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
-   --ignore-remote          Ignore all resources that resolve to a remote IP (use with --resources)
+   --ignore-remote          Ignore all resources that resolve to a remote IP (use with --assets)
    --domain-ignore GLOB     Ignore URLS during domain search that match GLOB, pipe separated list
    --domain-match GLOB      Allow URLS during domain search that match GLOB, pipe separated list
    --test-ignore GLOB       Ignore tests that match GLOB, pipe separated list
@@ -184,7 +226,7 @@ COPYRIGHT:
 
 <ul>
 <li>
-<code>-r</code> or <code>--resources</code>: This will fetch all of the resources (css/javascript/images, etc)</li>
+<code>-a</code> or <code>--assets</code>: This will fetch all of the assets for the page (css/javascript/images, etc)</li>
 <li>
 <code>-d</code> or <code>--debug</code>: This will enable debugging. It doesn't provide a whole lot more information, but can help if something isn't working.</li>
 <li>
@@ -198,9 +240,10 @@ COPYRIGHT:
 
 <p>So, for example, to start off with:</p>
 
-<div class="highlight highlight-source-shell"><pre>$ /root/tmp/marill -r</pre></div>
+<div class="highlight highlight-source-shell"><pre>$ /root/tmp/marill -a</pre></div>
 
-<p><strong>Things to note/Troubleshooting:</strong></p>
+<h3>
+<a id="things-to-notetroubleshooting" class="anchor" href="#things-to-notetroubleshooting" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Things to note/Troubleshooting:</h3>
 
 <ul>
 <li>Please remove <code>/root/tmp/marill</code> once you are done. This utility is still in alpha stages, and as such, there is no update check functionality. Leaving in place may cause someone in the future to utilize an outdated version of the software.</li>
@@ -223,8 +266,8 @@ COPYRIGHT:
 <p><strong>How long does Marill take to crawl sites (e.g. 1,000 sites on a server)?</strong></p>
 
 <ul>
-<li>Given a cPanel server, is must be noted that along with the input (default http) version of a domain, the https version of the site will be scanned as well if cPanel has a certificate for it. Furthermore, it will also attempt to crawl <a href="http://www.domain.com">www.domain.com</a>, not just domain.com. As for other webservers, it all depends on the input. <strong>Please note</strong> that using <code>--resources</code> (<code>-r</code>), that Marill <em>will take longer</em>. This is because this fetches all resources for each site being crawled. If you would like Marill to crawl faster, don't use <code>-r</code>.</li>
-<li>Generally speaking, crawling without <code>-r</code> is fairly fast.</li>
+<li>Given a cPanel server, is must be noted that along with the input (default http) version of a domain, the https version of the site will be scanned as well if cPanel has a certificate for it. Furthermore, it will also attempt to crawl <a href="http://www.domain.com">www.domain.com</a>, not just domain.com. As for other webservers, it all depends on the input. <strong>Please note</strong> that using <code>--assets</code> (<code>-a</code>), that Marill <em>will take longer</em>. This is because this fetches all resources for each site being crawled. If you would like Marill to crawl faster, don't use <code>-a</code>.</li>
+<li>Generally speaking, crawling without <code>-a</code> is fairly fast.</li>
 </ul>
 </li>
 <li>
