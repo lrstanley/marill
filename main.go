@@ -92,7 +92,7 @@ type outputConfig struct {
 type scanConfig struct {
 	threads       int           // number of threads to run the scanner in
 	manualList    string        // list of manually supplied domains
-	resources     bool          // pull all resources for the page, and their assets
+	assets        bool          // pull all assets for the page
 	delay         time.Duration // delay for the stasrt of each resource crawl
 	ignoreSuccess bool          // ignore urls/domains that were successfully fetched
 	allowInsecure bool          // if SSL errors should be ignored
@@ -642,9 +642,9 @@ func main() {
 			Destination: &conf.scan.minScore,
 		},
 		cli.BoolFlag{
-			Name:        "r, resources",
-			Usage:       "Check all resources/assets (css/js/images) for each page",
-			Destination: &conf.scan.resources,
+			Name:        "a, assets",
+			Usage:       "Crawl assets (css/js/images) for each page",
+			Destination: &conf.scan.assets,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-success",
@@ -675,7 +675,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:        "ignore-remote",
-			Usage:       "Ignore all resources that resolve to a remote IP (use with --resources)",
+			Usage:       "Ignore all resources that resolve to a remote IP (use with --assets)",
 			Destination: &conf.scan.ignoreRemote,
 		},
 		cli.StringFlag{

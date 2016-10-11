@@ -98,7 +98,7 @@ type Crawler struct {
 // CrawlerConfig is the configuration which changes Crawler
 type CrawlerConfig struct {
 	Domains       []*Domain     // list of domains to scan
-	Resources     bool          // if we want to pull the resources for the page too
+	Assets        bool          // if we want to pull the assets for the page too
 	NoRemote      bool          // ignore all resources that match a remote IP
 	AllowInsecure bool          // if SSL errors should be ignored
 	Delay         time.Duration // delay before each resource is crawled
@@ -222,7 +222,7 @@ func (c *Crawler) Fetch(domain *Domain) (res *Results) {
 		res.ResourceTime = resourceTime.Result
 	}()
 
-	if c.Cnf.Resources {
+	if c.Cnf.Assets {
 		c.ResPool = utils.NewPool(4)
 
 		for i := range urls {

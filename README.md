@@ -49,7 +49,7 @@ _Disclaimer: Marill is still in early development, and this list is subject to c
 
 ## How does it work?
 
-The general idea is that you place Marill on the server you would like to test. Marill by default will then figure out the list of domains that server is hosting. Marill will then begin to act much like a browser, crawling each site (and all resources like images/css/javascript/etc if `--resources` is used). It will then pass each resource it fetches through the list of builtin, or external tests. Each domain is given a starting score of 10, and each test has a pre-defined weight. If the test matches, that score is applied to the main score. If the score falls below the minimum configured score, it is considered failed.
+The general idea is that you place Marill on the server you would like to test. Marill by default will then figure out the list of domains that server is hosting. Marill will then begin to act much like a browser, crawling each site (and all resources like images/css/javascript/etc if `--assets` is used). It will then pass each resource it fetches through the list of builtin, or external tests. Each domain is given a starting score of 10, and each test has a pre-defined weight. If the test matches, that score is applied to the main score. If the score falls below the minimum configured score, it is considered failed.
 
 ### Examples:
 
@@ -120,12 +120,13 @@ GLOBAL OPTIONS:
    --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
    --min-score value        Minimium score for domain (default: 8)
-   -r, --resources          Check all resources/assets (css/js/images) for each page
+   -a, --assets             Crawl assets (css/js/images) for each page
    --ignore-success         Only print results if they are considered failed
+   --allow-insecure         Ignore SSL certificate errors
    --tmpl value             Golang text/template string template for use with formatting scan output
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
-   --ignore-remote          Ignore all resources that resolve to a remote IP (use with --resources)
+   --ignore-remote          Ignore all resources that resolve to a remote IP (use with --assets)
    --domain-ignore GLOB     Ignore URLS during domain search that match GLOB, pipe separated list
    --domain-match GLOB      Allow URLS during domain search that match GLOB, pipe separated list
    --test-ignore GLOB       Ignore tests that match GLOB, pipe separated list
@@ -168,7 +169,7 @@ $ /root/tmp/marill --help
 ```
 
 The main arguments that may be useful are:
-   * `-r` or `--resources`: This will fetch all of the resources (css/javascript/images, etc)
+   * `-a` or `--assets`: This will fetch all of the assets for the page (css/javascript/images, etc)
    * `-d` or `--debug`: This will enable debugging. It doesn't provide a whole lot more information, but can help if something isn't working.
    * `--delay`: Utilize this if the load caused by the crawling is too high. E.g. `--delay 10s`.
    * `--threads`: This is the amount of parallel scans will run at a single time. By default it will be 1/2 the amount of cores on the server.
@@ -177,7 +178,7 @@ The main arguments that may be useful are:
 So, for example, to start off with:
 
 ```bash
-$ /root/tmp/marill -r
+$ /root/tmp/marill -a
 ```
 
 ### Things to note/Troubleshooting:
@@ -189,8 +190,8 @@ $ /root/tmp/marill -r
       * The general target at which this was written for are servers under maintenance, or being ran on a new server that is being migrated to. That being said, Marill does run scans in parallel. It will run scans in parallel in the amount of cores divided by 2. (8 core server, 4 concurrent crawls, 2 core server, 1 crawl at a time). If you see Marill still causing too much load, you can utilize `--delay` and `--threads`.
 
    2. **How long does Marill take to crawl sites (e.g. 1,000 sites on a server)?**
-      * Given a cPanel server, is must be noted that along with the input (default http) version of a domain, the https version of the site will be scanned as well if cPanel has a certificate for it. Furthermore, it will also attempt to crawl www.domain.com, not just domain.com. As for other webservers, it all depends on the input. **Please note** that using `--resources` (`-r`), that Marill _will take longer_. This is because this fetches all resources for each site being crawled. If you would like Marill to crawl faster, don't use `-r`.
-      * Generally speaking, crawling without `-r` is fairly fast.
+      * Given a cPanel server, is must be noted that along with the input (default http) version of a domain, the https version of the site will be scanned as well if cPanel has a certificate for it. Furthermore, it will also attempt to crawl www.domain.com, not just domain.com. As for other webservers, it all depends on the input. **Please note** that using `--assets` (`-a`), that Marill _will take longer_. This is because this fetches all resources for each site being crawled. If you would like Marill to crawl faster, don't use `-a`.
+      * Generally speaking, crawling without `-a` is fairly fast.
 
    3. **Is it better to run Marill from inside of the server, or from a remote location?**
       * Running remotely ensures there are no ip or firewall related issues, however in the same sense if you are crawling quite a few sites, many servers may assume due to the connection count, that's your connections are malicious.
