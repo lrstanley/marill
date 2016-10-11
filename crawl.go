@@ -97,7 +97,7 @@ func crawl() (*Scan, error) {
 	res.results = checkTests(res.crawler.Results, res.tests)
 
 	for i := 0; i < len(res.results); i++ {
-		if res.results[i].Domain.Error != nil {
+		if res.results[i].Result.Error != nil {
 			res.failed++
 			continue
 		}

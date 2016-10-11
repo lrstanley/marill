@@ -53,7 +53,7 @@ const motd = `
 `
 
 var successTemplate = `
-{{- if .Domain.Error }}{red}{bold}[FAILURE]{c}{{- else }}{green}{bold}[SUCCESS]{c}{{- end }}
+{{- if .Result.Error }}{red}{bold}[FAILURE]{c}{{- else }}{green}{bold}[SUCCESS]{c}{{- end }}
 
 {{- /* add colors for the score */}} [score:
 {{- if gt .Score 8.0 }}{green}{{- else }}{{- if (or (le .Score 8.0) (gt .Score 5.0)) }}{yellow}{{- end }}{{- end }}
@@ -62,20 +62,20 @@ var successTemplate = `
 {{- .Score | printf "%5.1f/10.0" }}{c}]
 
 {{- /* status code output */}}
-{{- if .Domain.Resource }} [code:{yellow}{{ if .Domain.Response.Code }}{{ .Domain.Response.Code }}{{ else }}---{{ end }}{c}]
+{{- if .Result.Resource }} [code:{yellow}{{ if .Result.Response.Code }}{{ .Result.Response.Code }}{{ else }}---{{ end }}{c}]
 {{- else }} [code:{red}---{c}]{{- end }}
 
 {{- /* IP address */}}
-{{- if .Domain.Request.IP }} [{lightmagenta}{{ printf "%s" .Domain.Request.IP }}{c}]{{- end }}
+{{- if .Result.Request.IP }} [{lightmagenta}{{ printf "%s" .Result.Request.IP }}{c}]{{- end }}
 
 {{- /* number of assets */}}
-{{- if .Domain.Assets }} [{cyan}{{ printf "%d" (len .Domain.Assets) }} assets{c}]{{- end }}
+{{- if .Result.Assets }} [{cyan}{{ printf "%d" (len .Result.Assets) }} assets{c}]{{- end }}
 
 {{- /* response time for main resource */}}
-{{- if not .Domain.Error }} [{green}{{ .Domain.Time.Milli }}ms{c}]{{- end }}
+{{- if not .Result.Error }} [{green}{{ .Result.Time.Milli }}ms{c}]{{- end }}
 
-{{- " "}}{{- .Domain.URL }}
-{{- if .Domain.Error }} ({red}errors: {{ .Domain.Error }}{c}){{- end }}`
+{{- " "}}{{- .Result.URL }}
+{{- if .Result.Error }} ({red}errors: {{ .Result.Error }}{c}){{- end }}`
 
 // outputConfig handles what the user sees (stdout, debugging, logs, etc)
 type outputConfig struct {
@@ -468,7 +468,7 @@ func run() {
 
 	for _, res := range scan.results {
 		// ignore successful, per request
-		if conf.scan.ignoreSuccess && res.Domain.Error == nil {
+		if conf.scan.ignoreSuccess && res.Result.Error == nil {
 			continue
 		}
 

@@ -58,15 +58,15 @@ func (r *Resource) String() string {
 	return fmt.Sprintf("<[Resource] request:%s ip:%q err:%q>", r.Request.URL, r.Request.IP, r.Error)
 }
 
-// Results -- struct returned by Crawl() to represent the entire crawl process
-type Results struct {
+// FetchResult -- struct returned by Crawl() to represent the entire crawl process
+type FetchResult struct {
 	Resource                        // Inherit the Resource struct
 	Assets       []*Resource        // Assets containing the needed resources for the given URL
 	ResourceTime *utils.TimerResult // ResourceTime is the time it took to fetch all resources
 	TotalTime    *utils.TimerResult // TotalTime is the time it took to crawl the site
 }
 
-func (r *Results) String() string {
+func (r *FetchResult) String() string {
 	if r.Assets != nil && r.ResourceTime != nil && r.TotalTime != nil {
 		return fmt.Sprintf("<[Results] request:%s response:%s ip:%q code:%d resources:%d resource-time:%dms total-time:%dms err:%q>", r.Request.URL, r.Response.URL, r.Request.IP, r.Response.Code, len(r.Assets), r.ResourceTime.Milli, r.TotalTime.Milli, r.Error)
 	}
@@ -82,14 +82,14 @@ type Domain struct {
 }
 
 func (d *Domain) String() string {
-	return fmt.Sprintf("<[Domain] url:%s ip:%s>", d.URL, d.IP)
+	return fmt.Sprintf("<[Domain] url:%q ip:%q>", d.URL, d.IP)
 }
 
 // Crawler is the higher level struct which wraps the entire threaded crawl process
 type Crawler struct {
 	Log     *log.Logger       // output log
 	ipmap   map[string]string // domain -> ip map, to easily tell if something is local
-	Results []*Results        // scan results, should only be access when scan is complete
+	Results []*FetchResult    // scan results, should only be access when scan is complete
 	Pool    utils.Pool        // thread pool for fetching main resources
 	ResPool utils.Pool        // thread pool for fetching assets
 	Cnf     CrawlerConfig
@@ -155,11 +155,11 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 }
 
 // Fetch manages the fetching of the main resource, as well as all child resources,
-// providing a Results struct containing the entire crawl data needed
-func (c *Crawler) Fetch(domain *Domain) (res *Results) {
+// providing a FetchResult struct containing the entire crawl data needed
+func (c *Crawler) Fetch(domain *Domain) (res *FetchResult) {
 	var err error
 
-	res = &Results{}
+	res = &FetchResult{}
 	crawlTimer := utils.NewTimer()
 	defer func() {
 		crawlTimer.End()

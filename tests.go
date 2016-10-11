@@ -392,7 +392,7 @@ func genTestsFromURL(tests *[]*Test) {
 }
 
 // checkTests iterates over all domains and runs checks across all domains
-func checkTests(results []*scraper.Results, tests []*Test) (completedTests []*TestResult) {
+func checkTests(results []*scraper.FetchResult, tests []*Test) (completedTests []*TestResult) {
 	timer := utils.NewTimer()
 	logger.Print("starting test checks")
 
@@ -404,7 +404,7 @@ func checkTests(results []*scraper.Results, tests []*Test) (completedTests []*Te
 	logger.Printf("finished tests, elapsed time: %ds\n", timer.Result.Seconds)
 
 	for i := 0; i < len(completedTests); i++ {
-		if completedTests[i].Domain.Error != nil {
+		if completedTests[i].Result.Error != nil {
 			continue
 		}
 
@@ -418,7 +418,7 @@ func checkTests(results []*scraper.Results, tests []*Test) (completedTests []*Te
 				failedTests = append(failedTests, k)
 			}
 
-			completedTests[i].Domain.Error = errors.New("failed tests: " + strings.Join(failedTests, ", "))
+			completedTests[i].Result.Error = errors.New("failed tests: " + strings.Join(failedTests, ", "))
 		}
 	}
 
@@ -427,10 +427,10 @@ func checkTests(results []*scraper.Results, tests []*Test) (completedTests []*Te
 
 // TestResult represents the result of testing a single resource
 type TestResult struct {
-	Domain       *scraper.Results   // Origin domain/resource data
-	Score        float64            // resulting score, skewed off defaultScore
-	MatchedTests map[string]float64 // map of negative affecting tests that were applied
-	TestCount    map[string]int     // map of times the negative affecting tests matched
+	Result       *scraper.FetchResult // Origin domain/resource data
+	Score        float64              // resulting score, skewed off defaultScore
+	MatchedTests map[string]float64   // map of negative affecting tests that were applied
+	TestCount    map[string]int       // map of times the negative affecting tests matched
 }
 
 // applyScore applies the score from test to the result, assuming test matched
@@ -453,13 +453,13 @@ func (res *TestResult) applyScore(test *Test, data []string, multiplier int) {
 	}
 	res.TestCount[test.Name] += multiplier
 
-	logger.Printf("applied test %s score against %s to: %.2f (now %.2f). matched: '%s'\n", test, res.Domain.Response.URL, test.Weight, res.Score, matched)
+	logger.Printf("applied test %s score against %s to: %.2f (now %.2f). matched: '%s'\n", test, res.Result.Response.URL, test.Weight, res.Score, matched)
 }
 
 var reHTMLTag = regexp.MustCompile(`<[^>]+>`)
 
 // TestCompare returns what input match type should compare against
-func TestCompare(dom *scraper.Results, test *Test, mtype string) (out []string) {
+func TestCompare(dom *scraper.FetchResult, test *Test, mtype string) (out []string) {
 	bodyNoHTML := reHTMLTag.ReplaceAllString(dom.Response.Body, "")
 
 	switch mtype {
@@ -517,7 +517,7 @@ func TestCompare(dom *scraper.Results, test *Test, mtype string) (out []string) 
 }
 
 // TestMatch compares the input test match parameters with the domain
-func (res *TestResult) TestMatch(dom *scraper.Results, test *Test) {
+func (res *TestResult) TestMatch(dom *scraper.FetchResult, test *Test) {
 	if len(test.Match) > 0 {
 		for i := 0; i < len(test.Match); i++ {
 			data := TestCompare(dom, test, test.Match[i].Against)
@@ -546,9 +546,9 @@ func (res *TestResult) TestMatch(dom *scraper.Results, test *Test) {
 }
 
 // checkDomain loops through all tests and guages what test score the domain gets
-func checkDomain(dom *scraper.Results, tests []*Test) *TestResult {
+func checkDomain(dom *scraper.FetchResult, tests []*Test) *TestResult {
 	res := &TestResult{
-		Domain:       dom,
+		Result:       dom,
 		Score:        defaultScore,
 		MatchedTests: make(map[string]float64),
 		TestCount:    make(map[string]int),
