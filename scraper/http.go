@@ -11,7 +11,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -38,8 +37,6 @@ type CustomResponse struct {
 	Time *utils.TimerResult
 	URL  *url.URL
 }
-
-var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
 
 func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) error {
 	c.requestWrap(req)
@@ -245,29 +242,29 @@ func VerifyHostname(c *tls.ConnectionState, host string) error {
 }
 
 // getHandler wraps the standard net/http library, allowing us to spoof hostnames and IP addresses
-func (c *CustomClient) getHandler() (*CustomResponse, error) {
+func (c *Crawler) getHandler(cl *CustomClient) (*CustomResponse, error) {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			// unfortunately, ServerName will not persist over a redirect. so... we have to ignore
 			// ssl invalidations and do them somewhat manually.
 			InsecureSkipVerify: true,
-			ServerName:         c.Host,
+			ServerName:         cl.Host,
 		},
 	}
 	client := &http.Client{
-		CheckRedirect: c.redirectHandler,
+		CheckRedirect: cl.redirectHandler,
 		Timeout:       time.Duration(10) * time.Second,
 		Transport:     transport,
 	}
 
-	req, err := http.NewRequest("GET", c.URL, nil)
+	req, err := http.NewRequest("GET", cl.URL, nil)
 
 	if err != nil {
 		return nil, err
 	}
 
-	c.OriginURL = req.URL // set origin url for use in redirect wrapper
-	c.requestWrap(req)
+	cl.OriginURL = req.URL // set origin url for use in redirect wrapper
+	cl.requestWrap(req)
 
 	// start tracking how long the request is going to take
 	timer := utils.NewTimer()
@@ -278,14 +275,14 @@ func (c *CustomClient) getHandler() (*CustomResponse, error) {
 	// stop tracking the request
 	timer.End()
 
-	if err == nil {
-		if err = VerifyHostname(resp.TLS, c.ResultURL.Host); err != nil {
+	if err == nil && !c.Cnf.AllowInsecure {
+		if err = VerifyHostname(resp.TLS, cl.ResultURL.Host); err != nil {
 			return nil, err
 		}
 	}
 
-	if len(c.ResultURL.Host) > 0 {
-		return &CustomResponse{resp, timer.Result, &c.ResultURL}, err
+	if len(cl.ResultURL.Host) > 0 {
+		return &CustomResponse{resp, timer.Result, &cl.ResultURL}, err
 	}
 
 	return &CustomResponse{resp, timer.Result, req.URL}, err
@@ -298,13 +295,5 @@ func (c *Crawler) Get(url string) (*CustomResponse, error) {
 		return nil, err
 	}
 
-	if ip, ok := c.ipmap[host]; ok {
-		if len(ip) > 0 && !reIP.MatchString(ip) {
-			return nil, errors.New("IP address provided is invalid")
-		}
-	}
-
-	cc := &CustomClient{URL: url, Host: host, ipmap: c.ipmap}
-
-	return cc.getHandler()
+	return c.getHandler(&CustomClient{URL: url, Host: host, ipmap: c.ipmap})
 }

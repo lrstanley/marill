@@ -77,6 +77,7 @@ func crawl() (*Scan, error) {
 	res.crawler.Cnf.Resources = conf.scan.resources
 	res.crawler.Cnf.NoRemote = conf.scan.ignoreRemote
 	res.crawler.Cnf.Delay = conf.scan.delay
+	res.crawler.Cnf.AllowInsecure = conf.scan.allowInsecure
 
 	logger.Print("starting crawler...")
 	out.Printf("starting scan on %d domains", len(res.crawler.Cnf.Domains))

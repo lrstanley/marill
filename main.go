@@ -95,6 +95,7 @@ type scanConfig struct {
 	resources     bool          // pull all resources for the page, and their assets
 	delay         time.Duration // delay for the stasrt of each resource crawl
 	ignoreSuccess bool          // ignore urls/domains that were successfully fetched
+	allowInsecure bool          // if SSL errors should be ignored
 
 	// domain filter related
 	ignoreHTTP   bool   // ignore http://
@@ -649,6 +650,11 @@ func main() {
 			Name:        "ignore-success",
 			Usage:       "Only print results if they are considered failed",
 			Destination: &conf.scan.ignoreSuccess,
+		},
+		cli.BoolFlag{
+			Name:        "allow-insecure",
+			Usage:       "Ignore SSL certificate errors",
+			Destination: &conf.scan.allowInsecure,
 		},
 		cli.StringFlag{
 			Name:        "tmpl",

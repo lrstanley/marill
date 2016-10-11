@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -54,6 +55,8 @@ func (r *Resource) String() string {
 
 	return fmt.Sprintf("<[Resource] request:%s ip:%q err:%q>", r.Request.URL, r.Request.IP, r.Error)
 }
+
+var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
 
 // fetchResource fetches a singular resource from a page, returning a *Resource struct.
 // As we don't care much about the body of the resource, that can safely be ignored. We
@@ -120,9 +123,9 @@ func (r *Results) String() string {
 	return fmt.Sprintf("<[Results] request:%s response:%s ip:%q err:%q>", r.Request.URL, r.URL, r.Request.IP, r.Error)
 }
 
-// FetchURL manages the fetching of the main resource, as well as all child resources,
+// Fetch manages the fetching of the main resource, as well as all child resources,
 // providing a Results struct containing the entire crawl data needed
-func (c *Crawler) FetchURL(URL string) (res *Results) {
+func (c *Crawler) Fetch(domain *Domain) (res *Results) {
 	var err error
 
 	res = &Results{}
@@ -132,17 +135,14 @@ func (c *Crawler) FetchURL(URL string) (res *Results) {
 		res.TotalTime = crawlTimer.Result
 	}()
 
-	res.URL = URL
-	res.Request.URL = URL
-	res.Request.Host, err = utils.GetHost(URL)
-	if err != nil {
-		res.Error = err
-		return
-	}
-	res.Request.IP = c.ipmap[res.Request.Host]
+	res.URL = domain.URL.String()
+	res.Request.URL = domain.URL.String()
+	res.Request.Host = domain.URL.Host
+
+	res.Request.IP = domain.IP
 
 	// actually fetch the request
-	resp, err := c.Get(URL)
+	resp, err := c.Get(domain.URL.String())
 	if err != nil {
 		res.Error = err
 		return
@@ -228,6 +228,10 @@ type Domain struct {
 	IP  string
 }
 
+func (d *Domain) String() string {
+	return fmt.Sprintf("<[Domain] url:%s ip:%s>", d.URL, d.IP)
+}
+
 // Crawler is the higher level struct which wraps the entire threaded crawl process
 type Crawler struct {
 	Log     *log.Logger       // output log
@@ -240,18 +244,18 @@ type Crawler struct {
 
 // CrawlerConfig is the configuration which changes Crawler
 type CrawlerConfig struct {
-	Domains   []*Domain     // list of domains to scan
-	Resources bool          // if we want to pull the resources for the page too
-	NoRemote  bool          // ignore all resources that match a remote IP
-	Delay     time.Duration // delay before each resource is crawled
-	Threads   int           // total number of threads to run crawls in
+	Domains       []*Domain     // list of domains to scan
+	Resources     bool          // if we want to pull the resources for the page too
+	NoRemote      bool          // ignore all resources that match a remote IP
+	AllowInsecure bool          // if SSL errors should be ignored
+	Delay         time.Duration // delay before each resource is crawled
+	Threads       int           // total number of threads to run crawls in
 }
 
 // Crawl represents the higher level functionality of scraper. Crawl should
 // concurrently request the needed resources for a list of domains, allowing
 // the bypass of DNS lookups where necessary.
 func (c *Crawler) Crawl() {
-	var results []*Results
 	c.Pool = utils.NewPool(c.Cnf.Threads)
 	timer := utils.NewTimer()
 
@@ -276,17 +280,17 @@ func (c *Crawler) Crawl() {
 
 			// delay if they have a time set
 			if c.Cnf.Delay.String() != "0s" {
-				c.Log.Printf("delaying %s before starting crawl on %s", c.Cnf.Delay.String(), domain.URL.String())
+				c.Log.Printf("delaying %s before starting crawl on %s", c.Cnf.Delay, domain)
 				time.Sleep(c.Cnf.Delay)
 			}
 
-			result := c.FetchURL(domain.URL.String())
-			results = append(results, result)
+			result := c.Fetch(domain)
+			c.Results = append(c.Results, result)
 
 			if result.Error != nil {
-				c.Log.Printf("error scanning %s (error: %s)", domain.URL.String(), result.Error)
+				c.Log.Printf("error scanning %s (error: %s)", domain, result.Error)
 			} else {
-				c.Log.Printf("finished scanning %s (%dms)", domain.URL.String(), result.TotalTime.Milli)
+				c.Log.Printf("finished scanning %s (%dms)", domain, result.TotalTime.Milli)
 			}
 		}(domain)
 	}
@@ -295,22 +299,19 @@ func (c *Crawler) Crawl() {
 	c.Pool.Wait()
 	timer.End()
 
-	c.Log.Printf("finished scanning %d urls in %d seconds", len(results), timer.Result.Seconds)
+	c.Log.Printf("finished scanning %d urls in %d seconds", len(c.Results), timer.Result.Seconds)
 
 	// give some extra details
 	var resSuccess, resError int
-	for i := 0; i < len(results); i++ {
-		if results[i].Error != nil {
+	for i := 0; i < len(c.Results); i++ {
+		if c.Results[i].Error != nil {
 			resError++
 			continue
 		}
 
 		resSuccess++
 	}
-
 	c.Log.Printf("%d successful, %d failed\n", resSuccess, resError)
-
-	c.Results = results
 
 	return
 }
