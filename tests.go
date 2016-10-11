@@ -411,6 +411,10 @@ func checkTests(results []*scraper.Results, tests []*Test) (completedTests []*Te
 		if completedTests[i].Score < conf.scan.minScore {
 			failedTests := []string{}
 			for k := range completedTests[i].MatchedTests {
+				if completedTests[i].TestCount[k] > 1 {
+					k += fmt.Sprintf(" [%d matched]", completedTests[i].TestCount[k])
+				}
+
 				failedTests = append(failedTests, k)
 			}
 
