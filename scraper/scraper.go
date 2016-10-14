@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Liamraystanley/go-sempool"
 	"github.com/Liamraystanley/marill/utils"
 )
 
@@ -83,8 +84,8 @@ type Crawler struct {
 	Log     *log.Logger       // output log
 	ipmap   map[string]string // domain -> ip map, to easily tell if something is local
 	Results []*FetchResult    // scan results, should only be access when scan is complete
-	Pool    utils.Pool        // thread pool for fetching main resources
-	ResPool utils.Pool        // thread pool for fetching assets
+	Pool    sempool.Pool      // thread pool for fetching main resources
+	ResPool sempool.Pool      // thread pool for fetching assets
 	Cnf     CrawlerConfig
 }
 
@@ -213,7 +214,7 @@ func (c *Crawler) Fetch(res *FetchResult) {
 			urls = append(urls, parsedUri)
 		}
 
-		c.ResPool = utils.NewPool(4)
+		c.ResPool = sempool.New(4)
 
 		for i := range urls {
 			if c.Cnf.NoRemote {
@@ -240,7 +241,7 @@ func (c *Crawler) Fetch(res *FetchResult) {
 // concurrently request the needed resources for a list of domains, allowing
 // the bypass of DNS lookups where necessary.
 func (c *Crawler) Crawl() {
-	c.Pool = utils.NewPool(c.Cnf.Threads)
+	c.Pool = sempool.New(c.Cnf.Threads)
 	timer := utils.NewTimer()
 
 	// strip all common duplicate domain/ip pairs
