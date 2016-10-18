@@ -86,6 +86,9 @@ func getSrc(b io.Reader, req *http.Request) (urls []string) {
 				req.URL.Path = "/"
 			}
 
+			// site was developed using sub-relative paths. E.g:
+			// - url: http://domain.com/sub/path and resource: something/main.js
+			//   would equal http://domain.com/sub/path/something/main.js
 			if !strings.Contains(src, "//") && nonPrefixMatch.MatchString(src) {
 				src = fmt.Sprintf("%s://%s/%s", req.URL.Scheme, req.URL.Host+strings.TrimRight(req.URL.Path, "/"), src)
 			}
