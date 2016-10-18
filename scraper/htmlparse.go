@@ -5,8 +5,10 @@
 package scraper
 
 import (
+	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -23,6 +25,8 @@ func getAttr(attr string, attrs []html.Attribute) (val string) {
 
 	return
 }
+
+var nonPrefixMatch = regexp.MustCompile(`^[a-zA-Z]`)
 
 // getSrc crawls the body of the Results page, yielding all img/script/link resources
 // so they can later be fetched.
@@ -82,11 +86,15 @@ func getSrc(b io.Reader, req *http.Request) (urls []string) {
 				req.URL.Path = "/"
 			}
 
+			if !strings.Contains(src, "//") && nonPrefixMatch.MatchString(src) {
+				src = fmt.Sprintf("%s://%s/%s", req.URL.Scheme, req.URL.Host+strings.TrimRight(req.URL.Path, "/"), src)
+			}
+
 			// site was developed using relative paths. E.g:
 			//  - url: http://domain.com/sub/path and resource: ./something/main.js
 			//    would equal http://domain.com/sub/path/something/main.js
 			if strings.HasPrefix(src, "./") {
-				src = req.URL.Scheme + "://" + req.URL.Host + req.URL.Path + strings.SplitN(src, "./", 2)[1]
+				src = fmt.Sprintf("%s://%s", req.URL.Scheme, req.URL.Host+req.URL.Path+strings.SplitN(src, "./", 2)[1])
 			}
 
 			// site is loading resources from a remote location that supports both
