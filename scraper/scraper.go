@@ -204,7 +204,7 @@ func (c *Crawler) Fetch(res *FetchResult) {
 	if c.Cnf.Assets {
 		urls := []*url.URL{}
 
-		for _, uri := range getSrc(b, resp.Request) {
+		for _, uri := range getSrc(b, res.Response.URL) {
 			parsedUri, err := url.Parse(uri)
 			if err != nil {
 				c.Log.Printf("unable to parse asset uri [%s], resource: %s: %s", uri, res.Request, err)

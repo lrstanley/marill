@@ -7,7 +7,7 @@ package scraper
 import (
 	"fmt"
 	"io"
-	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -30,7 +30,7 @@ var nonPrefixMatch = regexp.MustCompile(`^[a-zA-Z]`)
 
 // getSrc crawls the body of the Results page, yielding all img/script/link resources
 // so they can later be fetched.
-func getSrc(b io.Reader, req *http.Request) (urls []string) {
+func getSrc(b io.Reader, parent *url.URL) (urls []string) {
 	urls = []string{}
 
 	z := html.NewTokenizer(b)
@@ -82,22 +82,22 @@ func getSrc(b io.Reader, req *http.Request) (urls []string) {
 			}
 
 			// add trailing slash to the end of the path
-			if len(req.URL.Path) == 0 {
-				req.URL.Path = "/"
+			if len(parent.Path) == 0 {
+				parent.Path = "/"
 			}
 
 			// site was developed using sub-relative paths. E.g:
 			// - url: http://domain.com/sub/path and resource: something/main.js
 			//   would equal http://domain.com/sub/path/something/main.js
 			if !strings.Contains(src, "//") && nonPrefixMatch.MatchString(src) {
-				src = fmt.Sprintf("%s://%s/%s", req.URL.Scheme, req.URL.Host+strings.TrimRight(req.URL.Path, "/"), src)
+				src = fmt.Sprintf("%s://%s/%s", parent.Scheme, parent.Host+strings.TrimRight(parent.Path, "/"), src)
 			}
 
 			// site was developed using relative paths. E.g:
 			//  - url: http://domain.com/sub/path and resource: ./something/main.js
 			//    would equal http://domain.com/sub/path/something/main.js
 			if strings.HasPrefix(src, "./") {
-				src = fmt.Sprintf("%s://%s", req.URL.Scheme, req.URL.Host+req.URL.Path+strings.SplitN(src, "./", 2)[1])
+				src = fmt.Sprintf("%s://%s", parent.Scheme, parent.Host+parent.Path+strings.SplitN(src, "./", 2)[1])
 			}
 
 			// site is loading resources from a remote location that supports both
@@ -108,7 +108,7 @@ func getSrc(b io.Reader, req *http.Request) (urls []string) {
 			//  - url: https://domain.com/ and resource: //other.com/some-resource.js
 			//    generates: https://other.com/some-resource.js
 			if strings.HasPrefix(src, "//") {
-				src = req.URL.Scheme + ":" + src
+				src = parent.Scheme + ":" + src
 			}
 
 			// non-host-absolute resource. E.g. resource is loaded based on the docroot
@@ -118,12 +118,12 @@ func getSrc(b io.Reader, req *http.Request) (urls []string) {
 			//  - url: https://domain.com/sub/resource and resource: /some-resource.js
 			//    generates: https://domain.com/some-resource.js
 			if strings.HasPrefix(src, "/") {
-				src = req.URL.Scheme + "://" + req.URL.Host + src
+				src = parent.Scheme + "://" + parent.Host + src
 			}
 
 			// ignore anything else that isn't http based. E.g. ftp://, and other svg-like
 			// data urls, as we really can't fetch those.
-			if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
+			if parent.Scheme != "http" && parent.Scheme != "https" {
 				continue
 			}
 
