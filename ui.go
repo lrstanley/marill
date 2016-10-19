@@ -96,7 +96,7 @@ func showMsg(g *ui.Gui, text string) error {
 		return err
 	}
 
-	if err := g.SetCurrentView("msg"); err != nil {
+	if _, err := g.SetCurrentView("msg"); err != nil {
 		return err
 	}
 
