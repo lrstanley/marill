@@ -41,9 +41,6 @@ type CustomResponse struct {
 func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) error {
 	c.requestWrap(req)
 
-	// add a few misc. headers here that are needed
-	req.Header.Set("Accept-Language", "en-US,en;q=0.8")
-
 	// rewrite Referer (Referrer) if it exists, to have the proper hostname
 	uri := via[len(via)-1].URL
 	uri.Host = via[len(via)-1].Host
@@ -84,6 +81,9 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 	// spoof useragent, as there are going to be sites/servers that are
 	// setup to deny by a specific useragent string (or lack there of)
 	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36")
+
+	// add a few other misc. headers here that are needed
+	req.Header.Set("Accept-Language", "en-US,en;q=0.8")
 
 	// if an IP address is provided, rewrite the Host headers
 	// of note: if we plan to support custom ports, these should be rewritten
