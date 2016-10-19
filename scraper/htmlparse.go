@@ -104,7 +104,7 @@ func fmtTagLinks(src string, parent *url.URL) string {
 	//  - url: http://domain.com/sub/path and resource: ./something/main.js
 	//    would equal http://domain.com/sub/path/something/main.js
 	if strings.HasPrefix(src, "./") {
-		src = fmt.Sprintf("%s://%s", parent.Scheme, parent.Host+parent.Path+strings.SplitN(src, "./", 2)[1])
+		src = fmt.Sprintf("%s://%s%s/%s", parent.Scheme, parent.Host, strings.TrimRight(parent.Path, "/"), strings.SplitN(src, "./", 2)[1])
 	}
 
 	// site is loading resources from a remote location that supports both
