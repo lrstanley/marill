@@ -11,7 +11,7 @@ import (
 	"github.com/Liamraystanley/marill/scraper"
 )
 
-// Scan do
+// Scan is a wrapper for all state related to the crawl process
 type Scan struct {
 	finder     *domfinder.Finder
 	crawler    *scraper.Crawler
