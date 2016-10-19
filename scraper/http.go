@@ -41,6 +41,9 @@ type CustomResponse struct {
 func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) error {
 	c.requestWrap(req)
 
+	// add a few misc. headers here that are needed
+	req.Header.Set("Accept-Language", "en-US,en;q=0.8")
+
 	// rewrite Referer (Referrer) if it exists, to have the proper hostname
 	uri := via[len(via)-1].URL
 	uri.Host = via[len(via)-1].Host
