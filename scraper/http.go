@@ -92,19 +92,21 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 
 	// assign the origin host to the host header value, ONLY if it matches the domains
 	// hostname
-	if ip, ok := c.ipmap[req.URL.Host]; ok {
-		req.Host = req.URL.Host
+	if isip := net.ParseIP(req.URL.Host); isip == nil {
+		if ip, ok := c.ipmap[req.URL.Host]; ok {
+			req.Host = req.URL.Host
 
-		// and overwrite the host used to make the connection
-		if len(ip) > 0 {
-			req.URL.Host = ip
+			// and overwrite the host used to make the connection
+			if len(ip) > 0 {
+				req.URL.Host = ip
+			}
 		}
-	}
 
-	// update our cached resulting uri
-	c.ResultURL = *req.URL
-	if len(req.Host) > 0 {
-		c.ResultURL.Host = req.Host
+		// update our cached resulting uri
+		c.ResultURL = *req.URL
+		if len(req.Host) > 0 {
+			c.ResultURL.Host = req.Host
+		}
 	}
 
 	return req
