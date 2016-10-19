@@ -38,19 +38,19 @@ func TestFetch(t *testing.T) {
 		{"https://google.com/", "", false},
 		{"htps://google.com", "", true}, // invalid schema
 		{"http://liamstanley.io", "", false},
-		{"http://1.liamstanley.io", "0.0.0.0", true},                            // invalid ip
-		{"http://2.liamstanley.io", "000.000.00.0", true},                       // invalid ip
-		{"http://3.liamstanley.io", "111.1111.11.1", true},                      // invalid ip
-		{"http://4.liamstanley.io", "1.1.1.1.", true},                           // invalid ip
-		{"http://some-domains-that-doesnt-exist.com/x", "", true},               // invalid domain/path
-		{"https://some-domains-that-doesnt-exist.com/x", "", true},              // invalid domain/path
-		{"https://httpbin.org/redirect/15", "", true},                           // we allow max of 10 redirects
-		{"https://httpbin.org/links/10", "", false},                             // provide some html links
-		{"https://httpbin.org/html", "", false},                                 // return some html
-		{"https://httpbin.org/drip?duration=5&numbytes=5&code=200", "", false},  // drip for 5 seconds
-		{"https://httpbin.org/drip?duration=11&numbytes=5&code=200", "", false}, // drip for 11 seconds, 10s is our timeout
-		{"https://httpbin.org/delay/12", "", true},                              // 10s is our timeout
-		{"https://httpbin.org/delay/3", "", false},
+		{"http://1.liamstanley.io", "0.0.0.0", true},               // invalid ip
+		{"http://2.liamstanley.io", "000.000.00.0", true},          // invalid ip
+		{"http://3.liamstanley.io", "111.1111.11.1", true},         // invalid ip
+		{"http://4.liamstanley.io", "1.1.1.1.", true},              // invalid ip
+		{"http://some-domains-that-doesnt-exist.com/x", "", true},  // invalid domain/path
+		{"https://some-domains-that-doesnt-exist.com/x", "", true}, // invalid domain/path
+		// {"https://httpbin.org/redirect/15", "", true},                           // we allow max of 10 redirects
+		// {"https://httpbin.org/links/10", "", false},                             // provide some html links
+		// {"https://httpbin.org/html", "", false},                                 // return some html
+		// {"https://httpbin.org/drip?duration=5&numbytes=5&code=200", "", false},  // drip for 5 seconds
+		// {"https://httpbin.org/drip?duration=11&numbytes=5&code=200", "", false}, // drip for 11 seconds, 10s is our timeout
+		// {"https://httpbin.org/delay/12", "", true},                              // 10s is our timeout
+		// {"https://httpbin.org/delay/3", "", false},
 	}
 
 	tmplist := []*Domain{}
