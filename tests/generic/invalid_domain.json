@@ -1,0 +1,5 @@
+{
+    "name": "wildcard domain",
+    "weight": -5,
+    "match": ["glob:host:*\\**"]
+}

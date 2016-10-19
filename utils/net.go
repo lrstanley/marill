@@ -5,6 +5,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -53,6 +54,10 @@ func GetHostname() string {
 func IsDomainURL(host, port string) (*url.URL, error) {
 	var uri *url.URL
 	var err error
+
+	if strings.Contains(host, "*") {
+		return nil, errors.New("uri is a wildcard domain")
+	}
 
 	if !strings.HasPrefix(host, "http") {
 		if port != sslPort && port != stdPort && port != "" {

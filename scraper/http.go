@@ -82,6 +82,9 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 	// setup to deny by a specific useragent string (or lack there of)
 	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36")
 
+	// add a few other misc. headers here that are needed
+	req.Header.Set("Accept-Language", "en-US,en;q=0.8")
+
 	// if an IP address is provided, rewrite the Host headers
 	// of note: if we plan to support custom ports, these should be rewritten
 	// within the header. E.g. "hostname.com:8080" -- though, common ports like
@@ -89,19 +92,21 @@ func (c *CustomClient) requestWrap(req *http.Request) *http.Request {
 
 	// assign the origin host to the host header value, ONLY if it matches the domains
 	// hostname
-	if ip, ok := c.ipmap[req.URL.Host]; ok {
-		req.Host = req.URL.Host
+	if isip := net.ParseIP(req.URL.Host); isip == nil {
+		if ip, ok := c.ipmap[req.URL.Host]; ok {
+			req.Host = req.URL.Host
 
-		// and overwrite the host used to make the connection
-		if len(ip) > 0 {
-			req.URL.Host = ip
+			// and overwrite the host used to make the connection
+			if len(ip) > 0 {
+				req.URL.Host = ip
+			}
 		}
-	}
 
-	// update our cached resulting uri
-	c.ResultURL = *req.URL
-	if len(req.Host) > 0 {
-		c.ResultURL.Host = req.Host
+		// update our cached resulting uri
+		c.ResultURL = *req.URL
+		if len(req.Host) > 0 {
+			c.ResultURL.Host = req.Host
+		}
 	}
 
 	return req

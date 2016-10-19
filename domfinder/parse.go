@@ -28,6 +28,10 @@ type cpanelVhost struct {
 	Port         string
 }
 
+func (vhost *cpanelVhost) String() string {
+	return fmt.Sprintf("<[cPanel dom] home:%q user:%q ip:%q docroot:%q port:%q name:%q alias:%q>", vhost.Homedir, vhost.User, vhost.IP, vhost.Documentroot, vhost.Port, vhost.Servername, vhost.Serveralias)
+}
+
 // ReadCpanelVars crawls through /var/cpanel/userdata/ and returns all valid
 // domains/ports that the cPanel server is hosting
 func (f *Finder) ReadCpanelVars() error {
@@ -37,10 +41,12 @@ func (f *Finder) ReadCpanelVars() error {
 		return err
 	}
 
+	var suspended []string
 	var domains []*Domain
 	for i := range cphosts {
 		raw, err := ioutil.ReadFile(cphosts[i])
 		if err != nil {
+			f.Log.Printf("unable to read file '%s' during domain search: %s", cphosts[i], err)
 			continue
 		}
 
@@ -48,28 +54,48 @@ func (f *Finder) ReadCpanelVars() error {
 
 		err = json.Unmarshal(raw, &vhost)
 		if err != nil {
+			f.Log.Printf("unable to parse json in file '%s' during domain search: %s", cphosts[i], err)
 			continue
 		}
 
 		if vhost.User == "nobody" || reIP.MatchString(vhost.Servername) {
 			// assume it's an invalid user or it's an ip. we can ignore.
+			f.Log.Printf("found invalid vhost during domain search, skipping: %s", vhost)
 			continue
+		}
+
+		// check to see if the user is suspended
+		var isSuspended bool
+		for s := 0; s < len(suspended); s++ {
+			if vhost.User == suspended[s] {
+				isSuspended = true
+				break
+			}
+		}
+		if isSuspended {
+			f.Log.Printf("cPanel user '%s' is suspended. skipping vhost. (from %s)", vhost.User, vhost)
+			continue // outright skip
 		}
 
 		// actually get the cPanel user data
 		cpuser, err := ioutil.ReadFile(fmt.Sprintf("/var/cpanel/users/%s", vhost.User))
 		if err != nil {
+			f.Log.Printf("unable to read user file '%s' during domain search, skipping: %s", fmt.Sprintf("/var/cpanel/users/%s", vhost.User), vhost)
 			continue
 		}
 
+		// TODO: This can be cached.
 		if strings.Contains(string(cpuser), "SUSPENDED=1") {
 			// assume they are suspended
+			suspended = append(suspended, vhost.User)
+			f.Log.Printf("cPanel user '%s' is suspended. skipping vhost. (from %s)", vhost.User, vhost)
 			continue
 		}
 
 		domainURL, err := utils.IsDomainURL(vhost.Servername, vhost.Port)
 		if err != nil {
 			// assume the actual domain is invalid
+			f.Log.Printf("invalid uri from cPanel vhost: %s", vhost)
 			continue
 		}
 
@@ -83,6 +109,7 @@ func (f *Finder) ReadCpanelVars() error {
 			subURL, err := utils.IsDomainURL(subvhost, vhost.Port)
 			if err != nil {
 				// assume bad domain
+				f.Log.Printf("invalid uri from cPanel vhost: %s (from: %q)", subvhost, strings.Split(vhost.Serveralias, " "))
 				continue
 			}
 
@@ -98,6 +125,8 @@ func (f *Finder) ReadCpanelVars() error {
 
 	return nil
 }
+
+var reNameVhost = regexp.MustCompile(`\s+ port (\d{2,5}) namevhost ([^ ]+)`)
 
 // ReadApacheVhosts interprets and parses the "httpd -S" directive entries.
 // docs: http://httpd.apache.org/docs/current/vhosts/#directives
@@ -169,7 +198,6 @@ func (f *Finder) ReadApacheVhosts(raw string) error {
 			return &NewErr{Code: ErrApacheParseVhosts, value: fmt.Sprintf("line %d, unable to determine ip/port", line)}
 		}
 
-		reNameVhost := regexp.MustCompile(`\s+ port (\d{2,5}) namevhost ([^ ]+)`)
 		tmp := reNameVhost.FindAllStringSubmatch(rvhost, -1)
 
 		if len(tmp) == 0 {
@@ -182,8 +210,8 @@ func (f *Finder) ReadApacheVhosts(raw string) error {
 			domainName := item[2]
 
 			if len(domainPort) == 0 || len(domainName) == 0 || reIP.MatchString(domainName) || hostname == domainName {
-				// assume that we didn't parse the string properly -- might add logs for debugging
-				// in the future
+				// assume that we didn't parse the string properly
+				f.Log.Printf("unable to parse apache domain %s (port %s) during domain search", domainName, domainPort)
 				continue
 			}
 
@@ -193,6 +221,7 @@ func (f *Finder) ReadApacheVhosts(raw string) error {
 			if err != nil {
 				// assume they have an entry in apache that just simply isn't a valid
 				// domain
+				f.Log.Printf("unable to parse apache domain %s (port %s): %s", domainName, domainPort, err)
 				continue
 			}
 
