@@ -100,11 +100,13 @@ func fmtTagLinks(src string, parent *url.URL) string {
 		src = fmt.Sprintf("%s://%s/%s", parent.Scheme, parent.Host+strings.TrimRight(parent.Path, "/"), src)
 	}
 
+	// TODO: add support for ../../ based urls.
+
 	// site was developed using relative paths. E.g:
 	//  - url: http://domain.com/sub/path and resource: ./something/main.js
 	//    would equal http://domain.com/sub/path/something/main.js
 	if strings.HasPrefix(src, "./") {
-		src = fmt.Sprintf("%s://%s%s/%s", parent.Scheme, parent.Host, strings.TrimRight(parent.Path, "/"), strings.SplitN(src, "./", 2)[1])
+		src = fmt.Sprintf("%s://%s/%s", parent.Scheme, parent.Host, strings.SplitN(src, "./", 2)[1])
 	}
 
 	// site is loading resources from a remote location that supports both
@@ -131,6 +133,11 @@ func fmtTagLinks(src string, parent *url.URL) string {
 	// ignore anything else that isn't http based. E.g. ftp://, and other svg-like
 	// data urls, as we really can't fetch those.
 	if parent.Scheme != "http" && parent.Scheme != "https" {
+		return ""
+	}
+
+	// check to make sure the link is now valid
+	if !strings.HasPrefix(strings.ToLower(src), "http") {
 		return ""
 	}
 
