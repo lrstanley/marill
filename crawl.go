@@ -11,6 +11,7 @@ import (
 	"github.com/Liamraystanley/marill/scraper"
 )
 
+// Scan do
 type Scan struct {
 	finder     *domfinder.Finder
 	crawler    *scraper.Crawler

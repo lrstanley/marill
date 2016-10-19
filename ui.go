@@ -20,11 +20,6 @@ type mMenu struct {
 
 var menu mMenu
 
-// quit quits the main event loop.
-func quit(g *gocui.Gui, v *gocui.View) error {
-	return gocui.ErrQuit
-}
-
 // centerText takes a string of text and a length and pads the beginning
 // of the string with spaces to center that text in the available space.
 func centerText(text string, maxX int) string {
@@ -386,9 +381,8 @@ func uiLayout(gooey *gocui.Gui) error {
 		return err
 	}
 
-	//
+	// Read the selected menu item and put the corresponding views on top.
 	if sidebar, err := gooey.View("sidebar"); err == nil {
-
 		selection := readSel(sidebar)
 		switch selection {
 
@@ -432,42 +426,45 @@ func uiLayout(gooey *gocui.Gui) error {
 				return err
 			}
 		}
-
-	} else {
-		return err
 	}
 
 	return nil
 }
 
-func uiUpdateLog(g *gocui.Gui) error {
-	main, err := g.View("main")
+// quit quits the main event loop.
+func quit(g *gocui.Gui, v *gocui.View) error {
+	return gocui.ErrQuit
+}
+
+func scanAllTheThings(gooey *gocui.Gui, view *gocui.View) error {
+
+	summary, err := gooey.View("summary")
+	details, err := gooey.View("details")
+	successes, err := gooey.View("successes")
+	failures, err := gooey.View("failures")
+
 	if err != nil {
 		return err
 	}
 
-	main.Clear()
-
-	for i := 0; i < len(out.buffer); i++ {
-		fmt.Fprint(main, out.buffer[i])
-	}
+	initOutWriter(summary, details, successes, failures)
+	crawl()
 
 	return nil
-}
-
-func uiQuit(gooey *gocui.Gui, view *gocui.View) error {
-	return gocui.ErrQuit
 }
 
 // setKeyBinds is a necessary evil.
 func setKeyBinds(gooey *gocui.Gui) error {
 
 	// Always have an exit strategy.
-	if err := gooey.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, uiQuit); err != nil {
+	if err := gooey.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		return err
 	}
 
-	//
+	// Start scanning
+	if err := gooey.SetKeybinding("", gocui.KeyCtrlA, gocui.ModNone, scanAllTheThings); err != nil {
+		return err
+	}
 
 	return nil
 }
