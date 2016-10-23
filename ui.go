@@ -1,6 +1,6 @@
-// Author: Liam Stanley <me@liamstanley.io>
-// Docs: https://marill.liam.sh/
-// Repo: https://github.com/Liamraystanley/marill
+// Author: Liam Stanley <me@liamstanleyio>
+// Docs: https://marill.liamsh/
+// Repo: https://githubcom/Liamraystanley/marill
 
 package main
 
@@ -14,7 +14,7 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-// mMenu holds some
+// mMenu holds X/Y coords of the menu for calculation from other views
 type mMenu struct {
 	maxX, maxY int
 }
@@ -22,7 +22,7 @@ type mMenu struct {
 var menu mMenu
 
 // centerText takes a string of text and a length and pads the beginning
-// of the string with spaces to center that text in the available space.
+// of the string with spaces to center that text in the available space
 func centerText(text string, maxX int) string {
 
 	numSpaces := maxX/2 - len(text)/2
@@ -34,7 +34,7 @@ func centerText(text string, maxX int) string {
 }
 
 // padText takes a string of text and pads the end of it with spaces to
-// fill the available space in a cell.
+// fill the available space in a cell
 func padText(text string, maxX int) string {
 
 	numSpaces := maxX - len(text)
@@ -46,7 +46,7 @@ func padText(text string, maxX int) string {
 }
 
 // readSel reads the currently selected line and returns a string
-// containing its contents, without trailing spaces.
+// containing its contents, without trailing spaces
 func readSel(view *gocui.View) string {
 
 	_, posY := view.Cursor()
@@ -56,16 +56,14 @@ func readSel(view *gocui.View) string {
 	return selection
 }
 
-// drawTitle adds the title to the top of the menu.
+// drawTitle adds the title to the top of the menu
 func drawTitle(gooey *gocui.Gui) error {
-
-	// Place the title view at the top of the menu and extend it down two lines.
+	// place the title view at the top of the menu and extend it down two lines
 	if title, err := gooey.SetView("title", 0, 0, menu.maxX-1, 2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		// Center the title text and print it to the view.
 		fmt.Fprintln(title, centerText("Marill: Automated site testing utility", menu.maxX))
 
 	}
@@ -73,36 +71,35 @@ func drawTitle(gooey *gocui.Gui) error {
 	return nil
 }
 
-// drawSidebar draws the sidebar on the left side of the gui.
+// drawSidebar draws the sidebar on the left side of the gui
 func drawSidebar(gooey *gocui.Gui) error {
 
-	// Find minY, which will be the bottom of the header view.
+	// find minY, which will be the bottom of the header view
 	_, _, _, minY, err := gooey.ViewPosition("title")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Set maxX, which will be fill one sixth of the menu.
 	maxX := menu.maxX / 6
 
-	// Create a view to hold the sidebar header.
+	// create a view to hold the sidebar header
 	if sideHead, err := gooey.SetView("sideHead", 0, minY, maxX, minY+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		// Print the title to the sidebar header.
+		// print the title to the sidebar header
 		fmt.Fprintln(sideHead, centerText("Abilities", maxX))
 
 	}
 
-	// Create a view for the sidebar itself.
+	// create a view for the sidebar itself
 	if sidebar, err := gooey.SetView("sidebar", 0, minY+2, maxX, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		// Print options and ensure highlights are enabled.
+		// print options and ensure highlights are enabled
 		fmt.Fprintln(sidebar, padText("Domains", maxX))
 		fmt.Fprintln(sidebar, padText("Summary", maxX))
 		fmt.Fprintln(sidebar, padText("Details", maxX))
@@ -115,33 +112,31 @@ func drawSidebar(gooey *gocui.Gui) error {
 	return nil
 }
 
-// drawDomains draws the domains view.
+// drawDomains draws the domains view
 func drawDomains(gooey *gocui.Gui) error {
-
-	// Find minY, which will be the bottom of the header view.
+	// find minY, which will be the bottom of the header view
 	_, _, _, minY, err := gooey.ViewPosition("title")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Find minX, which will be the right edge of the sidebar view.
+	// find minX, which will be the right edge of the sidebar view
 	_, _, minX, _, err := gooey.ViewPosition("sidebar")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Create a view to hold the domains header.
+	// create a view to hold the domains header
 	if domHead, err := gooey.SetView("domHead", minX, minY, menu.maxX-1, minY+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		// Print the title to the domains header.
 		fmt.Fprintln(domHead, centerText("Scan Domains", menu.maxX-minX))
 
 	}
 
-	// Create the domains view.
+	// create the domains view
 	if domains, err := gooey.SetView("domains", minX, minY+2, menu.maxX-1, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -154,32 +149,31 @@ func drawDomains(gooey *gocui.Gui) error {
 	return nil
 }
 
-// drawSummary draws the summary view.
+// drawSummary draws the summary view
 func drawSummary(gooey *gocui.Gui) error {
-
-	// Find minY, which will be the bottom of the header view.
+	// find minY, which will be the bottom of the header view
 	_, _, _, minY, err := gooey.ViewPosition("title")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Find minX, which will be the right edge of the sidebar view.
+	// find minX, which will be the right edge of the sidebar view
 	_, _, minX, _, err := gooey.ViewPosition("sidebar")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Create a view to hold the summary header.
+	// create a view to hold the summary header
 	if sumHead, err := gooey.SetView("sumHead", minX, minY, menu.maxX-1, minY+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		// Print the title to the summary header.
+		// print the title to the summary header
 		fmt.Fprintln(sumHead, centerText("Results Summary", menu.maxX-minX))
 	}
 
-	// Create the summary view.
+	// create the summary view
 	if summary, err := gooey.SetView("summary", minX, minY+2, menu.maxX-1, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -191,32 +185,31 @@ func drawSummary(gooey *gocui.Gui) error {
 	return nil
 }
 
-// drawDetails draws the details view.
+// drawDetails draws the details view
 func drawDetails(gooey *gocui.Gui) error {
-
-	// Find minY, which will be the bottom of the header view.
+	// find minY, which will be the bottom of the header view
 	_, _, _, minY, err := gooey.ViewPosition("title")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Find minX, which will be the right edge of the sidebar view.
+	// find minX, which will be the right edge of the sidebar view
 	_, _, minX, _, err := gooey.ViewPosition("sidebar")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Create a view to hold the results header.
+	// create a view to hold the results header
 	if detHead, err := gooey.SetView("detHead", minX, minY, menu.maxX-1, minY+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		// Print the title to the details header.
+		// print the title to the details header
 		fmt.Fprintln(detHead, centerText("Detailed Results", menu.maxX-minX))
 	}
 
-	// Create the details view.
+	// create the details view
 	if details, err := gooey.SetView("details", minX, minY+2, menu.maxX-1, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -228,32 +221,30 @@ func drawDetails(gooey *gocui.Gui) error {
 	return nil
 }
 
-// drawFailures draws the failures view.
+// drawFailures draws the failures view
 func drawFailures(gooey *gocui.Gui) error {
-
-	// Find minY, which will be the bottom of the header view.
+	// find minY, which will be the bottom of the header view
 	_, _, _, minY, err := gooey.ViewPosition("title")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Find minX, which will be the right edge of the sidebar view.
+	// find minX, which will be the right edge of the sidebar view
 	_, _, minX, _, err := gooey.ViewPosition("sidebar")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Create a view to hold the failures header.
+	// create a view to hold the failures header
 	if failHead, err := gooey.SetView("failHead", minX, minY, menu.maxX-1, minY+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		// Print the title to the failures header.
 		fmt.Fprintln(failHead, centerText("Failures", menu.maxX-minX))
 	}
 
-	// Create the failures view.
+	// create the failures view
 	if failures, err := gooey.SetView("failures", minX, minY+2, menu.maxX-1, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -265,32 +256,31 @@ func drawFailures(gooey *gocui.Gui) error {
 	return nil
 }
 
-// drawSuccesses draws the successes view.
+// drawSuccesses draws the successes view
 func drawSuccesses(gooey *gocui.Gui) error {
-
-	// Find minY, which will be the bottom of the header view.
+	// find minY, which will be the bottom of the header view
 	_, _, _, minY, err := gooey.ViewPosition("title")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Find minX, which will be the right edge of the sidebar view.
+	// find minX, which will be the right edge of the sidebar view
 	_, _, minX, _, err := gooey.ViewPosition("sidebar")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Create a view to hold the sucesses header.
+	// create a view to hold the sucesses header
 	if sucHead, err := gooey.SetView("sucHead", minX, minY, menu.maxX-1, minY+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		// Print the title to the successes header.
+		// print the title to the successes header
 		fmt.Fprintln(sucHead, centerText("Successes", menu.maxX-minX))
 	}
 
-	// Create the successes view.
+	// create the successes view
 	if successes, err := gooey.SetView("successes", minX, minY+2, menu.maxX-1, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -302,27 +292,14 @@ func drawSuccesses(gooey *gocui.Gui) error {
 	return nil
 }
 
-// TODO:  Move Legend to bottom.
-var keybindText = [...]string{
-	"KEYBINDINGS",
-	"Space: New View",
-	"Tab: Next View",
-	"← ↑ → ↓: Move View",
-	"Backspace: Delete View",
-	"t: Set view on top",
-	"^C: Exit",
-}
-
-// drawLegend draws te legend view.
+// drawLegend draws te legend view
 func drawLegend(gooey *gocui.Gui) error {
-
-	// Create the legend view at the bottom of the screen.
+	// create the legend view at the bottom of the screen
 	if legend, err := gooey.SetView("legend", 0, menu.maxY-3, menu.maxX, menu.maxY-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		// Print the key bindings to the legend view.
 		fmt.Fprintln(legend, centerText("← ↑ → ↓: Move | ^A: Scan All | ^C: Exit", menu.maxX))
 	}
 
@@ -330,11 +307,10 @@ func drawLegend(gooey *gocui.Gui) error {
 }
 
 func uiLayout(gooey *gocui.Gui) error {
-
-	// Find and set gui dimensions.
+	// bind and set gui dimensions
 	menu.maxX, menu.maxY = gooey.Size()
 
-	// Draw the views in the menu.
+	// draw the views in the menu
 	if err := drawTitle(gooey); err != nil {
 		return err
 	}
@@ -360,12 +336,12 @@ func uiLayout(gooey *gocui.Gui) error {
 		return err
 	}
 
-	// After the views have been draw, ensure sidebar is selected.
+	// after the views have been drawn, ensure sidebar is selected
 	if _, err := gooey.SetCurrentView("sidebar"); err != nil {
 		return err
 	}
 
-	// Read the selected menu item and put the corresponding views on top.
+	// read the selected menu item and put the corresponding views on top
 	if sidebar, err := gooey.View("sidebar"); err == nil {
 		selection := readSel(sidebar)
 		switch selection {
@@ -442,8 +418,6 @@ const failTemp = `
 {{- end}}`
 
 func scanAllTheThings(gooey *gocui.Gui, view *gocui.View) error {
-
-	//
 	summary, err := gooey.View("summary")
 	if err != nil {
 		return err
@@ -452,7 +426,7 @@ func scanAllTheThings(gooey *gocui.Gui, view *gocui.View) error {
 
 	initOutWriter(summary)
 
-	//
+	// start a scan
 	scan, err := crawl()
 	if err != nil {
 		return err
@@ -468,40 +442,34 @@ func scanAllTheThings(gooey *gocui.Gui, view *gocui.View) error {
 		fmt.Fprint(domains, "[", result.Result.Request.IP, "] ", result.Result.Request.URL, "\n")
 	}
 
-	//
 	details, err := gooey.View("details")
 	if err != nil {
 		return err
 	}
 	details.Clear()
 
-	//
 	detTmpl := template.Must(template.New("details").Parse(detailsTemp + "\n"))
 	for _, result := range scan.results {
 		detTmpl.Execute(details, result)
 	}
 
-	//
 	successes, err := gooey.View("successes")
 	if err != nil {
 		return err
 	}
 	successes.Clear()
 
-	//
 	successTmpl := template.Must(template.New("successes").Parse(successTemp + "\n"))
 	for _, result := range scan.results {
 		successTmpl.Execute(successes, result)
 	}
 
-	//
 	failures, err := gooey.View("failures")
 	if err != nil {
 		return err
 	}
 	failures.Clear()
 
-	//
 	failTmpl := template.Must(template.New("failures").Parse(failTemp + "\n"))
 	for _, result := range scan.results {
 		failTmpl.Execute(failures, result)
@@ -512,15 +480,13 @@ func scanAllTheThings(gooey *gocui.Gui, view *gocui.View) error {
 	return nil
 }
 
-// quit quits the main event loop.
+// quit closes out the main UI event loop
 func quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
 }
 
-// selUp moves the cursor/selection up one line.
+// selUp moves the cursor/selection up one line
 func selUp(gooey *gocui.Gui, view *gocui.View) error {
-
-	// Move the cursor up one line.
 	if view != nil {
 		view.MoveCursor(0, -1, false)
 	}
@@ -528,14 +494,12 @@ func selUp(gooey *gocui.Gui, view *gocui.View) error {
 	return nil
 }
 
-// selDown moves the selected menu item down one line, without moving past the last line.
+// selDown moves the selected menu item down one line, without moving past the last line
 func selDown(gooey *gocui.Gui, view *gocui.View) error {
-
-	// Move the cursor down one line.
 	if view != nil {
 		view.MoveCursor(0, 1, false)
 
-		// If the cursor moves to an empty line, move it back. :P
+		// if the cursor moves to an empty line, move it back
 		if readSel(view) == "" {
 			view.MoveCursor(0, -1, false)
 		}
@@ -544,25 +508,23 @@ func selDown(gooey *gocui.Gui, view *gocui.View) error {
 	return nil
 }
 
-// setKeyBinds is a necessary evil.
+// setKeyBinds is a necessary evil
 func setKeyBinds(gooey *gocui.Gui) error {
-
-	// Always have an exit strategy.
 	if err := gooey.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		return err
 	}
 
-	// Start scanning
+	// start scanning
 	if err := gooey.SetKeybinding("", gocui.KeyCtrlA, gocui.ModNone, scanAllTheThings); err != nil {
 		return err
 	}
 
-	// If the sidebar is active and ↑ is pressed, move the selection up one.
+	// if the sidebar is active and ↑ is pressed, move the selection up one
 	if err := gooey.SetKeybinding("sidebar", gocui.KeyArrowUp, gocui.ModNone, selUp); err != nil {
 		return err
 	}
 
-	// If the sidebar is active and ↓ is pressed, move the selection down one.
+	// If the sidebar is active and ↓ is pressed, move the selection down one
 	if err := gooey.SetKeybinding("sidebar", gocui.KeyArrowDown, gocui.ModNone, selDown); err != nil {
 		return err
 	}
@@ -599,7 +561,6 @@ func delMsg(g *gocui.Gui, v *gocui.View) error {
 }
 
 func uiInit() error {
-
 	gui := gocui.NewGui()
 	if err := gui.Init(); err != nil {
 		return err
