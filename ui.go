@@ -545,19 +545,15 @@ func showMsg(g *gocui.Gui, text string) error {
 		return err
 	}
 
-	if _, err := g.SetCurrentView("msg"); err != nil {
-		return err
-	}
+	_, err := g.SetCurrentView("msg")
 
-	return nil
+	return err // error or nil
 }
 
 func delMsg(g *gocui.Gui, v *gocui.View) error {
 	g.DeleteKeybinding("main", gocui.MouseLeft, gocui.ModNone)
-	if err := g.DeleteView("msg"); err != nil {
-		return err
-	}
-	return nil
+
+	return g.DeleteView("msg") // error or nil
 }
 
 func uiInit() error {
