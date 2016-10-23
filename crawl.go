@@ -29,6 +29,7 @@ func crawl() (*Scan, error) {
 	res.tests = genTests()
 
 	res.crawler = &scraper.Crawler{Log: logger}
+	res.finder = &domfinder.Finder{Log: logger}
 
 	if conf.scan.manualList != "" {
 		logger.Println("manually supplied url list")
@@ -39,38 +40,37 @@ func crawl() (*Scan, error) {
 	} else {
 		logger.Println("checking for running webservers")
 
-		finder := &domfinder.Finder{Log: logger}
-		if err := finder.GetWebservers(); err != nil {
+		if err := res.finder.GetWebservers(); err != nil {
 			return nil, NewErr{Code: ErrProcList, deepErr: err}
 		}
 
-		if outlist := ""; len(finder.Procs) > 0 {
-			for _, proc := range finder.Procs {
+		if outlist := ""; len(res.finder.Procs) > 0 {
+			for _, proc := range res.finder.Procs {
 				outlist += fmt.Sprintf("[%s:%s] ", proc.Name, proc.PID)
 			}
-			logger.Printf("found %d procs matching a webserver: %s", len(finder.Procs), outlist)
-			out.Printf("found %d procs matching a webserver", len(finder.Procs))
+			logger.Printf("found %d procs matching a webserver: %s", len(res.finder.Procs), outlist)
+			out.Printf("found %d procs matching a webserver", len(res.finder.Procs))
 		}
 
 		// start crawling for domains
-		if err := finder.GetDomains(); err != nil {
+		if err := res.finder.GetDomains(); err != nil {
 			return nil, NewErr{Code: ErrGetDomains, deepErr: err}
 		}
 
-		finder.Filter(domfinder.DomainFilter{
+		res.finder.Filter(domfinder.DomainFilter{
 			IgnoreHTTP:  conf.scan.ignoreHTTP,
 			IgnoreHTTPS: conf.scan.ignoreHTTPS,
 			IgnoreMatch: conf.scan.ignoreMatch,
 			MatchOnly:   conf.scan.matchOnly,
 		})
 
-		if len(finder.Domains) == 0 {
+		if len(res.finder.Domains) == 0 {
 			return nil, NewErr{Code: ErrNoDomainsFound}
 		}
 
-		logger.Printf("found %d domains on webserver %s (exe: %s, pid: %s)", len(finder.Domains), finder.MainProc.Name, finder.MainProc.Exe, finder.MainProc.PID)
+		logger.Printf("found %d domains on webserver %s (exe: %s, pid: %s)", len(res.finder.Domains), res.finder.MainProc.Name, res.finder.MainProc.Exe, res.finder.MainProc.PID)
 
-		for _, domain := range finder.Domains {
+		for _, domain := range res.finder.Domains {
 			res.crawler.Cnf.Domains = append(res.crawler.Cnf.Domains, &scraper.Domain{URL: domain.URL, IP: domain.IP})
 		}
 	}
