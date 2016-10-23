@@ -177,7 +177,7 @@ GLOBAL OPTIONS:
    --threads n              Use n threads to fetch data (0 defaults to server cores/2) (default: 0)
    --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
-   --min-score value        Minimium score for domain (default: 8)
+   --min-score value        Minimum score for domain (default: 8)
    -a, --assets             Crawl assets (css/js/images) for each page
    --ignore-success         Only print results if they are considered failed
    --allow-insecure         Ignore SSL certificate errors
@@ -210,15 +210,11 @@ COPYRIGHT:
 <h3>
 <a id="cpanel-server-steps" class="anchor" href="#cpanel-server-steps" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>cPanel server steps:</h3>
 
-<p>Head to <a href="https://release.liam.sh/marill/?sort=time&amp;order=desc">this page</a> and download the top item in the list. For example (replacing <strong>YOUR-VERSION</strong> with the latest download link):</p>
+<p>Head to <a href="https://release.liam.sh/marill/?sort=time&amp;order=desc">this page</a> and download the top item in the list. For example, using the latest version:</p>
 
-<div class="highlight highlight-source-shell"><pre>$ <span class="pl-c1">cd</span> /root/tmp <span class="pl-k">&amp;&amp;</span> wget https://release.liam.sh/marill/marill_YOUR-VERSION.tar.gz</pre></div>
+<div class="highlight highlight-source-shell"><pre>$ wget -q -O- https://release.liam.sh/marill/latest.tar.gz <span class="pl-k">|</span> tar -zx -C /root/tmp/</pre></div>
 
-<p>The archive only has a single binary in it. Extract it so we can get to work:</p>
-
-<div class="highlight highlight-source-shell"><pre>$ tar -xzvf marill_linux_amd64_YOUR-VERSION.tar.gz</pre></div>
-
-<p>You should now see a file named <strong>marill</strong> in the same directory. Feel free to look over the current flags and arguments:</p>
+<p>You should now see a file named <strong>marill</strong> in <code>/root/tmp/</code>. Feel free to look over the current flags and arguments:</p>
 
 <div class="highlight highlight-source-shell"><pre>$ /root/tmp/marill --help</pre></div>
 
