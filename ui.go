@@ -424,7 +424,6 @@ const successTemp = `
 {{- "["}}{{.Score | printf "%4.1f/10.0"}}]
 {{- " "}}{{if .Result.Response.Code}}[{{.Result.Response.Code}}{{else}}---{{end}}]
 {{- " "}}{{if .Result.Request.IP }}[{{printf "%s" .Result.Request.IP }}]{{end}}
-{{- " "}}{{if not .Result.Error }}[{{.Result.Time.Milli}} ms]{{end}}
 {{- " "}}{{ .Result.Request.URL }}
 {{- if .Result.Assets}}{{" ["}}{{printf "%d" (len .Result.Assets)}} assets]{{end}}
 {{- end}}`
@@ -434,9 +433,8 @@ const failTemp = `
 {{- "["}}{{.Score | printf "%4.1f/10.0"}}]
 {{- " "}}{{if .Result.Response.Code}}[{{.Result.Response.Code}}{{else}}---{{end}}]
 {{- " "}}{{if .Result.Request.IP }}[{{printf "%s" .Result.Request.IP }}]{{end}}
-{{- " "}}{{if not .Result.Error }}[{{.Result.Time.Milli}} ms]{{end}}
 {{- " "}}{{ .Result.Request.URL }}
-{{- if .Result.Assets}}{{" ["}}{{printf "%d" (len .Result.Assets)}} assets]{{end}}
+{{- if .Result.Error }} errors: {{ .Result.Error }}{{end}}
 {{- end}}`
 
 func scanAllTheThings(gooey *gocui.Gui, view *gocui.View) error {
