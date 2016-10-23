@@ -361,7 +361,7 @@ func uiLayout(gooey *gocui.Gui) error {
 	}
 
 	// After the views have been draw, ensure sidebar is selected.
-	if err := gooey.SetCurrentView("sidebar"); err != nil {
+	if _, err := gooey.SetCurrentView("sidebar"); err != nil {
 		return err
 	}
 
@@ -583,7 +583,7 @@ func showMsg(g *gocui.Gui, text string) error {
 		return err
 	}
 
-	if err := g.SetCurrentView("msg"); err != nil {
+	if _, err := g.SetCurrentView("msg"); err != nil {
 		return err
 	}
 
