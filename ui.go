@@ -270,13 +270,12 @@ func drawSuccesses(gooey *gocui.Gui) error {
 		log.Fatal(err)
 	}
 
-	// create a view to hold the sucesses header
+	// create a view to hold the successes header
 	if sucHead, err := gooey.SetView("sucHead", minX, minY, menu.maxX-1, minY+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		// print the title to the successes header
 		fmt.Fprintln(sucHead, centerText("Successes", menu.maxX-minX))
 	}
 
@@ -530,30 +529,6 @@ func setKeyBinds(gooey *gocui.Gui) error {
 	}
 
 	return nil
-}
-
-func showMsg(g *gocui.Gui, text string) error {
-	maxX, maxY := g.Size()
-	if v, err := g.SetView("msg", maxX/2-(len(text)/2)-1, maxY/2, maxX/2+(len(text)/2)+1, maxY/2+2); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		fmt.Fprintln(v, text)
-	}
-
-	if err := g.SetKeybinding("main", gocui.MouseLeft, gocui.ModNone, delMsg); err != nil {
-		return err
-	}
-
-	_, err := g.SetCurrentView("msg")
-
-	return err // error or nil
-}
-
-func delMsg(g *gocui.Gui, v *gocui.View) error {
-	g.DeleteKeybinding("main", gocui.MouseLeft, gocui.ModNone)
-
-	return g.DeleteView("msg") // error or nil
 }
 
 func uiInit() error {

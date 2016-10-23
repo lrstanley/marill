@@ -38,7 +38,7 @@ import (
 // these /SHOULD/ be defined during the make process. not always however.
 var version, commithash, compiledate = "", "", ""
 
-const updateUri = "https://api.github.com/repos/Liamraystanley/marill/releases/latest"
+const updateURI = "https://api.github.com/repos/Liamraystanley/marill/releases/latest"
 
 const motd = `
 {magenta}      {lightgreen}O{magenta}     {yellow}     [ Marill -- Automated site testing utility ]
@@ -330,7 +330,7 @@ func updateCheck() {
 		Timeout: time.Duration(3) * time.Second,
 	}
 
-	req, err := http.NewRequest("GET", updateUri, nil)
+	req, err := http.NewRequest("GET", updateURI, nil)
 	if err != nil {
 		out.Println(NewErr{Code: ErrUpdateGeneric})
 		logger.Println(NewErr{Code: ErrUpdate, value: "during check", deepErr: err})

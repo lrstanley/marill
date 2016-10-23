@@ -27,8 +27,6 @@ import (
 
 const (
 	defaultScore = 10.0
-	typeGlob     = "glob"
-	typeRegex    = "regex"
 )
 
 var defaultTestTypes = [...]string{
@@ -76,13 +74,14 @@ func (m *TestMatch) String() string {
 
 // Compare matches data against TestMatch.Query
 func (m *TestMatch) Compare(data []string) (matched int) {
-	if m.Type == typeGlob {
+	if m.Type == "glob" {
 		for i := 0; i < len(data); i++ {
 			if utils.Glob(data[i], m.Query) {
 				matched++
 			}
 		}
 	} else {
+		// assume regex
 		for i := 0; i < len(data); i++ {
 			if m.Regex.MatchString(data[i]) {
 				matched++

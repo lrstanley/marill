@@ -205,13 +205,13 @@ func (c *Crawler) Fetch(res *FetchResult) {
 		urls := []*url.URL{}
 
 		for _, uri := range getSrc(b, res.Response.URL) {
-			parsedUri, err := url.Parse(uri)
+			parsedURI, err := url.Parse(uri)
 			if err != nil {
 				c.Log.Printf("unable to parse asset uri [%s], resource: %s: %s", uri, res.Request, err)
 				continue
 			}
 
-			urls = append(urls, parsedUri)
+			urls = append(urls, parsedURI)
 		}
 
 		c.ResPool = sempool.New(4)
