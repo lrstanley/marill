@@ -46,7 +46,7 @@ test: clean fetch generate
 	@echo "\n\033[0;36m [ Running SHORT tests ]\033[0;m"
 	go test -v -timeout 30s -short ./...
 
-testextended: clean fetch generate lint
+testextended: clean fetch generate
 	@echo "\n\033[0;36m [ Running EXTENDED tests ]\033[0;m"
 	go test -v -timeout 2m ./...
 
