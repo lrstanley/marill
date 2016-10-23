@@ -18,20 +18,19 @@ LD_FLAGS += -s -w -X 'main.version=$(VERSION)' -X 'main.commithash=$(HASH)' -X '
 
 generate:
 	@echo "\n\033[0;36m [ Generating gocode from assets... ]\033[0;m"
+	test -f $(GOPATH)/bin/go-bindata || go get -v github.com/jteeuwen/go-bindata/...
 	$(GOPATH)/bin/go-bindata tests/...
 
 fetch:
 	@echo "\n\033[0;36m [ Fetching dependencies ]\033[0;m"
 	# go get -v -d ./... <-- legacy style
 	test -f $(GOPATH)/bin/govendor || go get -v -u github.com/kardianos/govendor
-	test -f $(GOPATH)/bin/gometalinter.v1 || go get -v -u gopkg.in/alecthomas/gometalinter.v1
-	test -f $(GOPATH)/bin/gox || go get -v github.com/mitchellh/gox
-	test -f $(GOPATH)/bin/go-bindata || go get -v github.com/jteeuwen/go-bindata/...
 
-	govendor sync
+	$(GOPATH)/bin/govendor sync
 
 lint: test
 	@echo "\n\033[0;36m [ Installng linters ]\033[0;m"
+	test -f $(GOPATH)/bin/gometalinter.v1 || go get -v -u gopkg.in/alecthomas/gometalinter.v1
 	$(GOPATH)/bin/gometalinter.v1 -i > /dev/null
 	@echo "\n\033[0;36m [ Running linters ]\033[0;m"
 	$(GOPATH)/bin/gometalinter.v1 --exclude="bindata*" --cyclo-over=15 --min-confidence=.30 --deadline=10s --dupl-threshold=40 -E gofmt -E goimports -E misspell -E test ./...
@@ -54,11 +53,13 @@ clean:
 
 cc: clean fetch generate
 	@echo "\n\033[0;36m [ Cross compiling ]\033[0;m"
+	test -f $(GOPATH)/bin/gox || go get -v github.com/mitchellh/gox
 	mkdir -p ${RELEASE_ROOT}/dist
 	$(GOPATH)/bin/gox -verbose -ldflags="${LD_FLAGS}" -os="linux freebsd netbsd openbsd" -arch="386 amd64 arm" -output "${RELEASE_ROOT}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
 
 ccsmall: clean fetch generate
 	@echo "\n\033[0;36m [ Cross compiling ]\033[0;m"
+	test -f $(GOPATH)/bin/gox || go get -v github.com/mitchellh/gox
 	mkdir -p ${RELEASE_ROOT}/dist
 	$(GOPATH)/bin/gox -verbose -ldflags="${LD_FLAGS}" -os="linux" -arch="amd64" -output "${RELEASE_ROOT}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
 
