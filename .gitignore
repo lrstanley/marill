@@ -25,6 +25,7 @@ _testmain.go
 
 # Glide extras
 vendor
+!vendor/vendor.json
 .glide
 *.lock
 
