@@ -1,0 +1,49 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "tv5ZbA30tvT8pUG09RObhPq4Ji8=",
+			"path": "github.com/Liamraystanley/go-sempool",
+			"revision": "eba0b766e963205cc7389e1a7f3f8348ceefd0ae",
+			"revisionTime": "2016-10-14T05:28:09Z"
+		},
+		{
+			"checksumSHA1": "NBfKOTcMlELiBnWkYL956WmwgBE=",
+			"path": "github.com/jroimartin/gocui",
+			"revision": "550f04e523205530542d0c4fe63c4c0ab5d046bd",
+			"revisionTime": "2016-10-18T17:34:29Z"
+		},
+		{
+			"checksumSHA1": "yf185lmVPcvXjLZuPT1s4JzxI18=",
+			"path": "github.com/mattn/go-runewidth",
+			"revision": "737072b4e32b7a5018b4a7125da8d12de90e8045",
+			"revisionTime": "2016-10-12T01:35:12Z"
+		},
+		{
+			"checksumSHA1": "pqTEAm1W2tlmdHJ6b/J0no+cfso=",
+			"path": "github.com/nsf/termbox-go",
+			"revision": "b6acae516ace002cb8105a89024544a1480655a5",
+			"revisionTime": "2016-09-13T19:16:50Z"
+		},
+		{
+			"checksumSHA1": "VzCBWaUbB+sJ7NvGf1TMPoxcqSE=",
+			"path": "github.com/urfave/cli",
+			"revision": "6f2647a880e25bd7178ab4bbf1f4045ac256cc57",
+			"revisionTime": "2016-10-22T17:29:59Z"
+		},
+		{
+			"checksumSHA1": "vqc3a+oTUGX8PmD0TS+qQ7gmN8I=",
+			"path": "golang.org/x/net/html",
+			"revision": "f11d7120b19ae21da5715f3e47621736de1b1da9",
+			"revisionTime": "2016-10-22T09:38:57Z"
+		},
+		{
+			"checksumSHA1": "00eQaGynDYrv3tL+C7l9xH0IDZg=",
+			"path": "golang.org/x/net/html/atom",
+			"revision": "f11d7120b19ae21da5715f3e47621736de1b1da9",
+			"revisionTime": "2016-10-22T09:38:57Z"
+		}
+	],
+	"rootPath": "github.com/Liamraystanley/marill"
+}

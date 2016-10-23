@@ -24,8 +24,8 @@ _testmain.go
 *.prof
 
 # Glide extras
-vendor
-!vendor/vendor.json
+vendor/*
+!vendor/*.json
 .glide
 *.lock
 

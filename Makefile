@@ -22,10 +22,13 @@ generate:
 
 fetch:
 	@echo "\n\033[0;36m [ Fetching dependencies ]\033[0;m"
-	go get -d ./...
-	test -f $(GOPATH)/bin/gometalinter.v1 || go get -u gopkg.in/alecthomas/gometalinter.v1
-	test -f $(GOPATH)/bin/gox || go get github.com/mitchellh/gox
-	test -f $(GOPATH)/bin/go-bindata || go get github.com/jteeuwen/go-bindata/...
+	# go get -v -d ./... <-- legacy style
+	test -f $(GOPATH)/bin/govendor || go get -v -u github.com/kardianos/govendor
+	test -f $(GOPATH)/bin/gometalinter.v1 || go get -v -u gopkg.in/alecthomas/gometalinter.v1
+	test -f $(GOPATH)/bin/gox || go get -v github.com/mitchellh/gox
+	test -f $(GOPATH)/bin/go-bindata || go get -v github.com/jteeuwen/go-bindata/...
+
+	govendor sync
 
 lint: test
 	@echo "\n\033[0;36m [ Installng linters ]\033[0;m"
