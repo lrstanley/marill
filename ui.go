@@ -97,7 +97,7 @@ func drawSidebar(gooey *gocui.Gui) error {
 	}
 
 	// Create a view for the sidebar itself.
-	if sidebar, err := gooey.SetView("sidebar", 0, minY+2, maxX, menu.maxY-1); err != nil {
+	if sidebar, err := gooey.SetView("sidebar", 0, minY+2, maxX, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -142,7 +142,7 @@ func drawDomains(gooey *gocui.Gui) error {
 	}
 
 	// Create the domains view.
-	if domains, err := gooey.SetView("domains", minX, minY+2, menu.maxX-1, menu.maxY-1); err != nil {
+	if domains, err := gooey.SetView("domains", minX, minY+2, menu.maxX-1, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -180,7 +180,7 @@ func drawSummary(gooey *gocui.Gui) error {
 	}
 
 	// Create the summary view.
-	if summary, err := gooey.SetView("summary", minX, minY+2, menu.maxX-1, menu.maxY-1); err != nil {
+	if summary, err := gooey.SetView("summary", minX, minY+2, menu.maxX-1, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -217,7 +217,7 @@ func drawDetails(gooey *gocui.Gui) error {
 	}
 
 	// Create the details view.
-	if details, err := gooey.SetView("details", minX, minY+2, menu.maxX-1, menu.maxY-1); err != nil {
+	if details, err := gooey.SetView("details", minX, minY+2, menu.maxX-1, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -254,7 +254,7 @@ func drawFailures(gooey *gocui.Gui) error {
 	}
 
 	// Create the failures view.
-	if failures, err := gooey.SetView("failures", minX, minY+2, menu.maxX-1, menu.maxY-1); err != nil {
+	if failures, err := gooey.SetView("failures", minX, minY+2, menu.maxX-1, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -291,7 +291,7 @@ func drawSuccesses(gooey *gocui.Gui) error {
 	}
 
 	// Create the successes view.
-	if successes, err := gooey.SetView("successes", minX, minY+2, menu.maxX-1, menu.maxY-1); err != nil {
+	if successes, err := gooey.SetView("successes", minX, minY+2, menu.maxX-1, menu.maxY-3); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -313,16 +313,17 @@ var keybindText = [...]string{
 	"^C: Exit",
 }
 
+// drawLegend draws te legend view.
 func drawLegend(gooey *gocui.Gui) error {
 
-	if v, err := gooey.SetView("legend", menu.maxX-25, 0, menu.maxX-1, 8); err != nil {
+	// Create the legend view at the bottom of the screen.
+	if legend, err := gooey.SetView("legend", 0, menu.maxY-3, menu.maxX, menu.maxY-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 
-		for i := 0; i < len(keybindText); i++ {
-			fmt.Fprintln(v, keybindText[i])
-		}
+		// Print the key bindings to the legend view.
+		fmt.Fprintln(legend, centerText("← ↑ → ↓: Move | ^A: Scan All | ^C: Exit", menu.maxX))
 	}
 
 	return nil
@@ -353,6 +354,9 @@ func uiLayout(gooey *gocui.Gui) error {
 		return err
 	}
 	if err := drawSuccesses(gooey); err != nil {
+		return err
+	}
+	if err := drawLegend(gooey); err != nil {
 		return err
 	}
 
