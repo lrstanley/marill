@@ -119,7 +119,7 @@ GLOBAL OPTIONS:
    --threads n              Use n threads to fetch data (0 defaults to server cores/2) (default: 0)
    --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
-   --min-score value        Minimium score for domain (default: 8)
+   --min-score value        Minimum score for domain (default: 8)
    -a, --assets             Crawl assets (css/js/images) for each page
    --ignore-success         Only print results if they are considered failed
    --allow-insecure         Ignore SSL certificate errors

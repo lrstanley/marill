@@ -637,7 +637,7 @@ func main() {
 		},
 		cli.Float64Flag{
 			Name:        "min-score",
-			Usage:       "Minimium score for domain",
+			Usage:       "Minimum score for domain",
 			Value:       8.0,
 			Destination: &conf.scan.minScore,
 		},
