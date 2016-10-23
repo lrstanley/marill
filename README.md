@@ -51,7 +51,7 @@ _Disclaimer: Marill is still in early development, and this list is subject to c
 
 The general idea is that you place Marill on the server you would like to test. Marill by default will then figure out the list of domains that server is hosting. Marill will then begin to act much like a browser, crawling each site (and all resources like images/css/javascript/etc if `--assets` is used). It will then pass each resource it fetches through the list of builtin, or external tests. Each domain is given a starting score of 10, and each test has a pre-defined weight. If the test matches, that score is applied to the main score. If the score falls below the minimum configured score, it is considered failed.
 
-### Examples:
+### Examples
 
 Here are a few examples of tests that are useful:
 
@@ -64,14 +64,14 @@ Here are a few examples of tests that are useful:
 Example running from my workstation (though, this would be best suited running from the server itself):
 [![asciicast](https://asciinema.org/a/bhnskk1s3vwdwgl2w52deioel.png)](https://asciinema.org/a/bhnskk1s3vwdwgl2w52deioel)
 
-## Project Status:
+## Project Status
 
    * [See here](https://github.com/Liamraystanley/marill/projects/1) for what is being worked on/in my todo list for the first beta release.
    * [See here](https://github.com/Liamraystanley/marill/projects/2) for what is being worked on/in my todo list for the first major release.
    * Head over to [release.liam.sh/marill](https://release.liam.sh/marill/?sort=time&order=desc) to get some testing bundled binaries, if your'e daring and willing to help test my latest pushes.
    * Head over to [Github Releases](https://github.com/Liamraystanley/marill/releases) to get more true-tested builds and versions, with change information.
 
-## Building:
+## Building
 Marill supports building on 1.3+ (or even possibly older), however it is recommended to build on the latest go release. Note that you will not be able to use the Makefile to compile Marill if you are trying to build on go 1.4 or lower. You will need to manually compile it, due to limitations with ldflag support.
 
 ```bash
@@ -86,7 +86,7 @@ To run unit tests, then compile, simply run:
 $ make test all
 ```
 
-## Usage:
+## Usage
 This is very likely to change quite a bit until we're out of beta. Please use wisely.
 
 ```
@@ -148,7 +148,7 @@ COPYRIGHT:
 
 So, you want to help out, test, see how things work, and find possible bugs? Follow the below steps and you will be right on your way.
 
-### cPanel server steps:
+### cPanel server steps
 
 Head to [this page](https://release.liam.sh/marill/?sort=time&order=desc) and download the top item in the list. For example, using the latest version:
 
@@ -175,11 +175,11 @@ So, for example, to start off with:
 $ /root/tmp/marill -a
 ```
 
-### Things to note/Troubleshooting:
+### Things to note/Troubleshooting
    * Please remove `/root/tmp/marill` once you are done. This utility is still in alpha stages, and as such, there is no update check functionality. Leaving in place may cause someone in the future to utilize an outdated version of the software.
    * If there are any problems or bugs, **PLEASE LET ME KNOW!** You can submit bugs if you have a Github account [here](https://github.com/Liamraystanley/marill/issues/new) or [here if you do not](https://gitreports.com/issue/Liamraystanley/marill)
 
-## FAQ:
+## FAQ
    1. **Will it cause high load?**
       * The general target at which this was written for are servers under maintenance, or being ran on a new server that is being migrated to. That being said, Marill does run scans in parallel. It will run scans in parallel in the amount of cores divided by 2. (8 core server, 4 concurrent crawls, 2 core server, 1 crawl at a time). If you see Marill still causing too much load, you can utilize `--delay` and `--threads`.
 
@@ -221,7 +221,7 @@ $ /root/tmp/marill -a
       ```
 
 
-## License:
+## License
 
     LICENSE: The MIT License (MIT)
     Copyright (c) 2016 Liam Stanley <me@liamstanley.io>
