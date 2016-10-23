@@ -28,15 +28,26 @@ fetch:
 
 	$(GOPATH)/bin/govendor sync
 
-lint: test
+lint: clean fetch generate
 	@echo "\n\033[0;36m [ Installng linters ]\033[0;m"
 	test -f $(GOPATH)/bin/gometalinter.v1 || go get -v -u gopkg.in/alecthomas/gometalinter.v1
 	$(GOPATH)/bin/gometalinter.v1 -i > /dev/null
-	@echo "\n\033[0;36m [ Running linters ]\033[0;m"
-	$(GOPATH)/bin/gometalinter.v1 --exclude="bindata*" --cyclo-over=15 --min-confidence=.30 --deadline=10s --dupl-threshold=40 -E gofmt -E goimports -E misspell -E test ./...
+	@echo "\n\033[0;36m [ Running SHORT linting ]\033[0;m"
+	$(GOPATH)/bin/gometalinter.v1 --vendored-linters --sort=path --exclude="bindata*" --exclude "vendor" --min-confidence=0.3 --deadline 15s --disable-all -E structkcheck -E deadcode -E ineffassign -E dupl -E golint -E gotype -E varcheck -E interfacer -E goconst -E gosimple -E staticcheck -E unused -E gofmt -E goimports -E misspell ./...
+
+lintextended: clean fetch generate
+	@echo "\n\033[0;36m [ Installng linters ]\033[0;m"
+	test -f $(GOPATH)/bin/gometalinter.v1 || go get -v -u gopkg.in/alecthomas/gometalinter.v1
+	$(GOPATH)/bin/gometalinter.v1 -i > /dev/null
+	@echo "\n\033[0;36m [ Running EXTENDED linting ]\033[0;m"
+	$(GOPATH)/bin/gometalinter.v1 --vendored-linters --sort=path --exclude="bindata*" --exclude "vendor" --min-confidence=0.3 --deadline 1m --disable-all -E structkcheck -E aligncheck -E deadcode -E ineffassign -E dupl -E golint -E gotype -E errcheck -E varcheck -E interfacer -E goconst -E gosimple -E staticcheck -E unused -E gofmt -E goimports -E misspell ./...
 
 test: clean fetch generate
-	@echo "\n\033[0;36m [ Running tests ]\033[0;m"
+	@echo "\n\033[0;36m [ Running SHORT tests ]\033[0;m"
+	go test -v -timeout 30s -short ./...
+
+testextended: clean fetch generate lint
+	@echo "\n\033[0;36m [ Running EXTENDED tests ]\033[0;m"
 	go test -v -timeout 2m ./...
 
 debug: clean fetch generate

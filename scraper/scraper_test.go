@@ -23,6 +23,11 @@ func GetResults(c *Crawler, URL, IP string) *FetchResult {
 }
 
 func TestFetch(t *testing.T) {
+	// as this is a long running test, ignore if they want short
+	if testing.Short() {
+		t.Skip("skipping crawl fetching in short mode")
+	}
+
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
 	cases := []struct {
