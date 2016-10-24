@@ -15,8 +15,9 @@
 - [Project Status](#project-status)
 - [Building](#building)
 - [Usage](#usage)
-- [Testing](#testing)
-  - [cPanel servers](#cpanel-server-steps)
+- [Getting started](#getting-started)
+  - [cPanel/Apache based servers](#cpanelapache-based-servers)
+  - [Alternatives (Nginx, Caddy, etc)](#alternatives-nginx-caddy-etc)
   - [Troubleshooting](#things-to-notetroubleshooting)
 - [Frequently Asked Questions](#faq)
   - [Will it cause high load?](#faq)
@@ -144,11 +145,9 @@ COPYRIGHT:
    (c) 2016 Liam Stanley (see https://git.io/vPvUp)
 ```
 
-## Testing
+## Getting Started
 
-So, you want to help out, test, see how things work, and find possible bugs? Follow the below steps and you will be right on your way.
-
-### cPanel server steps
+Getting started with Marill should be fairly easy. Since Marill is a single binary, there are no dependencies that are needed for the utility to run.
 
 Head to [this page](https://release.liam.sh/marill/?sort=time&order=desc) and download the top item in the list. For example, using the latest version:
 
@@ -173,6 +172,39 @@ So, for example, to start off with:
 
 ```bash
 $ /root/tmp/marill -a
+```
+
+### cPanel/Apache based servers:
+
+Note that Marill has out of the box support for cPanel and Apache servers. The way that information (like the domains that the server is hosting) is pulled from cPanel is through `/var/cpanel/` (e.g. `/var/cpanel/users/<user>` and `/var/cpanel/userdata/<domain>`), for which cPanel should keep updated.
+
+For Apache based servers, Marill will find the current running binary, and execute `<binary> -S`, which pulls information about all loaded virtual host entries in the current running version. (see [here](https://httpd.apache.org/docs/2.4/vhosts/) for more information).
+
+### Alternatives (Nginx, Caddy, etc)
+
+If your web server does not match the above description, you can utilize the manual domain list flag of Marill. The current syntax for this is as follows:
+
+```bash
+$ marill --domains "<items>"
+```
+
+Replace **\<items\>** with one of the following list of inputs:
+   * `DOMAIN:IP:PORT`
+   * `DOMAIN:IP`
+   * `DOMAIN:PORT`
+   * `DOMAIN`
+
+**DOMAIN** can be any of one of the following examples:
+   * `domain.com`
+   * `www.domain.com`
+   * `random.subdomain.domain.com`
+   * `http://some-example.com/`
+   * `https://some-example.com/some-login.php`
+
+So, to put it all together, you can do something like:
+
+```bash
+$ marill a --domains "somedomain.com:443 domain.com:1234 https://domain.com/"
 ```
 
 ### Things to note/Troubleshooting
