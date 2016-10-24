@@ -2,7 +2,7 @@ language: go
 go:
 - tip
 script:
-- make testextended all
+- make testextended
 branches:
   only:
   - master
