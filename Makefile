@@ -44,11 +44,11 @@ lintextended: clean fetch generate
 
 test: clean fetch generate
 	@echo "\n\033[0;36m [ Running SHORT tests ]\033[0;m"
-	go test -v -timeout 30s -short ./...
+	go test -v -timeout 30s -short $(shell go list ./... | grep -v "vendor/")
 
 testextended: clean fetch generate
 	@echo "\n\033[0;36m [ Running EXTENDED tests ]\033[0;m"
-	go test -v -timeout 2m ./...
+	go test -v -timeout 2m $(shell go list ./... | grep -v "vendor/")
 
 debug: clean fetch generate
 	@echo "\n\033[0;36m [ Executing ]\033[0;m"
