@@ -228,7 +228,7 @@ func (c *Crawler) Fetch(res *FetchResult) {
 
 			asset := &Resource{Request: &Domain{URL: urls[i]}}
 			res.Assets = append(res.Assets, asset)
-			go c.fetchResource(res.Assets[i])
+			go c.fetchResource(res.Assets[len(res.Assets)-1])
 		}
 
 		c.ResPool.Wait()
