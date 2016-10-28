@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/Liamraystanley/marill/utils"
@@ -258,7 +257,7 @@ func (c *Crawler) getHandler(cl *CustomClient) (*CustomResponse, error) {
 	}
 	client := &http.Client{
 		CheckRedirect: cl.redirectHandler,
-		Timeout:       time.Duration(10) * time.Second,
+		Timeout:       c.Cnf.HTTPTimeout,
 		Transport:     transport,
 	}
 

@@ -93,9 +93,10 @@ type scanConfig struct {
 	threads       int           // number of threads to run the scanner in
 	manualList    string        // list of manually supplied domains
 	assets        bool          // pull all assets for the page
-	delay         time.Duration // delay for the stasrt of each resource crawl
 	ignoreSuccess bool          // ignore urls/domains that were successfully fetched
 	allowInsecure bool          // if SSL errors should be ignored
+	delay         time.Duration // delay for the stasrt of each resource crawl
+	httptimeout   time.Duration // timeout before http request becomes stale
 
 	// domain filter related
 	ignoreHTTP   bool   // ignore http://
@@ -105,9 +106,9 @@ type scanConfig struct {
 	matchOnly    string // glob match of domains to whitelist
 
 	// test related
+	minScore       float64 // minimum score before a resource is considered "failed"
 	ignoreTest     string  // glob match of tests to blacklist
 	matchTest      string  // glob match of tests to whitelist
-	minScore       float64 // minimum score before a resource is considered "failed"
 	testsFromURL   string  // load tests from a remote url
 	testsFromPath  string  // load tests from a specified path
 	ignoreStdTests bool    // don't execute standard builtin tests
@@ -629,6 +630,12 @@ func main() {
 			Name:        "delay",
 			Usage:       "Delay `DURATION` before each resource is crawled (e.g. 5s, 1m, 100ms)",
 			Destination: &conf.scan.delay,
+		},
+		cli.DurationFlag{
+			Name:        "http-timeout",
+			Usage:       "`DURATION` before an http request is timed out (e.g. 5s, 10s, 1m)",
+			Destination: &conf.scan.httptimeout,
+			Value:       10 * time.Second,
 		},
 		cli.StringFlag{
 			Name:        "domains",

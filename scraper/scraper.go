@@ -96,6 +96,7 @@ type CrawlerConfig struct {
 	NoRemote      bool          // ignore all resources that match a remote IP
 	AllowInsecure bool          // if SSL errors should be ignored
 	Delay         time.Duration // delay before each resource is crawled
+	HTTPTimeout   time.Duration // http timeout before a request has become stale
 	Threads       int           // total number of threads to run crawls in
 }
 

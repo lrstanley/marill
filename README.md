@@ -119,6 +119,7 @@ GLOBAL OPTIONS:
    --tests-extended         Same as --tests, with extra information
    --threads n              Use n threads to fetch data (0 defaults to server cores/2) (default: 0)
    --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)
+   --http-timeout DURATION  DURATION before an http request is timed out (e.g. 5s, 10s, 1m) (default: 10s)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
    --min-score value        Minimum score for domain (default: 8)
    -a, --assets             Crawl assets (css/js/images) for each page
@@ -139,10 +140,9 @@ GLOBAL OPTIONS:
    --fail-text GLOB         Give sites a -10 score if body matches GLOB
    --help, -h               show help
    --version, -v            print the version
-
    
 COPYRIGHT:
-   (c) 2016 Liam Stanley (see https://git.io/vPvUp)
+   (c) 2016 Liam Stanley
 ```
 
 ## Getting Started
