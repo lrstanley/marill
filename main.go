@@ -123,12 +123,8 @@ type scanConfig struct {
 
 // appConfig handles what the app does (scans/crawls, printing data, some other task, etc)
 type appConfig struct {
-	ui                 bool
-	printUrls          bool
-	printTests         bool
-	printTestsExtended bool
-	exitOnFail         bool // exit with a status code of 1 if any of the domains failed
-	noUpdateCheck      bool
+	exitOnFail    bool // exit with a status code of 1 if any of the domains failed
+	noUpdateCheck bool
 }
 
 // config is a wrapper for all the other configs to put them in one place
@@ -236,7 +232,7 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 }
 
 // printUrls prints the urls that /would/ be scanned, if we were to start crawling
-func printUrls() {
+func printUrls(c *cli.Context) error {
 	printBanner()
 
 	if conf.scan.manualList != "" {
@@ -273,10 +269,12 @@ func printUrls() {
 			out.Printf("{blue}%-40s{c} {green}%s{c}", domain.URL, domain.IP)
 		}
 	}
+
+	return nil
 }
 
 // listTests lists all loaded tests, based on supplied args to Marill
-func listTests() {
+func listTests(c *cli.Context) error {
 	printBanner()
 
 	tests := genTests()
@@ -286,7 +284,7 @@ func listTests() {
 	for _, test := range tests {
 		out.Printf("{lightblue}name:{c} %-30s {lightblue}weight:{c} %-6.2f {lightblue}origin:{c} %s", test.Name, test.Weight, test.Origin)
 
-		if conf.app.printTestsExtended {
+		if c.Bool("extended") {
 			if len(test.Match) > 0 {
 				out.Println("    - {cyan}Match ANY{c}:")
 				for i := 0; i < len(test.Match); i++ {
@@ -304,6 +302,8 @@ func listTests() {
 			out.Println("")
 		}
 	}
+
+	return nil
 }
 
 func printBanner() {
@@ -422,7 +422,11 @@ func updateCheck() {
 	return
 }
 
-func run() {
+func run(c *cli.Context) error {
+	if len(conf.scan.manualList) == 0 {
+		conf.scan.manualList = strings.Join(c.Args(), " ")
+	}
+
 	printBanner()
 
 	if !conf.app.noUpdateCheck {
@@ -488,6 +492,8 @@ func run() {
 			}
 		}
 	}
+
+	return nil
 }
 
 func main() {
@@ -549,6 +555,46 @@ func main() {
 		return nil
 	}
 
+	app.Commands = []cli.Command{
+		{
+			Name:   "scan",
+			Usage:  "[DEFAULT] Start scan for all domains on server",
+			Action: run,
+		},
+		{
+			Name:    "urls",
+			Aliases: []string{"domains"},
+			Usage:   "Print the list of urls as if they were going to be scanned",
+			Action:  printUrls,
+		},
+		{
+			Name:   "tests",
+			Usage:  "Print the list of tests that are loaded and would be used",
+			Action: listTests,
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "extended",
+					Usage: "Show exta test information",
+				},
+			},
+		},
+		{
+			Name:   "ui",
+			Usage:  "Display a GUI/TUI mouse-enabled UI that allows a more visual approach to Marill",
+			Hidden: true,
+			Action: func(c *cli.Context) error {
+				if err := uiInit(); err != nil {
+					closeOut()         // close any open files that Out has open
+					initOut(os.Stdout) //re-initialize with stdout so we can give them the error
+					out.Fatal(err)
+				}
+				os.Exit(0)
+
+				return nil
+			},
+		},
+	}
+
 	app.Flags = []cli.Flag{
 		// output style flags
 		cli.BoolFlag{
@@ -595,29 +641,6 @@ func main() {
 			Name:        "no-updates",
 			Usage:       "Don't check to see if there are updates",
 			Destination: &conf.app.noUpdateCheck,
-		},
-
-		// app related
-		cli.BoolFlag{
-			Name:        "ui",
-			Usage:       "Display a GUI/TUI mouse-enabled UI that allows a more visual approach to Marill",
-			Destination: &conf.app.ui,
-			Hidden:      true,
-		},
-		cli.BoolFlag{
-			Name:        "urls",
-			Usage:       "Print the list of urls as if they were going to be scanned",
-			Destination: &conf.app.printUrls,
-		},
-		cli.BoolFlag{
-			Name:        "tests",
-			Usage:       "Print the list of tests that are loaded and would be used",
-			Destination: &conf.app.printTests,
-		},
-		cli.BoolFlag{
-			Name:        "tests-extended",
-			Usage:       "Same as --tests, with extra information",
-			Destination: &conf.app.printTestsExtended,
 		},
 
 		// scan configuration
@@ -743,30 +766,7 @@ func main() {
 	app.Copyright = "(c) 2016 Liam Stanley"
 	app.Compiled = time.Now()
 	app.Usage = "Automated website testing utility"
-	app.Action = func(c *cli.Context) error {
-		if len(conf.scan.manualList) == 0 {
-			conf.scan.manualList = strings.Join(c.Args(), " ")
-		}
-
-		if conf.app.printUrls {
-			printUrls()
-			os.Exit(0)
-		} else if conf.app.printTests || conf.app.printTestsExtended {
-			listTests()
-			os.Exit(0)
-		} else if conf.app.ui {
-			if err := uiInit(); err != nil {
-				closeOut()         // close any open files that Out has open
-				initOut(os.Stdout) //re-initialize with stdout so we can give them the error
-				out.Fatal(err)
-			}
-			os.Exit(0)
-		}
-
-		run()
-
-		return nil
-	}
+	app.Action = run
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(NewErr{Code: ErrInstantiateApp, deepErr: err})

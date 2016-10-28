@@ -104,6 +104,12 @@ VERSION:
 AUTHOR(S):
    Liam Stanley <user@domain.com> 
    
+COMMANDS:
+     scan           [DEFAULT] Start scan for all domains on server
+     urls, domains  Print the list of urls as if they were going to be scanned
+     tests          Print the list of tests that are loaded and would be used
+     help, h        Shows a list of commands or help for one command
+
 GLOBAL OPTIONS:
    -d, --debug              Print debugging information to stdout
    -q, --quiet              Do not print regular stdout messages
@@ -114,9 +120,6 @@ GLOBAL OPTIONS:
    --debug-log FILE         Log debugging information to FILE
    --result-file FILE       Dump result template into FILE (will overwrite!)
    --no-updates             Don't check to see if there are updates
-   --urls                   Print the list of urls as if they were going to be scanned
-   --tests                  Print the list of tests that are loaded and would be used
-   --tests-extended         Same as --tests, with extra information
    --threads n              Use n threads to fetch data (0 defaults to server cores/2) (default: 0)
    --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)
    --http-timeout DURATION  DURATION before an http request is timed out (e.g. 5s, 10s, 1m) (default: 10s)
