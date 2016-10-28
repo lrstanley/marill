@@ -7,6 +7,8 @@
 [![Codebeat Badge](https://codebeat.co/badges/4653f785-83ec-4b21-bf0c-b519b20c89d6)](https://codebeat.co/projects/github-com-liamraystanley-marill)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Liamraystanley/marill)](https://goreportcard.com/report/github.com/Liamraystanley/marill)
 
+Marill is an automated site utility, which is meant to make administrators lives easier by taking much of the leg-work out of testing. It's intended to be lightweight, flexible, and easy to use, while still being very powerful.
+
 ## Table of Contents
 - [Goal](#goal)
 - [Features](#features)
