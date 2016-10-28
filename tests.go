@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	sempool "github.com/Liamraystanley/go-sempool"
 	"github.com/Liamraystanley/marill/scraper"
 	"github.com/Liamraystanley/marill/utils"
 )
@@ -391,13 +392,23 @@ func genTestsFromURL(tests *[]*Test) {
 }
 
 // checkTests iterates over all domains and runs checks across all domains
-func checkTests(results []*scraper.FetchResult, tests []*Test) (completedTests []*TestResult) {
+func checkTests(results []*scraper.FetchResult, tests []*Test) []*TestResult {
+	completedTests := make([]*TestResult, len(results))
 	timer := utils.NewTimer()
 	logger.Print("starting test checks")
 
-	for _, dom := range results {
-		completedTests = append(completedTests, checkDomain(dom, tests))
+	// 10 workers should be enough to speed up the testing process during times of multiple domain
+	// scans
+	pool := sempool.New(10)
+	for i := 0; i < len(results); i++ {
+		pool.Slot() // wait for an open slot
+		go func(index int) {
+			defer pool.Free() // free up the slot that we were previously using
+			completedTests[index] = checkDomain(results[index], tests)
+		}(i)
 	}
+
+	pool.Wait() // wait for everything to finish
 
 	timer.End()
 	logger.Printf("finished tests, elapsed time: %ds\n", timer.Result.Seconds)
@@ -452,7 +463,7 @@ func (res *TestResult) applyScore(test *Test, data []string, multiplier int) {
 	}
 	res.TestCount[test.Name] += multiplier
 
-	logger.Printf("applied test %s score against %s to: %.2f (now %.2f). matched: '%s'\n", test, res.Result.Response.URL, test.Weight, res.Score, matched)
+	logger.Printf("applied test %s score against %s to: %.2f (now %.2f). matched: %q\n", test, res.Result.Response.URL, test.Weight, res.Score, matched)
 }
 
 var reHTMLTag = regexp.MustCompile(`<[^>]+>`)
