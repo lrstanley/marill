@@ -46,10 +46,11 @@
 <li><a href="#building">Building</a></li>
 <li><a href="#usage">Usage</a></li>
 <li>
-<a href="#testing">Testing</a>
+<a href="#getting-started">Getting started</a>
 
 <ul>
-<li><a href="#cpanel-server-steps">cPanel servers</a></li>
+<li><a href="#cpanelapache-based-servers">cPanel/Apache based servers</a></li>
+<li><a href="#alternatives-nginx-caddy-etc">Alternatives (Nginx, Caddy, etc)</a></li>
 <li><a href="#things-to-notetroubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
@@ -101,7 +102,7 @@
 <p>The general idea is that you place Marill on the server you would like to test. Marill by default will then figure out the list of domains that server is hosting. Marill will then begin to act much like a browser, crawling each site (and all resources like images/css/javascript/etc if <code>--assets</code> is used). It will then pass each resource it fetches through the list of builtin, or external tests. Each domain is given a starting score of 10, and each test has a pre-defined weight. If the test matches, that score is applied to the main score. If the score falls below the minimum configured score, it is considered failed.</p>
 
 <h3>
-<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples:</h3>
+<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples</h3>
 
 <p>Here are a few examples of tests that are useful:</p>
 
@@ -119,7 +120,7 @@
 <a href="https://asciinema.org/a/bhnskk1s3vwdwgl2w52deioel"><img src="https://asciinema.org/a/bhnskk1s3vwdwgl2w52deioel.png" alt="asciicast"></a></p>
 
 <h2>
-<a id="project-status" class="anchor" href="#project-status" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Project Status:</h2>
+<a id="project-status" class="anchor" href="#project-status" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Project Status</h2>
 
 <ul>
 <li>
@@ -131,7 +132,7 @@
 </ul>
 
 <h2>
-<a id="building" class="anchor" href="#building" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Building:</h2>
+<a id="building" class="anchor" href="#building" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Building</h2>
 
 <p>Marill supports building on 1.3+ (or even possibly older), however it is recommended to build on the latest go release. Note that you will not be able to use the Makefile to compile Marill if you are trying to build on go 1.4 or lower. You will need to manually compile it, due to limitations with ldflag support.</p>
 
@@ -144,7 +145,7 @@ $ make</pre></div>
 <div class="highlight highlight-source-shell"><pre>$ make <span class="pl-c1">test</span> all</pre></div>
 
 <h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage:</h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 
 <p>This is very likely to change quite a bit until we're out of beta. Please use wisely.</p>
 
@@ -161,6 +162,12 @@ VERSION:
 AUTHOR(S):
    Liam Stanley &lt;user@domain.com&gt; 
 
+COMMANDS:
+     scan           [DEFAULT] Start scan for all domains on server
+     urls, domains  Print the list of urls as if they were going to be scanned
+     tests          Print the list of tests that are loaded and would be used
+     help, h        Shows a list of commands or help for one command
+
 GLOBAL OPTIONS:
    -d, --debug              Print debugging information to stdout
    -q, --quiet              Do not print regular stdout messages
@@ -171,11 +178,9 @@ GLOBAL OPTIONS:
    --debug-log FILE         Log debugging information to FILE
    --result-file FILE       Dump result template into FILE (will overwrite!)
    --no-updates             Don't check to see if there are updates
-   --urls                   Print the list of urls as if they were going to be scanned
-   --tests                  Print the list of tests that are loaded and would be used
-   --tests-extended         Same as --tests, with extra information
    --threads n              Use n threads to fetch data (0 defaults to server cores/2) (default: 0)
    --delay DURATION         Delay DURATION before each resource is crawled (e.g. 5s, 1m, 100ms) (default: 0s)
+   --http-timeout DURATION  DURATION before an http request is timed out (e.g. 5s, 10s, 1m) (default: 10s)
    --domains DOMAIN:IP ...  Manually specify list of domains to scan in form: DOMAIN:IP ..., or DOMAIN:IP:PORT
    --min-score value        Minimum score for domain (default: 8)
    -a, --assets             Crawl assets (css/js/images) for each page
@@ -197,18 +202,14 @@ GLOBAL OPTIONS:
    --help, -h               show help
    --version, -v            print the version
 
-
 COPYRIGHT:
-   (c) 2016 Liam Stanley (see https://git.io/vPvUp)
+   (c) 2016 Liam Stanley
 </code></pre>
 
 <h2>
-<a id="testing" class="anchor" href="#testing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Testing</h2>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
 
-<p>So, you want to help out, test, see how things work, and find possible bugs? Follow the below steps and you will be right on your way.</p>
-
-<h3>
-<a id="cpanel-server-steps" class="anchor" href="#cpanel-server-steps" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>cPanel server steps:</h3>
+<p>Getting started with Marill should be fairly easy. Since Marill is a single binary, there are no dependencies that are needed for the utility to run.</p>
 
 <p>Head to <a href="https://release.liam.sh/marill/?sort=time&amp;order=desc">this page</a> and download the top item in the list. For example, using the latest version:</p>
 
@@ -239,7 +240,44 @@ COPYRIGHT:
 <div class="highlight highlight-source-shell"><pre>$ /root/tmp/marill -a</pre></div>
 
 <h3>
-<a id="things-to-notetroubleshooting" class="anchor" href="#things-to-notetroubleshooting" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Things to note/Troubleshooting:</h3>
+<a id="cpanelapache-based-servers" class="anchor" href="#cpanelapache-based-servers" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>cPanel/Apache based servers:</h3>
+
+<p>Note that Marill has out of the box support for cPanel and Apache servers. The way that information (like the domains that the server is hosting) is pulled from cPanel is through <code>/var/cpanel/</code> (e.g. <code>/var/cpanel/users/&lt;user&gt;</code> and <code>/var/cpanel/userdata/&lt;domain&gt;</code>), for which cPanel should keep updated.</p>
+
+<p>For Apache based servers, Marill will find the current running binary, and execute <code>&lt;binary&gt; -S</code>, which pulls information about all loaded virtual host entries in the current running version. (see <a href="https://httpd.apache.org/docs/2.4/vhosts/">here</a> for more information).</p>
+
+<h3>
+<a id="alternatives-nginx-caddy-etc" class="anchor" href="#alternatives-nginx-caddy-etc" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Alternatives (Nginx, Caddy, etc)</h3>
+
+<p>If your web server does not match the above description, you can utilize the manual domain list flag of Marill. The current syntax for this is as follows:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ marill --domains <span class="pl-s"><span class="pl-pds">"</span>&lt;items&gt;<span class="pl-pds">"</span></span></pre></div>
+
+<p>Replace <strong>&lt;items&gt;</strong> with one of the following list of inputs:</p>
+
+<ul>
+<li><code>DOMAIN:IP:PORT</code></li>
+<li><code>DOMAIN:IP</code></li>
+<li><code>DOMAIN:PORT</code></li>
+<li><code>DOMAIN</code></li>
+</ul>
+
+<p><strong>DOMAIN</strong> can be any of one of the following examples:</p>
+
+<ul>
+<li><code>domain.com</code></li>
+<li><code>www.domain.com</code></li>
+<li><code>random.subdomain.domain.com</code></li>
+<li><code>http://some-example.com/</code></li>
+<li><code>https://some-example.com/some-login.php</code></li>
+</ul>
+
+<p>So, to put it all together, you can do something like:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ marill a --domains <span class="pl-s"><span class="pl-pds">"</span>somedomain.com:443 domain.com:1234 https://domain.com/<span class="pl-pds">"</span></span></pre></div>
+
+<h3>
+<a id="things-to-notetroubleshooting" class="anchor" href="#things-to-notetroubleshooting" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Things to note/Troubleshooting</h3>
 
 <ul>
 <li>Please remove <code>/root/tmp/marill</code> once you are done. This utility is still in alpha stages, and as such, there is no update check functionality. Leaving in place may cause someone in the future to utilize an outdated version of the software.</li>
@@ -248,7 +286,7 @@ COPYRIGHT:
 </ul>
 
 <h2>
-<a id="faq" class="anchor" href="#faq" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FAQ:</h2>
+<a id="faq" class="anchor" href="#faq" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>FAQ</h2>
 
 <ol>
 <li>
@@ -318,7 +356,7 @@ COPYRIGHT:
 </ol>
 
 <h2>
-<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License:</h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
 
 <pre><code>LICENSE: The MIT License (MIT)
 Copyright (c) 2016 Liam Stanley &lt;me@liamstanley.io&gt;
