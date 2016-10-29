@@ -159,7 +159,7 @@ The main arguments that may be useful are:
    * `-a` or `--assets`: This will fetch all of the assets for the page (css/javascript/images, etc)
    * `-d` or `--debug`: This will enable debugging. It doesn't provide a whole lot more information, but can help if something isn't working.
    * `--delay`: Utilize this if the load caused by the crawling is too high. E.g. `--delay 10s`.
-   * `--threads`: This is the amount of parallel scans will run at a single time. By default it will be 1/2 the amount of cores on the server.
+   * `--threads`: This is the amount of parallel scans that will run at a single time. By default it will be 1/2 the amount of cores on the server.
    * `--domain-ignore` and `--domain-match`: utilize these to skip or only scan certain domains during the crawl. E.g. `--domains-ignore "*domain.com|someotherdomain.com"`
 
 So, for example, to start off with:
