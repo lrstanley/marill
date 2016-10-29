@@ -7,7 +7,7 @@
 [![Codebeat Badge](https://codebeat.co/badges/4653f785-83ec-4b21-bf0c-b519b20c89d6)](https://codebeat.co/projects/github-com-liamraystanley-marill)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Liamraystanley/marill)](https://goreportcard.com/report/github.com/Liamraystanley/marill)
 
-Marill is an automated site utility, which is meant to make administrators lives easier by taking much of the leg-work out of testing. It's intended to be lightweight, flexible, and easy to use, while still being very powerful.
+Marill is an automated site testing utility, which is meant to make administrators lives easier by taking much of the leg-work out of testing. It's intended to be lightweight, flexible, and easy to use, while still being very powerful.
 
 ## Table of Contents
 - [Goal](#goal)
@@ -57,7 +57,7 @@ _Disclaimer: Marill is still in early development, and this list is subject to c
 There are a few limitations with Marill, due to how the utility was developed. Marill was meant to be lightweight, and portable. This means it cannot work exactly like a normal browser. Below are a few examples:
 
    * Marill currently isn't able to take a screenshot of the site. However, there many other external resources for this. (usecase: pixel-by-pixel comparison -- easily tell if CSS is broken)
-   * Marill can't execute Javascript. If your site is heavy on Javascript, this tool may not be best suited. (there are some sites which rely heavily on Javascript. (however not frequently do sites Javascript break during a migration or move, unless a resource fails to load, which Marill should) catch)
+   * Marill can't execute Javascript. If your site is heavy on Javascript, this tool may not be best suited. (there are some sites which rely heavily on Javascript. (however not frequently do sites Javascript break during a migration or move, unless a resource fails to load, which Marill should catch)
    * Marill cannot and will not load certain resources. E.g. videos, iframes, embeds, ftp links, etc. This would make crawling the site very complex and convoluted. (however, embed plugins within things like wordpress could possibly be caught, if a test were to be written to search for bad tags)
    * Marill cannot search through webserver, PHP, or other misc. logs to determine what the issue may be. This will likely never change, because adding this functionality would make the utility fragile and clunky. If there is an error, you should be able to find out what is causing it.
 
@@ -159,7 +159,7 @@ The main arguments that may be useful are:
    * `-a` or `--assets`: This will fetch all of the assets for the page (css/javascript/images, etc)
    * `-d` or `--debug`: This will enable debugging. It doesn't provide a whole lot more information, but can help if something isn't working.
    * `--delay`: Utilize this if the load caused by the crawling is too high. E.g. `--delay 10s`.
-   * `--threads`: This is the amount of parallel scans will run at a single time. By default it will be 1/2 the amount of cores on the server.
+   * `--threads`: This is the amount of parallel scans that will run at a single time. By default it will be 1/2 the amount of cores on the server.
    * `--domain-ignore` and `--domain-match`: utilize these to skip or only scan certain domains during the crawl. E.g. `--domains-ignore "*domain.com|someotherdomain.com"`
 
 So, for example, to start off with:
@@ -198,7 +198,7 @@ Replace **\<items\>** with one of the following list of inputs:
 So, to put it all together, you can do something like:
 
 ```bash
-$ marill a --domains "somedomain.com:443 domain.com:1234 https://domain.com/"
+$ marill a --domains "somedomain.com:443 domain.com:1234 example.com:123.456.7.89:80 https://domain.com/"
 ```
 
 ### Things to note/Troubleshooting
@@ -214,7 +214,7 @@ $ marill a --domains "somedomain.com:443 domain.com:1234 https://domain.com/"
       * Generally speaking, crawling without `-a` is fairly fast.
 
    3. **Is it better to run Marill from inside of the server, or from a remote location?**
-      * Running remotely ensures there are no ip or firewall related issues, however in the same sense if you are crawling quite a few sites, many servers may assume due to the connection count, that's your connections are malicious.
+      * Running remotely ensures there are no ip or firewall related issues, however in the same sense if you are crawling quite a few sites, many servers may assume due to the high connection count, that your connections are malicious.
       * If ran from inside of the server, Marill can scan and determine what the server is hosting (by checking Apache, cPanel, etc).
 
    4. **Can I give Marill a custom IP address for which to crawl a site (before it goes live and DNS is updated)?**
@@ -234,7 +234,7 @@ $ marill a --domains "somedomain.com:443 domain.com:1234 https://domain.com/"
       * **Yes!** see **FAQ #4**
 
    6. **Can Marill crawl sub-domains and sub-folders?**
-      * **Yes!** You can pass and url into `--domains` as necessary. For example:
+      * **Yes!** You can pass any url into `--domains` as necessary. For example:
 
       ```bash
       $ marill --domains "https://domain.com/sub/folder/some-page"
@@ -275,7 +275,7 @@ Below are a few guidelines if you would like to contribute to Marill. I'm hoping
    * Delete local and remote feature branches after merging.
    * Rebase frequently to incorporate upstream changes if you plan to do work in a feature branch.
    * Do not push huge commits. Break them out into smaller, more logical commits.
-   * Use a [pull request](https://github.com/Liamraystanley/marill/pulls) if you plan to havbe something reviewed, before committed.
+   * Use a [pull request](https://github.com/Liamraystanley/marill/pulls) if you plan to have something reviewed, before committed.
    * Good commit messages. No generic messages like `fixed`, or `this should be written better`. More `fix X issue (closes #X)` or `implement X (closes #X)`, etc.
    * If you've created more than one commit, [use `git rebase` interactively](https://help.github.com/articles/about-git-rebase/) to squash them into cohesive commits with good messages.
 
@@ -285,7 +285,7 @@ Other syntactical and Golang-specific things:
    * Always use `gofmt` before committing anything.
    * Always have proper documentation before committing.
    * Keep the same whitespacing, documentation, and newline format as the rest of the project.
-   * Always run `make lint` if possible, to ensure you are meeting Golang standards.
+   * Always run `make lint` if possible, to ensure you are meeting Golang and community standards.
    * Only use 3rd party libraries if necessary. If only a small portion of the library is needed, simply rewrite it within the library to prevent useless imports.
    * Also see [golang/go/wiki/CodeReviewComments](https://github.com/golang/go/wiki/CodeReviewComments)
 
