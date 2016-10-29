@@ -214,7 +214,7 @@ $ marill a --domains "somedomain.com:443 domain.com:1234 example.com:123.456.7.8
       * Generally speaking, crawling without `-a` is fairly fast.
 
    3. **Is it better to run Marill from inside of the server, or from a remote location?**
-      * Running remotely ensures there are no ip or firewall related issues, however in the same sense if you are crawling quite a few sites, many servers may assume due to the connection count, that's your connections are malicious.
+      * Running remotely ensures there are no ip or firewall related issues, however in the same sense if you are crawling quite a few sites, many servers may assume due to the high connection count, that your connections are malicious.
       * If ran from inside of the server, Marill can scan and determine what the server is hosting (by checking Apache, cPanel, etc).
 
    4. **Can I give Marill a custom IP address for which to crawl a site (before it goes live and DNS is updated)?**
@@ -234,7 +234,7 @@ $ marill a --domains "somedomain.com:443 domain.com:1234 example.com:123.456.7.8
       * **Yes!** see **FAQ #4**
 
    6. **Can Marill crawl sub-domains and sub-folders?**
-      * **Yes!** You can pass and url into `--domains` as necessary. For example:
+      * **Yes!** You can pass any url into `--domains` as necessary. For example:
 
       ```bash
       $ marill --domains "https://domain.com/sub/folder/some-page"
@@ -275,7 +275,7 @@ Below are a few guidelines if you would like to contribute to Marill. I'm hoping
    * Delete local and remote feature branches after merging.
    * Rebase frequently to incorporate upstream changes if you plan to do work in a feature branch.
    * Do not push huge commits. Break them out into smaller, more logical commits.
-   * Use a [pull request](https://github.com/Liamraystanley/marill/pulls) if you plan to havbe something reviewed, before committed.
+   * Use a [pull request](https://github.com/Liamraystanley/marill/pulls) if you plan to have something reviewed, before committed.
    * Good commit messages. No generic messages like `fixed`, or `this should be written better`. More `fix X issue (closes #X)` or `implement X (closes #X)`, etc.
    * If you've created more than one commit, [use `git rebase` interactively](https://help.github.com/articles/about-git-rebase/) to squash them into cohesive commits with good messages.
 
@@ -285,7 +285,7 @@ Other syntactical and Golang-specific things:
    * Always use `gofmt` before committing anything.
    * Always have proper documentation before committing.
    * Keep the same whitespacing, documentation, and newline format as the rest of the project.
-   * Always run `make lint` if possible, to ensure you are meeting Golang standards.
+   * Always run `make lint` if possible, to ensure you are meeting Golang and community standards.
    * Only use 3rd party libraries if necessary. If only a small portion of the library is needed, simply rewrite it within the library to prevent useless imports.
    * Also see [golang/go/wiki/CodeReviewComments](https://github.com/golang/go/wiki/CodeReviewComments)
 
