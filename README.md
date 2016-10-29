@@ -198,7 +198,7 @@ Replace **\<items\>** with one of the following list of inputs:
 So, to put it all together, you can do something like:
 
 ```bash
-$ marill a --domains "somedomain.com:443 domain.com:1234 https://domain.com/"
+$ marill a --domains "somedomain.com:443 domain.com:1234 example.com:123.456.7.89:80 https://domain.com/"
 ```
 
 ### Things to note/Troubleshooting
