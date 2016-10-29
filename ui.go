@@ -579,9 +579,14 @@ func uiCrawl(gooey *gocui.Gui, view *gocui.View) error {
 			}
 		}
 
-		// print the full results summary
+		// print the full results/summary
 		out.Printf("%d successful, %d failed", menu.scan.successful, menu.scan.failed)
 		uiPrintResults(gooey)
+
+		// reset results and success/fail counters
+		menu.scan.crawler.Results = nil
+		menu.scan.successful = 0
+		menu.scan.failed = 0
 
 	}()
 
