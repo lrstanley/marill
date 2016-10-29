@@ -57,7 +57,7 @@ _Disclaimer: Marill is still in early development, and this list is subject to c
 There are a few limitations with Marill, due to how the utility was developed. Marill was meant to be lightweight, and portable. This means it cannot work exactly like a normal browser. Below are a few examples:
 
    * Marill currently isn't able to take a screenshot of the site. However, there many other external resources for this. (usecase: pixel-by-pixel comparison -- easily tell if CSS is broken)
-   * Marill can't execute Javascript. If your site is heavy on Javascript, this tool may not be best suited. (there are some sites which rely heavily on Javascript. (however not frequently do sites Javascript break during a migration or move, unless a resource fails to load, which Marill should) catch)
+   * Marill can't execute Javascript. If your site is heavy on Javascript, this tool may not be best suited. (there are some sites which rely heavily on Javascript. (however not frequently do sites Javascript break during a migration or move, unless a resource fails to load, which Marill should catch)
    * Marill cannot and will not load certain resources. E.g. videos, iframes, embeds, ftp links, etc. This would make crawling the site very complex and convoluted. (however, embed plugins within things like wordpress could possibly be caught, if a test were to be written to search for bad tags)
    * Marill cannot search through webserver, PHP, or other misc. logs to determine what the issue may be. This will likely never change, because adding this functionality would make the utility fragile and clunky. If there is an error, you should be able to find out what is causing it.
 
