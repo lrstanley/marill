@@ -792,7 +792,6 @@ func main() {
 		},
 	}
 	app.Copyright = "(c) 2016 Liam Stanley"
-	// app.Compiled = time.Now()
 	app.Usage = "Automated website testing utility"
 	app.Action = run
 
