@@ -118,7 +118,8 @@ type scanConfig struct {
 	testFailText string // glob match against body, will take away a weight of 10
 
 	// output related
-	outTmpl string // the output text/template template for use with printing results
+	outTmpl  string // the output text/template template for use with printing results
+	htmlFile string // the file path to dump an html file
 }
 
 // appConfig handles what the app does (scans/crawls, printing data, some other task, etc)
@@ -135,6 +136,20 @@ type config struct {
 }
 
 var conf config
+
+func getVersion() string {
+	if version != "" && commithash != "" && compiledate != "" {
+		return fmt.Sprintf("%s, git revision %s (compiled %s)", version, commithash, compiledate)
+	} else if version != "" && commithash != "" {
+		return fmt.Sprintf("%s, git revision %s", version, commithash)
+	} else if version != "" {
+		return version
+	} else if commithash != "" {
+		return "git revision " + commithash
+	}
+
+	return "unknown"
+}
 
 // statsLoop prints out memory/load/runtime statistics to debug output
 func statsLoop(done <-chan struct{}) {
@@ -467,10 +482,6 @@ func run(c *cli.Context) error {
 		out.Fatal(err)
 	}
 
-	if conf.app.exitOnFail && scan.failed > 0 {
-		out.Fatalf("exit-on-error enabled, %d errors. giving status code 1.", scan.failed)
-	}
-
 	for _, res := range scan.results {
 		// ignore successful, per request
 		if conf.scan.ignoreSuccess && res.Result.Error == nil {
@@ -493,6 +504,22 @@ func run(c *cli.Context) error {
 		}
 	}
 
+	if conf.scan.htmlFile != "" {
+		htmlOut, err := genHTMLOutput(scan.results)
+		if err != nil {
+			out.Fatal(err)
+		}
+
+		if err := ioutil.WriteFile(conf.scan.htmlFile, htmlOut, 0666); err != nil {
+			out.Fatal(err)
+		}
+	}
+
+	// this should be the last thing we do
+	if conf.app.exitOnFail && scan.failed > 0 {
+		out.Fatalf("exit-on-error enabled, %d errors. giving status code 1.", scan.failed)
+	}
+
 	return nil
 }
 
@@ -501,9 +528,11 @@ func main() {
 
 	cli.VersionPrinter = func(c *cli.Context) {
 		if version != "" && commithash != "" && compiledate != "" {
-			fmt.Printf("version %s, revision %s (%s)\n", version, commithash, compiledate)
+			fmt.Printf("version %s, revision %s (compiled %s)\n", version, commithash, compiledate)
 		} else if commithash != "" && compiledate != "" {
-			fmt.Printf("revision %s (%s)\n", commithash, compiledate)
+			fmt.Printf("revision %s (compiled %s)\n", commithash, compiledate)
+		} else if version != "" && compiledate != "" {
+			fmt.Printf("version %s (compiled %s)\n", version, compiledate)
 		} else if version != "" {
 			fmt.Printf("version %s\n", version)
 		} else {
@@ -514,14 +543,7 @@ func main() {
 	app := cli.NewApp()
 
 	app.Name = "marill"
-
-	if version != "" && commithash != "" {
-		app.Version = fmt.Sprintf("%s, git revision %s", version, commithash)
-	} else if version != "" {
-		app.Version = version
-	} else if commithash != "" {
-		app.Version = "git revision " + commithash
-	}
+	app.Version = getVersion()
 
 	// needed for stats look
 	done := make(chan struct{}, 1)
@@ -691,6 +713,12 @@ func main() {
 			Usage:       "Golang text/template string template for use with formatting scan output",
 			Destination: &conf.scan.outTmpl,
 		},
+		cli.StringFlag{
+			Name:        "html",
+			Usage:       "Optional file to output html results to",
+			Hidden:      true,
+			Destination: &conf.scan.htmlFile,
+		},
 
 		// domain filtering
 		cli.BoolFlag{
@@ -764,7 +792,7 @@ func main() {
 		},
 	}
 	app.Copyright = "(c) 2016 Liam Stanley"
-	app.Compiled = time.Now()
+	// app.Compiled = time.Now()
 	app.Usage = "Automated website testing utility"
 	app.Action = run
 

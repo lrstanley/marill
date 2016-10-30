@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="main">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.1/angular-material.min.css">
+    <style>{{ .CSS }}</style>
+</head>
+<body ng-controller="mainCtrl" ng-cloak>
+	<div id="data" style="display: none;">{{ .JSON }}</div>
+	<div id="wrapper" layout="row" flex>
+
+        <md-sidenav layout="column" class="main-sidebar" md-is-locked-open="true">
+            <img class="logo" src="https://i.imgur.com/HYZ3biA.png">
+            <p class="text-center">Automated Site Testing Utility</p>
+        </md-sidenav>
+
+        <md-content class="gradient main-content" flex layout="column">
+            <md-tabs class="md-accent">
+                <md-tab id="tab1">
+                    <md-tab-label>Item One</md-tab-label>
+                    asdasdasdasdasdasd
+                </md-tab>
+                <md-tab id="tab2">
+                    <md-tab-label>label</md-tab-label>
+                    asdasdasdasdasd
+                </md-tab>
+                <md-tab id="tab3">
+                    <md-tab-label>Item Three</md-tab-label>
+                </md-tab>
+            </md-tabs>
+        </md-content>
+    </div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-animate.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-aria.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-messages.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.1/angular-material.min.js"></script>
+	<script type="text/javascript">{{ .JS }}</script>
+</body>
+</html>

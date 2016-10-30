@@ -273,12 +273,16 @@ func genTestsFromStd(tests *[]*Test) {
 		logger.Printf("found %d test files", len(fns))
 		count := 0
 		for i := 0; i < len(fns); i++ {
+			if !strings.HasPrefix(fns[i], "data/tests/") {
+				continue
+			}
+
 			file, err := Asset(fns[i])
 			if err != nil {
 				out.Fatalf("unable to load asset from file %s: %s", fns[i], err)
 			}
 
-			parsedTests, err := parseTests(file, "file-builtin", fns[i])
+			parsedTests, err := parseTests(file, "builtin", fns[i])
 			if err != nil {
 				out.Fatal(err)
 			}
