@@ -19,9 +19,9 @@ import (
 
 // mMenu holds X/Y coords of the menu for calculation from other views
 type mMenu struct {
-	maxX, maxY                                     int
-	scan                                           *Scan
-	domains, summary, details, failures, successes *gocui.View
+	maxX, maxY                                              int
+	scan                                                    *Scan
+	sidebar, domains, summary, details, failures, successes *gocui.View
 }
 
 var menu mMenu
@@ -104,6 +104,7 @@ func drawSidebar(gooey *gocui.Gui) error {
 		fmt.Fprintln(sidebar, padText("Failures", maxX))
 		fmt.Fprintln(sidebar, padText("Successes", maxX))
 		sidebar.Highlight = true
+		menu.sidebar = sidebar
 
 	}
 
@@ -345,54 +346,52 @@ func uiLayout(gooey *gocui.Gui) error {
 	}
 
 	// read the selected menu item and put the corresponding views on top
-	if sidebar, err := gooey.View("sidebar"); err == nil {
-		selection := readSel(sidebar)
-		switch selection {
+	selection := readSel(menu.sidebar)
+	switch selection {
 
-		case "Domains":
-			gooey.Cursor = true
-			if _, err = gooey.SetViewOnTop("domHead"); err != nil {
-				return err
-			}
-			if _, err = gooey.SetViewOnTop("domains"); err != nil {
-				return err
-			}
+	case "Domains":
+		gooey.Cursor = true
+		if _, err := gooey.SetViewOnTop("domHead"); err != nil {
+			return err
+		}
+		if _, err := gooey.SetViewOnTop("domains"); err != nil {
+			return err
+		}
 
-		case "Summary":
-			gooey.Cursor = false
-			if _, err = gooey.SetViewOnTop("sumHead"); err != nil {
-				return err
-			}
-			if _, err = gooey.SetViewOnTop("summary"); err != nil {
-				return err
-			}
+	case "Summary":
+		gooey.Cursor = false
+		if _, err := gooey.SetViewOnTop("sumHead"); err != nil {
+			return err
+		}
+		if _, err := gooey.SetViewOnTop("summary"); err != nil {
+			return err
+		}
 
-		case "Details":
-			gooey.Cursor = false
-			if _, err = gooey.SetViewOnTop("detHead"); err != nil {
-				return err
-			}
-			if _, err = gooey.SetViewOnTop("details"); err != nil {
-				return err
-			}
+	case "Details":
+		gooey.Cursor = false
+		if _, err := gooey.SetViewOnTop("detHead"); err != nil {
+			return err
+		}
+		if _, err := gooey.SetViewOnTop("details"); err != nil {
+			return err
+		}
 
-		case "Failures":
-			gooey.Cursor = false
-			if _, err = gooey.SetViewOnTop("failHead"); err != nil {
-				return err
-			}
-			if _, err = gooey.SetViewOnTop("failures"); err != nil {
-				return err
-			}
+	case "Failures":
+		gooey.Cursor = false
+		if _, err := gooey.SetViewOnTop("failHead"); err != nil {
+			return err
+		}
+		if _, err := gooey.SetViewOnTop("failures"); err != nil {
+			return err
+		}
 
-		case "Successes":
-			gooey.Cursor = false
-			if _, err = gooey.SetViewOnTop("sucHead"); err != nil {
-				return err
-			}
-			if _, err = gooey.SetViewOnTop("successes"); err != nil {
-				return err
-			}
+	case "Successes":
+		gooey.Cursor = false
+		if _, err := gooey.SetViewOnTop("sucHead"); err != nil {
+			return err
+		}
+		if _, err := gooey.SetViewOnTop("successes"); err != nil {
+			return err
 		}
 	}
 
@@ -633,6 +632,41 @@ func selDown(gooey *gocui.Gui, view *gocui.View) error {
 	return nil
 }
 
+// sel selects the view under the cursor
+func setActive(gooey *gocui.Gui, view *gocui.View) error {
+	// read the selected menu item and set it active
+	selection := readSel(menu.sidebar)
+	switch selection {
+
+	case "Domains":
+		if _, err := gooey.SetCurrentView("domains"); err != nil {
+			return err
+		}
+
+	case "Summary":
+		if _, err := gooey.SetCurrentView("summary"); err != nil {
+			return err
+		}
+
+	case "Details":
+		if _, err := gooey.SetCurrentView("details"); err != nil {
+			return err
+		}
+
+	case "Failures":
+		if _, err := gooey.SetCurrentView("failures"); err != nil {
+			return err
+		}
+
+	case "Successes":
+		if _, err := gooey.SetCurrentView("successes"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // setKeyBinds is a necessary evil
 func setKeyBinds(gooey *gocui.Gui) error {
 	// press ctrl+c at any time to bail
@@ -660,8 +694,33 @@ func setKeyBinds(gooey *gocui.Gui) error {
 		return err
 	}
 
-	// If the sidebar is active and ↓ is pressed, move the selection down one
+	// if the sidebar is active and ↓ is pressed, move the selection down one
 	if err := gooey.SetKeybinding("sidebar", gocui.KeyArrowDown, gocui.ModNone, selDown); err != nil {
+		return err
+	}
+
+	// set domains active when clicked
+	if err := gooey.SetKeybinding("domains", gocui.MouseLeft, gocui.ModNone, setActive); err != nil {
+		return err
+	}
+
+	// set summary active when clicked
+	if err := gooey.SetKeybinding("summary", gocui.MouseLeft, gocui.ModNone, setActive); err != nil {
+		return err
+	}
+
+	// set details active when clicked
+	if err := gooey.SetKeybinding("details", gocui.MouseLeft, gocui.ModNone, setActive); err != nil {
+		return err
+	}
+
+	// set failures active when clicked
+	if err := gooey.SetKeybinding("failures", gocui.MouseLeft, gocui.ModNone, setActive); err != nil {
+		return err
+	}
+
+	// set successes active when clicked
+	if err := gooey.SetKeybinding("successes", gocui.MouseLeft, gocui.ModNone, setActive); err != nil {
 		return err
 	}
 
