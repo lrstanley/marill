@@ -505,7 +505,7 @@ func run(c *cli.Context) error {
 	}
 
 	if conf.scan.htmlFile != "" {
-		htmlOut, err := genHTMLOutput(scan.results)
+		htmlOut, err := genHTMLOutput(scan)
 		if err != nil {
 			out.Fatal(err)
 		}

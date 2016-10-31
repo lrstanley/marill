@@ -2,40 +2,94 @@
 <html lang="en" ng-app="main">
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Test Results &middot; Marill &middot; Automated Site Testing Utility</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.1/angular-material.min.css">
-    <style>{{ .CSS }}</style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:400,500">
+    <style>{[ .CSS ]}</style>
+    <base href="/">
 </head>
 <body ng-controller="mainCtrl" ng-cloak>
-	<div id="data" style="display: none;">{{ .JSON }}</div>
-	<div id="wrapper" layout="row" flex>
+    <!-- input by the generation process -->
+	<div id="data" style="display: none;">{[ .JSON ]}</div>
 
-        <md-sidenav layout="column" class="main-sidebar" md-is-locked-open="true">
-            <img class="logo" src="https://i.imgur.com/HYZ3biA.png">
-            <p class="text-center">Automated Site Testing Utility</p>
+	<div id="wrapper" layout="row" flex>
+        <md-sidenav layout="column" layout-align="end stretch" class="main-sidebar" md-is-locked-open="true">
+            <span class="sidebar-main">Scan Results <i class="fa fa-check-square-o"></i></span>
+
+            <ul flex>
+                <li class="sidebar-title">Navigation</li>
+
+                <li class="sidebar-list"><a ui-sref-active="active" ui-sref="root.home">URL Crawl Results <i class="fa fa-info-circle"></i></a></li>
+                <li class="sidebar-list"><a ui-sref-active="active" ui-sref="root.success">Successfully crawled <i class="fa fa-check-circle"></i></a></li>
+                <li class="sidebar-list"><a ui-sref-active="active" ui-sref="root.failed">Failed to crawl <i class="fa fa-times-circle"></i></a></li>
+                <li class="sidebar-list"><a ui-sref-active="active" ui-sref="root.raw">Raw result data <i class="fa fa-info-circle"></i></a></li>
+            </ul>
+
+            <div class="sidebar-footer" layout="row">
+                <div flex="33"><a href="https://github.com/Liamraystanley/marill" target="_blank">Github</a></div>
+                <div flex="33"><a href="https://github.com/Liamraystanley/marill/blob/master/README.md#readme" target="_blank">About</a></div>
+                <div flex="33"><a href="https://github.com/Liamraystanley/marill/issues" target="_blank">Support</a></div>
+            </div>
         </md-sidenav>
 
-        <md-content class="gradient main-content" flex layout="column">
-            <md-tabs class="md-accent">
-                <md-tab id="tab1">
-                    <md-tab-label>Item One</md-tab-label>
-                    asdasdasdasdasdasd
-                </md-tab>
-                <md-tab id="tab2">
-                    <md-tab-label>label</md-tab-label>
-                    asdasdasdasdasd
-                </md-tab>
-                <md-tab id="tab3">
-                    <md-tab-label>Item Three</md-tab-label>
-                </md-tab>
-            </md-tabs>
+        <md-content class="main-content" flex layout="column">
+            <div class="meta">
+                <div class="pagename">{{$root.pagetitle}}</div>
+                <div class="breadcrumb-links">Home {{$root.pageurl}}</div>
+            </div>
+
+            <div ui-view class="content md-padding" flex></div>
         </md-content>
     </div>
+
+    <script type="text/ng-template" id="/index.html">
+        <md-tabs md-dynamic-height md-border-bottom md-stretch-tabs="always" class="md-primary">
+            <md-tab label="main results">
+                <md-content class="md-padding">
+                    <h1 class="md-display-2">Main results</h1>
+                    <p>some content here.</p>
+                </md-content>
+            </md-tab>
+
+            <md-tab label="successful">
+                <md-content class="md-padding">
+                    <h1 class="md-display-2">Successful</h1>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla venenatis ante augue. Phasellus volutpat neque ac dui mattis vulputate. Etiam consequat aliquam cursus. In sodales pretium ultrices. Maecenas lectus est, sollicitudin consectetur felis nec, feugiat ultricies mi. Aliquam erat volutpat. Nam placerat, tortor in ultrices porttitor, orci enim rutrum enim, vel tempor sapien arcu a tellus. Vivamus convallis sodales ante varius gravida. Curabitur a purus vel augue ultrices ultricies id a nisl. Nullam malesuada consequat diam, a facilisis tortor volutpat et. Sed urna dolor, aliquet vitae posuere vulputate, euismod ac lorem. Sed felis risus, pulvinar at interdum quis, vehicula sed odio. Phasellus in enim venenatis, iaculis tortor eu, bibendum ante. Donec ac tellus dictum neque volutpat blandit. Praesent efficitur faucibus risus, ac auctor purus porttitor vitae. Phasellus ornare dui nec orci posuere, nec luctus mauris semper.</p>
+                    <p>Morbi viverra, ante vel aliquet tincidunt, leo dolor pharetra quam, at semper massa orci nec magna. Donec posuere nec sapien sed laoreet. Etiam cursus nunc in condimentum facilisis. Etiam in tempor tortor. Vivamus faucibus egestas enim, at convallis diam pulvinar vel. Cras ac orci eget nisi maximus cursus. Nunc urna libero, viverra sit amet nisl at, hendrerit tempor turpis. Maecenas facilisis convallis mi vel tempor. Nullam vitae nunc leo. Cras sed nisl consectetur, rhoncus sapien sit amet, tempus sapien.</p>
+                    <p>Integer turpis erat, porttitor vitae mi faucibus, laoreet interdum tellus. Curabitur posuere molestie dictum. Morbi eget congue risus, quis rhoncus quam. Suspendisse vitae hendrerit erat, at posuere mi. Cras eu fermentum nunc. Sed id ante eu orci commodo volutpat non ac est. Praesent ligula diam, congue eu enim scelerisque, finibus commodo lectus.</p>
+                </md-content>
+            </md-tab>
+
+            <md-tab label="failed">
+                <md-content class="md-padding">
+                    <h1 class="md-display-2">Failed</h1>
+                    <p>Integer turpis erat, porttitor vitae mi faucibus, laoreet interdum tellus. Curabitur posuere molestie dictum. Morbi eget congue risus, quis rhoncus quam. Suspendisse vitae hendrerit erat, at posuere mi. Cras eu fermentum nunc. Sed id ante eu orci commodo volutpat non ac est. Praesent ligula diam, congue eu enim scelerisque, finibus commodo lectus.</p>
+                </md-content>
+            </md-tab>
+
+            <md-tab label="raw data">
+                <md-content class="md-padding">
+                    <code><pre>{{ $root.data.HostFile }}</pre></code>
+                    <code><pre>{{ $root.data | prettyJSON }}</pre></code>
+                </md-content>
+            </md-tab>
+        </md-tabs>
+    </script>
+
+    <script type="text/ng-template" id="/test.html"></script>
+
+    <script type="text/ng-template" id="/raw.html">
+        <code><pre>{{ $root.data.HostFile }}</pre></code>
+        <code><pre>{{ $root.data | prettyJSON }}</pre></code>
+    </script>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-animate.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-aria.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-messages.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.1/angular-material.min.js"></script>
-	<script type="text/javascript">{{ .JS }}</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.3.1/angular-ui-router.min.js"></script>
+	<script type="text/javascript">{[ .JS ]}</script>
 </body>
 </html>

@@ -13,18 +13,45 @@ import (
 
 // JSONOutput is the generated json that will be embedded in Angular
 type JSONOutput struct {
-	Version  string
-	MinScore float64
-	Out      []*TestResult
-	Success  bool
+	Version    string
+	MinScore   float64
+	Out        []*HTMLDomResult
+	Successful int
+	Failed     int
+	Success    bool
+	HostFile   string
 }
 
-func genHTMLOutput(results []*TestResult) ([]byte, error) {
+// HTMLDomResult is a wrapper around the test results, providing string representations
+// of some errors and other items that during JSON conversion get converted to structs.
+type HTMLDomResult struct {
+	*TestResult
+	ErrorString string // string representation of any errors
+}
+
+func genHTMLOutput(scan *Scan) ([]byte, error) {
+	htmlConvertedResults := make([]*HTMLDomResult, len(scan.results))
+	var hosts string
+
+	for i := 0; i < len(scan.results); i++ {
+		htmlConvertedResults[i] = &HTMLDomResult{TestResult: scan.results[i]}
+		if htmlConvertedResults[i].Result.Error != nil {
+			htmlConvertedResults[i].ErrorString = htmlConvertedResults[i].Result.Error.Error()
+		}
+
+		if htmlConvertedResults[i].Result.Request.IP != "" {
+			hosts += fmt.Sprintf("%s %s\n", htmlConvertedResults[i].Result.Request.IP, htmlConvertedResults[i].Result.Request.URL.Host)
+		}
+	}
+
 	out, err := json.Marshal(&JSONOutput{
-		Version:  getVersion(),
-		MinScore: 8.0,
-		Out:      results,
-		Success:  true,
+		Version:    getVersion(),
+		MinScore:   8.0,
+		Out:        htmlConvertedResults,
+		Successful: scan.successful,
+		Failed:     scan.failed,
+		HostFile:   hosts,
+		Success:    true,
 	})
 	if err != nil {
 		return nil, err
@@ -44,7 +71,9 @@ func genHTMLOutput(results []*TestResult) ([]byte, error) {
 	}
 
 	jsonStr := fmt.Sprintf("%s", out)
-	tmpl := template.Must(template.New("html").Parse(string(htmlTmpl)))
+	tmpl := template.New("html")
+	tmpl.Delims("{[", "]}")
+	tmpl = template.Must(tmpl.Parse(string(htmlTmpl)))
 
 	var buf bytes.Buffer
 	tmpl.Execute(&buf, struct {
