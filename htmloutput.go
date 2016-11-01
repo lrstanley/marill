@@ -9,17 +9,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"text/template"
+	"time"
+
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/css"
+	"github.com/tdewolff/minify/html"
+	"github.com/tdewolff/minify/js"
 )
 
 // JSONOutput is the generated json that will be embedded in Angular
 type JSONOutput struct {
-	Version    string
-	MinScore   float64
-	Out        []*HTMLDomResult
-	Successful int
-	Failed     int
-	Success    bool
-	HostFile   string
+	Version     string
+	MinScore    float64
+	Out         []*HTMLDomResult
+	Successful  int
+	Failed      int
+	Success     bool
+	HostFile    string
+	TimeScanned string
 }
 
 // HTMLDomResult is a wrapper around the test results, providing string representations
@@ -45,27 +52,45 @@ func genHTMLOutput(scan *Scan) ([]byte, error) {
 	}
 
 	out, err := json.Marshal(&JSONOutput{
-		Version:    getVersion(),
-		MinScore:   8.0,
-		Out:        htmlConvertedResults,
-		Successful: scan.successful,
-		Failed:     scan.failed,
-		HostFile:   hosts,
-		Success:    true,
+		Version:     getVersion(),
+		MinScore:    8.0,
+		Out:         htmlConvertedResults,
+		Successful:  scan.successful,
+		Failed:      scan.failed,
+		HostFile:    hosts,
+		Success:     true,
+		TimeScanned: time.Now().Format(time.RFC3339),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	htmlTmpl, err := Asset("data/html/index.html")
+	m := minify.New()
+	m.AddFunc("text/css", css.Minify)
+	m.AddFunc("text/html", html.Minify)
+	m.AddFunc("text/javascript", js.Minify)
+
+	// above the necessary static files
+	htmlRawTmpl, err := Asset("data/html/index.html")
 	if err != nil {
 		return nil, err
 	}
-	jsTmpl, err := Asset("data/html/main.js")
+	jsRawTmpl, err := Asset("data/html/main.js")
 	if err != nil {
 		return nil, err
 	}
-	cssTmpl, err := Asset("data/html/main.css")
+	cssRawTmpl, err := Asset("data/html/main.css")
+	if err != nil {
+		return nil, err
+	}
+
+	// minify js and css
+	jsTmpl, err := m.String("text/javascript", string(jsRawTmpl))
+	if err != nil {
+		return nil, err
+	}
+
+	cssTmpl, err := m.String("text/css", string(cssRawTmpl))
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +98,7 @@ func genHTMLOutput(scan *Scan) ([]byte, error) {
 	jsonStr := fmt.Sprintf("%s", out)
 	tmpl := template.New("html")
 	tmpl.Delims("{[", "]}")
-	tmpl = template.Must(tmpl.Parse(string(htmlTmpl)))
+	tmpl = template.Must(tmpl.Parse(string(htmlRawTmpl)))
 
 	var buf bytes.Buffer
 	tmpl.Execute(&buf, struct {
@@ -82,9 +107,14 @@ func genHTMLOutput(scan *Scan) ([]byte, error) {
 		CSS  string
 	}{
 		JSON: jsonStr,
-		JS:   string(jsTmpl),
-		CSS:  string(cssTmpl),
+		JS:   jsTmpl,
+		CSS:  cssTmpl,
 	})
 
-	return buf.Bytes(), nil
+	htmlBytes, err := m.Bytes("text/html", buf.Bytes())
+	if err != nil {
+		return nil, err
+	}
+
+	return htmlBytes, nil
 }
