@@ -74,7 +74,17 @@ angular.module('main').config(function($stateProvider, $urlRouterProvider, $loca
         .state('root.raw', { data: { title: 'Raw Crawl Results' }, url: '/raw/data', templateUrl: '/raw.html' })
 });
 
-angular.module('main').controller('mainCtrl', function($scope, $rootScope) {
+angular.module('main').controller('mainCtrl', function ($scope, $rootScope) {
+    $scope.urlViewing = -1;
+    $scope.setURL = function (index) {
+        if ($scope.urlViewing == index) {
+            $scope.urlViewing = -1;
+            return
+        }
+
+        $scope.urlViewing = index;
+    }    
+    
     console.log($rootScope.data);
 });
 
