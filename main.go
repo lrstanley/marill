@@ -705,7 +705,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:        "allow-insecure",
-			Usage:       "Ignore SSL certificate errors",
+			Usage:       "Don't check to see if an SSL certificate is valid",
 			Destination: &conf.scan.allowInsecure,
 		},
 		cli.StringFlag{

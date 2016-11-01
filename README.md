@@ -118,7 +118,7 @@ GLOBAL OPTIONS:
    --min-score value        Minimum score for domain (default: 8)
    -a, --assets             Crawl assets (css/js/images) for each page
    --ignore-success         Only print results if they are considered failed
-   --allow-insecure         Ignore SSL certificate errors
+   --allow-insecure         Don't check to see if an SSL certificate is valid
    --tmpl value             Golang text/template string template for use with formatting scan output
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
