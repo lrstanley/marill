@@ -29,6 +29,8 @@
 <a href="https://codebeat.co/projects/github-com-liamraystanley-marill"><img src="https://codebeat.co/badges/4653f785-83ec-4b21-bf0c-b519b20c89d6" alt="Codebeat Badge"></a>
 <a href="https://goreportcard.com/report/github.com/Liamraystanley/marill"><img src="https://goreportcard.com/badge/github.com/Liamraystanley/marill" alt="Go Report Card"></a></p>
 
+<p>Marill is an automated site testing utility, which is meant to make administrators lives easier by taking much of the leg-work out of testing. It's intended to be lightweight, flexible, and easy to use, while still being very powerful.</p>
+
 <h2>
 <a id="table-of-contents" class="anchor" href="#table-of-contents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table of Contents</h2>
 
@@ -105,7 +107,7 @@
 
 <ul>
 <li>Marill currently isn't able to take a screenshot of the site. However, there many other external resources for this. (usecase: pixel-by-pixel comparison -- easily tell if CSS is broken)</li>
-<li>Marill can't execute Javascript. If your site is heavy on Javascript, this tool may not be best suited. (there are some sites which rely heavily on Javascript. (however not frequently do sites Javascript break during a migration or move, unless a resource fails to load, which Marill should) catch)</li>
+<li>Marill can't execute Javascript. If your site is heavy on Javascript, this tool may not be best suited. (there are some sites which rely heavily on Javascript. (however not frequently do sites Javascript break during a migration or move, unless a resource fails to load, which Marill should catch)</li>
 <li>Marill cannot and will not load certain resources. E.g. videos, iframes, embeds, ftp links, etc. This would make crawling the site very complex and convoluted. (however, embed plugins within things like wordpress could possibly be caught, if a test were to be written to search for bad tags)</li>
 <li>Marill cannot search through webserver, PHP, or other misc. logs to determine what the issue may be. This will likely never change, because adding this functionality would make the utility fragile and clunky. If there is an error, you should be able to find out what is causing it.</li>
 </ul>
@@ -174,7 +176,7 @@ GLOBAL OPTIONS:
    --min-score value        Minimum score for domain (default: 8)
    -a, --assets             Crawl assets (css/js/images) for each page
    --ignore-success         Only print results if they are considered failed
-   --allow-insecure         Ignore SSL certificate errors
+   --allow-insecure         Don't check to see if an SSL certificate is valid
    --tmpl value             Golang text/template string template for use with formatting scan output
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
@@ -218,7 +220,7 @@ COPYRIGHT:
 <li>
 <code>--delay</code>: Utilize this if the load caused by the crawling is too high. E.g. <code>--delay 10s</code>.</li>
 <li>
-<code>--threads</code>: This is the amount of parallel scans will run at a single time. By default it will be 1/2 the amount of cores on the server.</li>
+<code>--threads</code>: This is the amount of parallel scans that will run at a single time. By default it will be 1/2 the amount of cores on the server.</li>
 <li>
 <code>--domain-ignore</code> and <code>--domain-match</code>: utilize these to skip or only scan certain domains during the crawl. E.g. <code>--domains-ignore "*domain.com|someotherdomain.com"</code>
 </li>
@@ -263,7 +265,7 @@ COPYRIGHT:
 
 <p>So, to put it all together, you can do something like:</p>
 
-<div class="highlight highlight-source-shell"><pre>$ marill a --domains <span class="pl-s"><span class="pl-pds">"</span>somedomain.com:443 domain.com:1234 https://domain.com/<span class="pl-pds">"</span></span></pre></div>
+<div class="highlight highlight-source-shell"><pre>$ marill a --domains <span class="pl-s"><span class="pl-pds">"</span>somedomain.com:443 domain.com:1234 example.com:123.456.7.89:80 https://domain.com/<span class="pl-pds">"</span></span></pre></div>
 
 <h3>
 <a id="things-to-notetroubleshooting" class="anchor" href="#things-to-notetroubleshooting" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Things to note/Troubleshooting</h3>
@@ -297,7 +299,7 @@ COPYRIGHT:
 <p><strong>Is it better to run Marill from inside of the server, or from a remote location?</strong></p>
 
 <ul>
-<li>Running remotely ensures there are no ip or firewall related issues, however in the same sense if you are crawling quite a few sites, many servers may assume due to the connection count, that's your connections are malicious.</li>
+<li>Running remotely ensures there are no ip or firewall related issues, however in the same sense if you are crawling quite a few sites, many servers may assume due to the high connection count, that your connections are malicious.</li>
 <li>If ran from inside of the server, Marill can scan and determine what the server is hosting (by checking Apache, cPanel, etc).</li>
 </ul>
 </li>
@@ -331,7 +333,7 @@ COPYRIGHT:
 
 <ul>
 <li>
-<p><strong>Yes!</strong> You can pass and url into <code>--domains</code> as necessary. For example:</p>
+<p><strong>Yes!</strong> You can pass any url into <code>--domains</code> as necessary. For example:</p>
 
 <div class="highlight highlight-source-shell"><pre>$ marill --domains <span class="pl-s"><span class="pl-pds">"</span>https://domain.com/sub/folder/some-page<span class="pl-pds">"</span></span></pre></div>
 </li>
@@ -378,7 +380,7 @@ $ make</pre></div>
 <li>Delete local and remote feature branches after merging.</li>
 <li>Rebase frequently to incorporate upstream changes if you plan to do work in a feature branch.</li>
 <li>Do not push huge commits. Break them out into smaller, more logical commits.</li>
-<li>Use a <a href="https://github.com/Liamraystanley/marill/pulls">pull request</a> if you plan to havbe something reviewed, before committed.</li>
+<li>Use a <a href="https://github.com/Liamraystanley/marill/pulls">pull request</a> if you plan to have something reviewed, before committed.</li>
 <li>Good commit messages. No generic messages like <code>fixed</code>, or <code>this should be written better</code>. More <code>fix X issue (closes #X)</code> or <code>implement X (closes #X)</code>, etc.</li>
 <li>If you've created more than one commit, <a href="https://help.github.com/articles/about-git-rebase/">use <code>git rebase</code> interactively</a> to squash them into cohesive commits with good messages.</li>
 </ul>
@@ -390,7 +392,7 @@ $ make</pre></div>
 <li>Always use <code>gofmt</code> before committing anything.</li>
 <li>Always have proper documentation before committing.</li>
 <li>Keep the same whitespacing, documentation, and newline format as the rest of the project.</li>
-<li>Always run <code>make lint</code> if possible, to ensure you are meeting Golang standards.</li>
+<li>Always run <code>make lint</code> if possible, to ensure you are meeting Golang and community standards.</li>
 <li>Only use 3rd party libraries if necessary. If only a small portion of the library is needed, simply rewrite it within the library to prevent useless imports.</li>
 <li>Also see <a href="https://github.com/golang/go/wiki/CodeReviewComments">golang/go/wiki/CodeReviewComments</a>
 </li>
