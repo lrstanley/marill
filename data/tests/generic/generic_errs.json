@@ -1,17 +1,17 @@
 [{
-    "name": "err msg: unexpected [sp]",
+    "name": "generic error: unexpected [sp]",
     "weight": -3,
     "match": ["regex:body:(?i)Un error a ocurrido en la aplicacion"]
 }, {
-    "name": "err msg: unexpected [fr]",
+    "name": "generic error: unexpected [fr]",
     "weight": -3,
     "match": ["regex:body:(?i)Une erreur est survenue dans l'application"]
 }, {
-    "name": "err msg: unexpected [de]",
+    "name": "generic error: unexpected [de]",
     "weight": -3,
     "match": ["regex:body:(?i)Ein Fehler ist aufgetreten in der Anwendung"]
 }, {
-    "name": "err msg: unexpected [ru]",
+    "name": "generic error: unexpected [ru]",
     "weight": -3,
     "match": ["regex:body:(?i)Произошла ошибка в приложении"]
 }]
