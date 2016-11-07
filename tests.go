@@ -578,5 +578,23 @@ func checkDomain(dom *scraper.FetchResult, tests []*Test) *TestResult {
 		res.TestMatch(dom, t)
 	}
 
+	assetErrTest := &Test{Name: "erronous asset", Weight: -0.4}
+	assetCount := len(dom.Assets)
+	if assetCount < 5 {
+		assetErrTest.Weight = -1.5
+	} else if assetCount < 15 {
+		assetErrTest.Weight = -1.0
+	} else if assetCount < 50 {
+		assetErrTest.Weight = -0.8
+	} else if assetCount < 100 {
+		assetErrTest.Weight = -0.5
+	}
+
+	for i := 0; i < assetCount; i++ {
+		if dom.Assets[i].Error != nil {
+			res.applyScore(assetErrTest, []string{dom.Assets[i].Error.Error()}, 1)
+		}
+	}
+
 	return res
 }
