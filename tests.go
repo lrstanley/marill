@@ -219,6 +219,13 @@ func genTests() (tests []*Test) {
 					matches = true
 					break
 				}
+
+				// e.g:
+				// $ marill --test-ignore "builtin:data/tests/generic/*" tests
+				if utils.Glob(test.Origin, match) {
+					matches = true
+					break
+				}
 			}
 
 			if matches {
