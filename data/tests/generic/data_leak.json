@@ -1,9 +1,9 @@
 [{
     "name": "data leak: config.php",
     "weight": -3,
-    "match": ["glob:body:*config.php*", "glob:body:*configuration.php*"]
+    "match": ["glob:text:*config.php*", "glob:text:*configuration.php*"]
 }, {
     "name": "data leak: visible docroot",
     "weight": -4,
-    "match": ["glob:body:*/home/*/public_html/*"]
+    "match": ["glob:text:*/home/*/public_html/*"]
 }]

@@ -34,7 +34,7 @@ var defaultTestTypes = [...]string{
 	"url",           // resource url (https://example.com/test)
 	"host",          // resource host (example.com)
 	"scheme",        // resource scheme (http/https/etc)
-	"body",          // resource html-stripped body
+	"text",          // resource html-stripped body
 	"html",          // resource html
 	"code",          // resource status code (e.g. 200, 500, etc)
 	"headers",       // resource headers in string form (tested against each one, being "Header: value")
@@ -117,7 +117,7 @@ func (t *Test) generateMatches() {
 }
 
 // StrToMatch converts a string based match element into a composed match query
-// e.g. from "glob:body:*something*" -> TestMatch
+// e.g. from "glob:text:*something*" -> TestMatch
 func StrToMatch(test *Test, rawMatch string) (*TestMatch, error) {
 	in := strings.SplitN(rawMatch, ":", 3)
 	if len(in) != 3 {
@@ -186,7 +186,7 @@ func genTests() (tests []*Test) {
 		tmp = append(tmp, &Test{
 			Name:     "--pass-text matched",
 			Weight:   10,
-			RawMatch: []string{fmt.Sprintf("glob:body:*%s*", conf.scan.testPassText)},
+			RawMatch: []string{fmt.Sprintf("glob:text:*%s*", conf.scan.testPassText)},
 			Origin:   "cli-args",
 		})
 	}
@@ -195,7 +195,7 @@ func genTests() (tests []*Test) {
 		tmp = append(tmp, &Test{
 			Name:     "--fail-text matched",
 			Weight:   -10,
-			RawMatch: []string{fmt.Sprintf("glob:body:*%s*", conf.scan.testFailText)},
+			RawMatch: []string{fmt.Sprintf("glob:text:*%s*", conf.scan.testFailText)},
 			Origin:   "cli-args",
 		})
 	}
@@ -501,7 +501,7 @@ func TestCompare(dom *scraper.FetchResult, test *Test, mtype string) (out []stri
 		for i := 0; i < len(dom.Assets); i++ {
 			out = append(out, dom.Assets[i].Response.URL.Path)
 		}
-	case "body":
+	case "text":
 		out = append(out, bodyNoHTML)
 	case "html":
 		out = append(out, dom.Response.Body)

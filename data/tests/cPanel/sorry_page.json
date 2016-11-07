@@ -1,5 +1,5 @@
 {
     "name": "cPanel sorry page",
     "weight": -10,
-    "match": ["glob:body:*URL=/cgi-sys/defaultwebpage.cgi*"]
+    "match": ["glob:text:*URL=/cgi-sys/defaultwebpage.cgi*"]
 }

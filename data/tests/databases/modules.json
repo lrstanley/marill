@@ -1,5 +1,5 @@
 {
     "name": "database module/plugin error",
     "weight": -5,
-    "match": ["glob:body:*The MySQL adapter 'mysql*' is not available*"]
+    "match": ["glob:text:*The MySQL adapter 'mysql*' is not available*"]
 }

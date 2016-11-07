@@ -1,5 +1,5 @@
 [{
     "name": "cgi: no input file",
     "weight": -3,
-    "match": ["glob:body:*No input file specified.*"]
+    "match": ["glob:text:*No input file specified.*"]
 }]

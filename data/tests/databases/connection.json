@@ -1,5 +1,5 @@
 {
     "name": "database connection error",
     "weight": -5,
-    "match": ["glob:body:*Error establishing a database connection*"]
+    "match": ["glob:text:*Error establishing a database connection*"]
 }
