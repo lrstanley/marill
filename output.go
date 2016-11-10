@@ -29,6 +29,33 @@ type JSONOutput struct {
 	TimeScanned string
 }
 
+func (j *JSONOutput) Bytes() []byte {
+	jsonBytes, err := json.Marshal(j)
+	if err != nil {
+		panic(err)
+	}
+
+	return jsonBytes
+}
+
+func (j *JSONOutput) String() string {
+	jsonBytes, err := json.Marshal(j)
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf("%s", jsonBytes)
+}
+
+func (j *JSONOutput) StringPretty() string {
+	jsonBytes, err := json.MarshalIndent(j, "", "    ")
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf("%s", jsonBytes)
+}
+
 // HTMLDomResult is a wrapper around the test results, providing string representations
 // of some errors and other items that during JSON conversion get converted to structs.
 type HTMLDomResult struct {
@@ -36,7 +63,7 @@ type HTMLDomResult struct {
 	ErrorString string // string representation of any errors
 }
 
-func genHTMLOutput(scan *Scan) ([]byte, error) {
+func genJSONOutput(scan *Scan) (*JSONOutput, error) {
 	htmlConvertedResults := make([]*HTMLDomResult, len(scan.results))
 	var hosts string
 
@@ -51,7 +78,7 @@ func genHTMLOutput(scan *Scan) ([]byte, error) {
 		}
 	}
 
-	out, err := json.Marshal(&JSONOutput{
+	jsonOut := &JSONOutput{
 		Version:     getVersion(),
 		MinScore:    8.0,
 		Out:         htmlConvertedResults,
@@ -60,11 +87,12 @@ func genHTMLOutput(scan *Scan) ([]byte, error) {
 		HostFile:    hosts,
 		Success:     true,
 		TimeScanned: time.Now().Format(time.RFC3339),
-	})
-	if err != nil {
-		return nil, err
 	}
 
+	return jsonOut, nil
+}
+
+func genHTMLOutput(input *JSONOutput) ([]byte, error) {
 	m := minify.New()
 	m.AddFunc("text/css", css.Minify)
 	m.AddFunc("text/html", html.Minify)
@@ -95,7 +123,7 @@ func genHTMLOutput(scan *Scan) ([]byte, error) {
 		return nil, err
 	}
 
-	jsonStr := fmt.Sprintf("%s", out)
+	jsonStr := fmt.Sprintf("%s", input.String())
 	tmpl := template.New("html")
 	tmpl.Delims("{[", "]}")
 	tmpl = template.Must(tmpl.Parse(string(htmlRawTmpl)))

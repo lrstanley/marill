@@ -118,8 +118,10 @@ type scanConfig struct {
 	testFailText string // glob match against body, will take away a weight of 10
 
 	// output related
-	outTmpl  string // the output text/template template for use with printing results
-	htmlFile string // the file path to dump an html file
+	outTmpl    string // the output text/template template for use with printing results
+	htmlFile   string // the file path to dump results in html
+	jsonFile   string // the file path to dump results in json
+	jsonPretty bool   // prettifies the json output
 }
 
 // appConfig handles what the app does (scans/crawls, printing data, some other task, etc)
@@ -504,8 +506,28 @@ func run(c *cli.Context) error {
 		}
 	}
 
+	var jsonOut *JSONOutput
+
+	if conf.scan.jsonFile != "" || conf.scan.htmlFile != "" {
+		if jsonOut, err = genJSONOutput(scan); err != nil {
+			out.Fatal(err)
+		}
+	}
+
+	if conf.scan.jsonFile != "" {
+		if conf.scan.jsonPretty {
+			if err := ioutil.WriteFile(conf.scan.jsonFile, []byte(jsonOut.StringPretty()), 0666); err != nil {
+				out.Fatal(err)
+			}
+		} else {
+			if err := ioutil.WriteFile(conf.scan.jsonFile, jsonOut.Bytes(), 0666); err != nil {
+				out.Fatal(err)
+			}
+		}
+	}
+
 	if conf.scan.htmlFile != "" {
-		htmlOut, err := genHTMLOutput(scan)
+		htmlOut, err := genHTMLOutput(jsonOut)
 		if err != nil {
 			out.Fatal(err)
 		}
@@ -715,9 +737,19 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:        "html",
-			Usage:       "Optional file to output html results to",
+			Usage:       "Optional `PATH` to output html results to",
 			Hidden:      true,
 			Destination: &conf.scan.htmlFile,
+		},
+		cli.StringFlag{
+			Name:        "json",
+			Usage:       "Optional `PATH` to output json results to",
+			Destination: &conf.scan.jsonFile,
+		},
+		cli.BoolFlag{
+			Name:        "json-pretty",
+			Usage:       "Used with [--json], pretty-prints the output json",
+			Destination: &conf.scan.jsonPretty,
 		},
 
 		// domain filtering
