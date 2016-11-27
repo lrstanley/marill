@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"text/template"
 	"time"
 
@@ -73,6 +74,11 @@ func genJSONOutput(scan *Scan) (*JSONOutput, error) {
 			htmlConvertedResults[i].ErrorString = htmlConvertedResults[i].Result.Error.Error()
 		}
 
+		// trim out some of the bulk here
+		if len(htmlConvertedResults[i].Result.Response.Body) > 200 {
+			htmlConvertedResults[i].Result.Response.Body = htmlConvertedResults[i].Result.Response.Body[0:200] + " [...]"
+		}
+
 		if htmlConvertedResults[i].Result.Request.IP != "" {
 			hosts += fmt.Sprintf("%s %s\n", htmlConvertedResults[i].Result.Request.IP, htmlConvertedResults[i].Result.Request.URL.Host)
 		}
@@ -84,7 +90,7 @@ func genJSONOutput(scan *Scan) (*JSONOutput, error) {
 		Out:         htmlConvertedResults,
 		Successful:  scan.successful,
 		Failed:      scan.failed,
-		HostFile:    hosts,
+		HostFile:    strings.TrimRight(hosts, "\n"),
 		Success:     true,
 		TimeScanned: time.Now().Format(time.RFC3339),
 	}
