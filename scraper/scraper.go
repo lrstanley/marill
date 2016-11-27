@@ -6,7 +6,6 @@ package scraper
 
 import (
 	"bytes"
-	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -25,13 +24,13 @@ var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
 // Response represents the data for the HTTP-based request, closely matching
 // http.Response
 type Response struct {
-	Remote        bool                 // Remote is true if the origin is remote (unknown ip)
-	Code          int                  // Code is the numeric HTTP based status code
-	URL           *url.URL             // URL is the resulting static URL derived by the original result page
-	Body          string               // Body is the response body. Used for primary requests, ignored for Resource structs.
-	Headers       http.Header          // Headers is a map[string][]string of headers
-	ContentLength int64                // ContentLength is the number of bytes in the body of the response
-	TLS           *tls.ConnectionState // TLS is the SSL/TLS session if the resource was loaded over SSL/TLS
+	Remote        bool         // Remote is true if the origin is remote (unknown ip)
+	Code          int          // Code is the numeric HTTP based status code
+	URL           *url.URL     // URL is the resulting static URL derived by the original result page
+	Body          string       // Body is the response body. Used for primary requests, ignored for Resource structs.
+	Headers       http.Header  // Headers is a map[string][]string of headers
+	ContentLength int64        // ContentLength is the number of bytes in the body of the response
+	TLS           *TLSResponse // TLS is the SSL/TLS session if the resource was loaded over SSL/TLS
 }
 
 // Resource represents a single entity of many within a given crawl. These should
@@ -124,7 +123,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 		Code:          resp.StatusCode,
 		ContentLength: resp.ContentLength,
 		Headers:       resp.Header,
-		TLS:           resp.TLS,
+		TLS:           tlsToShort(resp.TLS),
 	}
 
 	if rsrc.Response.URL.Host != rsrc.Request.URL.Host {
@@ -170,7 +169,7 @@ func (c *Crawler) Fetch(res *FetchResult) {
 		Code:          resp.StatusCode,
 		ContentLength: resp.ContentLength,
 		Headers:       resp.Header,
-		TLS:           resp.TLS,
+		TLS:           tlsToShort(resp.TLS),
 	}
 
 	if res.Response.URL.Host != res.Request.URL.Host {

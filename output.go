@@ -7,6 +7,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"text/template"
@@ -72,6 +73,8 @@ func genJSONOutput(scan *Scan) (*JSONOutput, error) {
 		htmlConvertedResults[i] = &HTMLDomResult{TestResult: scan.results[i]}
 		if htmlConvertedResults[i].Result.Error != nil {
 			htmlConvertedResults[i].ErrorString = htmlConvertedResults[i].Result.Error.Error()
+			// make it so errors are still true, but it doesn't bloat the json
+			htmlConvertedResults[i].Result.Error = errors.New(htmlConvertedResults[i].ErrorString)
 		}
 
 		// trim out some of the bulk here
