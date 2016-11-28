@@ -58,7 +58,13 @@
                 <div flex class="md-list-item-text list-url" layout="column" ng-click="setURL($index)" ng-class="{'active': urlViewing == $index}">
                     <div>
                         <i class="fa" ng-class="{'fa-check-circle text-success': item.ErrorString == '', 'fa-times-circle text-danger': item.ErrorString != ''}"></i>
-                        <span class="score"><span class="chip chip-sm chip-success">{{ item.Score }}/10</span></span>
+                        <span class="score">
+                            <span class="chip chip-sm"
+                                  ng-class="{
+                                        'chip-success': item.Score >= (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.ErrorString == '',
+                                        'chip-warn': item.Score < (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.Score >= $root.data.MinScore && item.ErrorString == '',
+                                        'chip-danger': item.Score < $root.data.MinScore || item.ErrorString != ''}">{{ item.Score }}/10</span>
+                        </span>
                         {{ item.Result.URL }}
                         <span class="pull-right chip chip-sm chip-default">{{ item.Result.TotalTime.Milli }}ms</span>
                     </div>

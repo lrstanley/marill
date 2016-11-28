@@ -370,6 +370,15 @@ hr {
     color: #ffffff;
 }
 
+.chip.chip-danger {
+    background-color: #ff4c4c;
+    color: #ffffff;
+}
+
+.chip.chip-danger a {
+    color: #ffffff;
+}
+
 .chip.chip-success {
     background-color: #4caf50;
     color: #ffffff;
