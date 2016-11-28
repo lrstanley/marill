@@ -19,7 +19,7 @@ import (
 	"github.com/tdewolff/minify/js"
 )
 
-// JSONOutput is the generated json that will be embedded in Angular
+// JSONOutput is the generated json that will be embedded in Angular.
 type JSONOutput struct {
 	Version     string
 	MinScore    float64
@@ -31,6 +31,7 @@ type JSONOutput struct {
 	TimeScanned string
 }
 
+// Bytes returns a bytes array representation of JSONOutput.
 func (j *JSONOutput) Bytes() []byte {
 	jsonBytes, err := json.Marshal(j)
 	if err != nil {
@@ -40,6 +41,7 @@ func (j *JSONOutput) Bytes() []byte {
 	return jsonBytes
 }
 
+// String returns a string representation of JSONOutput.
 func (j *JSONOutput) String() string {
 	jsonBytes, err := json.Marshal(j)
 	if err != nil {
@@ -49,6 +51,7 @@ func (j *JSONOutput) String() string {
 	return fmt.Sprintf("%s", jsonBytes)
 }
 
+// StringPretty returns a prettified/indented representation of JSONOutput.
 func (j *JSONOutput) StringPretty() string {
 	jsonBytes, err := json.MarshalIndent(j, "", "    ")
 	if err != nil {
@@ -58,8 +61,9 @@ func (j *JSONOutput) StringPretty() string {
 	return fmt.Sprintf("%s", jsonBytes)
 }
 
-// HTMLDomResult is a wrapper around the test results, providing string representations
-// of some errors and other items that during JSON conversion get converted to structs.
+// HTMLDomResult is a wrapper around the test results, providing string
+// representations of some errors and other items that during JSON conversion
+// get converted to structs.
 type HTMLDomResult struct {
 	*TestResult
 	ErrorString string // string representation of any errors

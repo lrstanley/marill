@@ -428,12 +428,12 @@ func updateCheck() {
 
 	if data.Tag == version {
 		out.Println("{green}your version of marill is up to date{c}")
-		logger.Println("update check: up to date. current: %s, latest: %s (%s)", version, data.Tag, data.Name)
+		logger.Printf("update check: up to date. current: %s, latest: %s (%s)", version, data.Tag, data.Name)
 		return
 	}
 
-	out.Println("{bold}{yellow}there is an update available for marill. current: %s new: %s (%s){c}", version, data.Tag, data.Name)
-	out.Println("release link: %s", data.URL)
+	out.Printf("{bold}{yellow}there is an update available for marill. current: %s new: %s (%s){c}", version, data.Tag, data.Name)
+	out.Printf("release link: %s", data.URL)
 	logger.Printf("update check found update %s available (doesn't match current: %s): %s", data.Tag, version, data.URL)
 
 	return
@@ -490,7 +490,7 @@ func run(c *cli.Context) error {
 			continue
 		}
 
-		err := tmplFormatted.Execute(os.Stdout, res)
+		err = tmplFormatted.Execute(os.Stdout, res)
 		if err != nil {
 			out.Println("")
 			out.Fatal("executing template:", err)
@@ -498,7 +498,7 @@ func run(c *cli.Context) error {
 
 		if len(conf.out.resultFile) > 0 {
 			// pipe it to the result file as necessary.
-			err := tmpl.Execute(resultFn, res)
+			err = tmpl.Execute(resultFn, res)
 			if err != nil {
 				out.Println("")
 				out.Fatal("executing template:", err)
