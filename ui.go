@@ -1,6 +1,6 @@
 // Author: Liam Stanley <me@liamstanleyio>
 // Docs: https://marill.liamsh/
-// Repo: https://githubcom/Liamraystanley/marill
+// Repo: https://githubcom/lrstanley/marill
 
 package main
 
@@ -11,9 +11,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/Liamraystanley/marill/domfinder"
-	"github.com/Liamraystanley/marill/scraper"
-	"github.com/Liamraystanley/marill/utils"
+	"github.com/lrstanley/marill/domfinder"
+	"github.com/lrstanley/marill/scraper"
+	"github.com/lrstanley/marill/utils"
 	"github.com/jroimartin/gocui"
 )
 

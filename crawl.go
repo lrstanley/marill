@@ -1,14 +1,14 @@
 // Author: Liam Stanley <me@liamstanley.io>
 // Docs: https://marill.liam.sh/
-// Repo: https://github.com/Liamraystanley/marill
+// Repo: https://github.com/lrstanley/marill
 
 package main
 
 import (
 	"fmt"
 
-	"github.com/Liamraystanley/marill/domfinder"
-	"github.com/Liamraystanley/marill/scraper"
+	"github.com/lrstanley/marill/domfinder"
+	"github.com/lrstanley/marill/scraper"
 )
 
 // Scan is a wrapper for all state related to the crawl process

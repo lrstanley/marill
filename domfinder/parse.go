@@ -1,6 +1,6 @@
 // Author: Liam Stanley <me@liamstanley.io>
 // Docs: https://marill.liam.sh/
-// Repo: https://github.com/Liamraystanley/marill
+// Repo: https://github.com/lrstanley/marill
 
 package domfinder
 
@@ -12,7 +12,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Liamraystanley/marill/utils"
+	"github.com/lrstanley/marill/utils"
 )
 
 var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)

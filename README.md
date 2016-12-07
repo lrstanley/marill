@@ -1,11 +1,11 @@
 ![Marill -- Automated Site Testing Utility](https://i.imgur.com/HYZ3biA.png)
 <p align="center">Marill -- Automated site testing utility.</p>
 
-[![Build Status](https://travis-ci.org/Liamraystanley/marill.svg?branch=master)](https://travis-ci.org/Liamraystanley/marill)
-[![GitHub Issues](https://img.shields.io/github/issues/Liamraystanley/marill.svg)](https://github.com/Liamraystanley/marill/issues)
-[![Project Status](https://img.shields.io/badge/status-alpha-red.svg)](https://github.com/Liamraystanley/marill/commits/master)
+[![Build Status](https://travis-ci.org/lrstanley/marill.svg?branch=master)](https://travis-ci.org/lrstanley/marill)
+[![GitHub Issues](https://img.shields.io/github/issues/lrstanley/marill.svg)](https://github.com/lrstanley/marill/issues)
+[![Project Status](https://img.shields.io/badge/status-alpha-red.svg)](https://github.com/lrstanley/marill/commits/master)
 [![Codebeat Badge](https://codebeat.co/badges/4653f785-83ec-4b21-bf0c-b519b20c89d6)](https://codebeat.co/projects/github-com-liamraystanley-marill)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Liamraystanley/marill)](https://goreportcard.com/report/github.com/Liamraystanley/marill)
+[![Go Report Card](https://goreportcard.com/badge/github.com/lrstanley/marill)](https://goreportcard.com/report/github.com/lrstanley/marill)
 
 Marill is an automated site testing utility, which is meant to make administrators lives easier by taking much of the leg-work out of testing. It's intended to be lightweight, flexible, and easy to use, while still being very powerful.
 
@@ -50,7 +50,7 @@ _Disclaimer: Marill is still in early development, and this list is subject to c
    * Configurable output. Only output what you need.
    * Many cli flags to configure input, output, what is tested, what isn't, etc.
    * Ability to test cPanel based servers, Apache, Nginx (coming soon!), and others! (any can be scanned with `--domains`)
-   * Flexible testing system. You can even write your own tests! Load them from a URL in JSON format, or from a directory! (see [marill/tests](https://github.com/Liamraystanley/marill/tree/master/tests))
+   * Flexible testing system. You can even write your own tests! Load them from a URL in JSON format, or from a directory! (see [marill/tests](https://github.com/lrstanley/marill/tree/master/tests))
 
 ## Limitations
 
@@ -205,7 +205,7 @@ $ marill a --domains "somedomain.com:443 domain.com:1234 example.com:123.456.7.8
 
 ### Things to note/Troubleshooting
    * Please remove `/root/tmp/marill` once you are done. This utility is still in alpha stages, and as such, there is no update check functionality. Leaving in place may cause someone in the future to utilize an outdated version of the software.
-   * If there are any problems or bugs, **PLEASE LET ME KNOW!** You can submit bugs if you have a Github account [here](https://github.com/Liamraystanley/marill/issues/new) or [here if you do not](https://gitreports.com/issue/Liamraystanley/marill)
+   * If there are any problems or bugs, **PLEASE LET ME KNOW!** You can submit bugs if you have a Github account [here](https://github.com/lrstanley/marill/issues/new) or [here if you do not](https://gitreports.com/issue/lrstanley/marill)
 
 ## FAQ
    1. **Will it cause high load?**
@@ -252,7 +252,7 @@ $ marill a --domains "somedomain.com:443 domain.com:1234 example.com:123.456.7.8
 Marill supports building on 1.3+ (or even possibly older), however it is recommended to build on the latest go release. Note that you will not be able to use the Makefile to compile Marill if you are trying to build on go 1.4 or lower. You will need to manually compile it, due to limitations with ldflag support.
 
 ```bash
-$ git clone https://github.com/Liamraystanley/marill.git
+$ git clone https://github.com/lrstanley/marill.git
 $ cd marill
 $ make
 ```
@@ -265,10 +265,10 @@ $ make test all
 
 ## Project Status
 
-   * [See here](https://github.com/Liamraystanley/marill/projects/1) for what is being worked on/in my todo list for the first beta release.
-   * [See here](https://github.com/Liamraystanley/marill/projects/2) for what is being worked on/in my todo list for the first major release.
+   * [See here](https://github.com/lrstanley/marill/projects/1) for what is being worked on/in my todo list for the first beta release.
+   * [See here](https://github.com/lrstanley/marill/projects/2) for what is being worked on/in my todo list for the first major release.
    * Head over to [release.liam.sh/marill](https://release.liam.sh/marill/?sort=time&order=desc) to get some testing bundled binaries, if your'e daring and willing to help test my latest pushes.
-   * Head over to [Github Releases](https://github.com/Liamraystanley/marill/releases) to get more true-tested builds and versions, with change information.
+   * Head over to [Github Releases](https://github.com/lrstanley/marill/releases) to get more true-tested builds and versions, with change information.
 
 ## Contributing
 
@@ -277,7 +277,7 @@ Below are a few guidelines if you would like to contribute to Marill. I'm hoping
    * Delete local and remote feature branches after merging.
    * Rebase frequently to incorporate upstream changes if you plan to do work in a feature branch.
    * Do not push huge commits. Break them out into smaller, more logical commits.
-   * Use a [pull request](https://github.com/Liamraystanley/marill/pulls) if you plan to have something reviewed, before committed.
+   * Use a [pull request](https://github.com/lrstanley/marill/pulls) if you plan to have something reviewed, before committed.
    * Good commit messages. No generic messages like `fixed`, or `this should be written better`. More `fix X issue (closes #X)` or `implement X (closes #X)`, etc.
    * If you've created more than one commit, [use `git rebase` interactively](https://help.github.com/articles/about-git-rebase/) to squash them into cohesive commits with good messages.
 

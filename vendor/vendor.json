@@ -4,7 +4,7 @@
 	"package": [
 		{
 			"checksumSHA1": "tv5ZbA30tvT8pUG09RObhPq4Ji8=",
-			"path": "github.com/Liamraystanley/go-sempool",
+			"path": "github.com/lrstanley/go-sempool",
 			"revision": "eba0b766e963205cc7389e1a7f3f8348ceefd0ae",
 			"revisionTime": "2016-10-14T05:28:09Z"
 		},
@@ -105,5 +105,5 @@
 			"revisionTime": "2016-10-22T09:38:57Z"
 		}
 	],
-	"rootPath": "github.com/Liamraystanley/marill"
+	"rootPath": "github.com/lrstanley/marill"
 }

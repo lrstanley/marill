@@ -1,6 +1,6 @@
 // Author: Liam Stanley <me@liamstanley.io>
 // Docs: https://marill.liam.sh/
-// Repo: https://github.com/Liamraystanley/marill
+// Repo: https://github.com/lrstanley/marill
 
 package scraper
 
@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Liamraystanley/go-sempool"
-	"github.com/Liamraystanley/marill/utils"
+	"github.com/lrstanley/go-sempool"
+	"github.com/lrstanley/marill/utils"
 )
 
 var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)

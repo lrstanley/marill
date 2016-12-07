@@ -1,6 +1,6 @@
 // Author: Liam Stanley <me@liamstanley.io>
 // Docs: https://marill.liam.sh/
-// Repo: https://github.com/Liamraystanley/marill
+// Repo: https://github.com/lrstanley/marill
 
 package domfinder
 
@@ -11,8 +11,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/Liamraystanley/marill/procfinder"
-	"github.com/Liamraystanley/marill/utils"
+	"github.com/lrstanley/marill/procfinder"
+	"github.com/lrstanley/marill/utils"
 )
 
 // webservers represents the list of nice-name processes that we should be checking

@@ -1,6 +1,6 @@
 // Author: Liam Stanley <me@liamstanley.io>
 // Docs: https://marill.liam.sh/
-// Repo: https://github.com/Liamraystanley/marill
+// Repo: https://github.com/lrstanley/marill
 
 package domfinder
 
@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Liamraystanley/marill/utils"
+	"github.com/lrstanley/marill/utils"
 )
 
 func TestFilter(t *testing.T) {

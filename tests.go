@@ -1,6 +1,6 @@
 // Author: Liam Stanley <me@liamstanley.io>
 // Docs: https://marill.liam.sh/
-// Repo: https://github.com/Liamraystanley/marill
+// Repo: https://github.com/lrstanley/marill
 
 package main
 
@@ -18,9 +18,9 @@ import (
 	"strings"
 	"time"
 
-	sempool "github.com/Liamraystanley/go-sempool"
-	"github.com/Liamraystanley/marill/scraper"
-	"github.com/Liamraystanley/marill/utils"
+	sempool "github.com/lrstanley/go-sempool"
+	"github.com/lrstanley/marill/scraper"
+	"github.com/lrstanley/marill/utils"
 )
 
 // TODO:

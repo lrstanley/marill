@@ -1,6 +1,6 @@
 // Author: Liam Stanley <me@liamstanley.io>
 // Docs: https://marill.liam.sh/
-// Repo: https://github.com/Liamraystanley/marill
+// Repo: https://github.com/lrstanley/marill
 //
 //       O
 //    o 0  o        [ Marill -- Automated site testing utility ]
@@ -29,16 +29,16 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/Liamraystanley/marill/domfinder"
-	"github.com/Liamraystanley/marill/scraper"
-	"github.com/Liamraystanley/marill/utils"
+	"github.com/lrstanley/marill/domfinder"
+	"github.com/lrstanley/marill/scraper"
+	"github.com/lrstanley/marill/utils"
 	"github.com/urfave/cli"
 )
 
 // these /SHOULD/ be defined during the make process. not always however.
 var version, commithash, compiledate = "", "", ""
 
-const updateURI = "https://api.github.com/repos/Liamraystanley/marill/releases/latest"
+const updateURI = "https://api.github.com/repos/lrstanley/marill/releases/latest"
 
 const motd = `
 {magenta}      {lightgreen}O{magenta}     {yellow}     [ Marill -- Automated site testing utility ]
@@ -356,7 +356,7 @@ func updateCheck() {
 	}
 
 	// set the necessary headers per Github's request.
-	req.Header.Set("User-Agent", "repo: Liamraystanley/marill (internal update check utility)")
+	req.Header.Set("User-Agent", "repo: lrstanley/marill (internal update check utility)")
 
 	resp, err := client.Do(req)
 	if err != nil {

@@ -1,13 +1,13 @@
 // Author: Liam Stanley <me@liamstanley.io>
 // Docs: https://marill.liam.sh/
-// Repo: https://github.com/Liamraystanley/marill
+// Repo: https://github.com/lrstanley/marill
 
 package scraper
 
 import (
 	"testing"
 
-	"github.com/Liamraystanley/marill/utils"
+	"github.com/lrstanley/marill/utils"
 )
 
 func TestFmtTagLinks(t *testing.T) {

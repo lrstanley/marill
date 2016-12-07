@@ -1,6 +1,6 @@
 // Author: Liam Stanley <me@liamstanley.io>
 // Docs: https://marill.liam.sh/
-// Repo: https://github.com/Liamraystanley/marill
+// Repo: https://github.com/lrstanley/marill
 
 package scraper
 
@@ -14,7 +14,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Liamraystanley/marill/utils"
+	"github.com/lrstanley/marill/utils"
 )
 
 // CustomClient is the state for our custom http wrapper, which houses
