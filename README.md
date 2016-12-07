@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/lrstanley/marill.svg?branch=master)](https://travis-ci.org/lrstanley/marill)
 [![GitHub Issues](https://img.shields.io/github/issues/lrstanley/marill.svg)](https://github.com/lrstanley/marill/issues)
 [![Project Status](https://img.shields.io/badge/status-alpha-red.svg)](https://github.com/lrstanley/marill/commits/master)
-[![Codebeat Badge](https://codebeat.co/badges/4653f785-83ec-4b21-bf0c-b519b20c89d6)](https://codebeat.co/projects/github-com-liamraystanley-marill)
+[![Codebeat Badge](https://codebeat.co/badges/05580d8e-4a2f-4664-b25b-a6c053233982)](https://codebeat.co/projects/github-com-lrstanley-marill)
 [![Go Report Card](https://goreportcard.com/badge/github.com/lrstanley/marill)](https://goreportcard.com/report/github.com/lrstanley/marill)
 
 Marill is an automated site testing utility, which is meant to make administrators lives easier by taking much of the leg-work out of testing. It's intended to be lightweight, flexible, and easy to use, while still being very powerful.
