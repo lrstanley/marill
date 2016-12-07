@@ -3,16 +3,16 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "tv5ZbA30tvT8pUG09RObhPq4Ji8=",
-			"path": "github.com/lrstanley/go-sempool",
-			"revision": "eba0b766e963205cc7389e1a7f3f8348ceefd0ae",
-			"revisionTime": "2016-10-14T05:28:09Z"
-		},
-		{
 			"checksumSHA1": "NBfKOTcMlELiBnWkYL956WmwgBE=",
 			"path": "github.com/jroimartin/gocui",
 			"revision": "550f04e523205530542d0c4fe63c4c0ab5d046bd",
 			"revisionTime": "2016-10-18T17:34:29Z"
+		},
+		{
+			"checksumSHA1": "fnxb3eGmJHlcq1UWs4i/WAjKxVM=",
+			"path": "github.com/lrstanley/go-sempool",
+			"revision": "eba0b766e963205cc7389e1a7f3f8348ceefd0ae",
+			"revisionTime": "2016-10-14T05:28:09Z"
 		},
 		{
 			"checksumSHA1": "yf185lmVPcvXjLZuPT1s4JzxI18=",

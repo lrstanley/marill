@@ -75,8 +75,8 @@ ccsmall: clean fetch generate
 	$(GOPATH)/bin/gox -verbose -ldflags="${LD_FLAGS}" -os="linux" -arch="amd64" -output "${RELEASE_ROOT}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"
 
 ccshrink:
-	@echo "\n\033[0;36m [ Stripping debugging into and symbol tables from binaries ]\033[0;m"
-	find ${RELEASE_ROOT}/pkg/ -type f | while read bin;do (which upx > /dev/null && upx -9 -q "$$bin" > /dev/null) || echo -n;done
+	@echo "\n\033[0;36m [ Stripping debugging info and symbol tables from binaries ]\033[0;m"
+	find ${RELEASE_ROOT}/pkg/ -type f | while read bin;do (which upx > /dev/null && upx --best --brute -q "$$bin" > /dev/null) || echo -n;done
 
 dobuild: ccsmall ccshrink
 	@echo "\n\033[0;36m [ Compressing compiled binaries ]\033[0;m"
@@ -92,7 +92,7 @@ dorelease: cc ccshrink
 
 compress:
 	@echo "\n\033[0;36m [ Attempting to compress ${BINARY} with UPX ]\033[0;m"
-	(which upx > /dev/null && upx -9 -q ${BINARY} > /dev/null) || echo "not using upx"
+	(which upx > /dev/null && upx --best -q ${BINARY} > /dev/null) || echo "not using upx"
 
 all: clean fetch generate
 	@echo "\n\033[0;36m [ Removing previously compiled binaries ]\033[0;m"
