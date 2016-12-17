@@ -199,6 +199,14 @@ md-list-item:focus {
     padding: 15px;
 }
 
+.list-url .display > button {
+    margin: -5px 0 -5px 10px;
+}
+
+.list-url .display .url {
+    cursor: pointer;
+}
+
 .list-url .chip.chip-sm {
     margin: 0;
 }

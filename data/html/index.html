@@ -54,9 +54,9 @@
         </md-toolbar>
 
         <md-list class="url-results" flex>
-            <md-list-item flex ng-repeat="item in $root.data.Out track by $index">
-                <div flex class="md-list-item-text list-url" layout="column" ng-click="setURL($index)" ng-class="{'active': urlViewing == $index}">
-                    <div>
+            <div flex ng-repeat="item in $root.data.Out track by $index">
+                <div flex class="list-url" layout="column" ng-class="{'active': urlViewing == $index}">
+                    <div class="display">
                         <i class="fa" ng-class="{'fa-check-circle text-success': item.ErrorString == '', 'fa-times-circle text-danger': item.ErrorString != ''}"></i>
                         <span class="score">
                             <span class="chip chip-sm"
@@ -65,12 +65,15 @@
                                         'chip-warn': item.Score < (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.Score >= $root.data.MinScore && item.ErrorString == '',
                                         'chip-danger': item.Score < $root.data.MinScore || item.ErrorString != ''}">{{ item.Score }}/10</span>
                         </span>
-                        {{ item.Result.URL }}
+                        <span ng-click="setURL($index)" class="url">{{ item.Result.URL }}</span>
+                        <md-button class="md-raised md-accent pull-right" ng-click="setURL($index)">Details</md-button>
                         <span class="pull-right chip chip-sm chip-default">{{ item.Result.TotalTime.Milli }}ms</span>
                     </div>
-                    <div ng-if="urlViewing == $index" class="details">[ some useful information here ]</div>
+                    <div ng-if="urlViewing == $index" class="details">
+                        [ some useful information here ]
+                    </div>
                 </div>
-            </md-list-item>
+            </div>
         </md-list>
     </script>
 
