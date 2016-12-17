@@ -273,6 +273,12 @@ func (c *Crawler) Crawl() {
 			result.Request = domain
 
 			c.Fetch(result)
+			// Check to see if there were errors here that we want to ignore.
+			if c.Cnf.NoRemote && result.Error == ErrNotMatchOrigin {
+				c.Log.Printf("skipping %s as skip remote was used (error: %s)", domain, result.Error)
+				return
+			}
+
 			c.Results = append(c.Results, result)
 
 			if result.Error != nil {
