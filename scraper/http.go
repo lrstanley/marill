@@ -37,6 +37,15 @@ type CustomResponse struct {
 	URL  *url.URL
 }
 
+// ErrTooManyRedirects indicates that the requested origin redirected more
+// than a considerable amount of times, indicating there may be a redirect
+// loop.
+var ErrTooManyRedirects = errors.New("too many redirects (10+)")
+
+// ErrNotMatchOrigin indicates that the end location is external to the host
+// we were originally looking up.
+var ErrNotMatchOrigin = errors.New("redirection does not match origin host")
+
 func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) error {
 	c.requestWrap(req)
 
@@ -47,11 +56,11 @@ func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) e
 
 	if len(via) > 10 {
 		// assume too many redirects
-		return errors.New("too many redirects (10+)")
+		return ErrTooManyRedirects
 	}
 
 	if reIP.MatchString(req.Host) && req.Host != c.Host {
-		return errors.New("redirected to IP that doesn't match proxy/origin request")
+		return ErrNotMatchOrigin
 	}
 
 	// check to see if we're redirecting to a target which is possibly off this server
@@ -68,7 +77,7 @@ func (c *CustomClient) redirectHandler(req *http.Request, via []*http.Request) e
 			}
 
 			if !isin {
-				return errors.New("redirection does not match origin host")
+				return ErrNotMatchOrigin
 			}
 		}
 	}
@@ -124,7 +133,7 @@ func (h HostnameError) Error() string {
 	if ip := net.ParseIP(h.Host); ip != nil {
 		// Trying to validate an IP
 		if len(c.IPAddresses) == 0 {
-			return "x509: cannot validate certificate for " + h.Host + " because it doesn't contain any IP SANs"
+			return "cannot validate cert for " + h.Host + " because it doesn't contain any IP SANs"
 		}
 		for _, san := range c.IPAddresses {
 			if len(valid) > 0 {
@@ -139,7 +148,7 @@ func (h HostnameError) Error() string {
 			valid = c.Subject.CommonName
 		}
 	}
-	return "x509: certificate is valid for " + valid + ", not " + h.Host
+	return "cert valid for " + valid + ", not " + h.Host
 }
 
 // toLowerCaseASCII returns a lower-case version of in. See RFC 6125 6.4.1. We use
