@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/user"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -110,7 +111,13 @@ func getProcessName(pid string) (name string) {
 	tmp, err := ioutil.ReadFile(fmt.Sprintf("/proc/%s/comm", pid))
 
 	if err != nil {
-		return ""
+		// "comm" likely doesn't exist. Try "/proc/PID/exe" and read the link.
+		link, err := os.Readlink(fmt.Sprintf("/proc/%s/exe", pid))
+		if err != nil {
+			return ""
+		}
+
+		return path.Base(link)
 	}
 
 	return strings.Split(string(tmp), "\n")[0]
