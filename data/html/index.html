@@ -70,7 +70,25 @@
                         <span class="pull-right chip chip-sm chip-default">{{ item.Result.TotalTime.Milli }}ms</span>
                     </div>
                     <div ng-if="urlViewing == $index" class="details">
-                        [ some useful information here ]
+                        <!--[ some useful information here ]-->
+                        <div ng-if="item.ErrorString != ''" class="notice notice-sm notice-danger"><h4>[ an error occurred while crawling ]</h4> {{item.ErrorString}}</div>
+                        <div layout="row" layout-align="space-around start">
+                            <div flex-xs flex-gt-xs="25" class="gradient-single stats md-whiteframe-4dp">
+                                Score: <span ng-class="{
+                                    'text-success': item.Score >= (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.ErrorString == '',
+                                    'text-warning': item.Score < (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.Score >= $root.data.MinScore && item.ErrorString == '',
+                                    'text-danger': item.Score < $root.data.MinScore || item.ErrorString != ''}">{{item.Score}}
+                                <i class="fa" ng-class="{'fa-arrow-up text-success': item.ErrorString == '', 'fa-arrow-down text-danger': item.ErrorString != ''}"></i></span>
+                            </div>
+                            <div flex-xs flex-gt-xs="25" class="gradient-single stats md-whiteframe-4dp">
+                                Code: <span ng-class="{'text-success': item.Result.Response.Code < 400, 'text-danger': item.Result.Response.Code >= 400}">{{item.Result.Response.Code}}</span>
+                            </div>
+                            <div flex-xs flex-gt-xs="25" class="gradient-single stats md-whiteframe-4dp">
+                                <span ng-if="item.Result.Response.Headers['Content-Length']">Size: {{item.Result.Response.Headers['Content-Length']*8/1024 | number: 2}}kb</span>
+                                <span ng-if="!item.Result.Response.Headers['Content-Length']">{{(item.Result.Response.Headers['Server'].length == 1 && item.Result.Response.Headers['Server'][0] || item.Result.Response.Headers['Server']) || 'n/a'}}</span>
+                            </div>
+                            <div flex-xs flex-gt-xs="25" class="gradient-single stats md-whiteframe-4dp">Assets: {{item.Result.Assets.length || 0}}</div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -199,6 +199,24 @@ md-list-item:focus {
     padding: 15px;
 }
 
+.list-url .details .stats {
+    margin: 0 10px;
+    background-color: white;
+    color: #dadada;
+    text-align: center;
+    padding: 7px;
+    font-size: 35px;
+}
+
+.list-url .details .stats i {
+    position: relative;
+    top: -6px;
+}
+
+.list-url .details .notice-sm {
+    margin: 0 10px 10px !important;
+}
+
 .list-url .display > button {
     margin: -5px 0 -5px 10px;
 }
@@ -223,6 +241,15 @@ md-list-item:focus {
     background: -moz-linear-gradient(70deg,#080f1f 30%,#2b4b5a 87%,#435e67 100%);
     background: linear-gradient(20deg,#080f1f 30%,#2b4b5a 87%,#435e67 100%);
     background-attachment: fixed;
+    background-color: #1c2533;
+}
+
+.gradient-single {
+    background: -webkit-linear-gradient(70deg,#080f1f 4%,#2b4b5a 110%,#435e67 100%);
+    background: -o-linear-gradient(70deg,#080f1f 4%,#2b4b5a 110%,#435e67 100%);
+    background: -ms-linear-gradient(70deg,#080f1f 4%,#2b4b5a 110%,#435e67 100%);
+    background: -moz-linear-gradient(70deg,#080f1f 4%,#2b4b5a 110%,#435e67 100%);
+    background: linear-gradient(20deg,#080f1f 4%,#2b4b5a 110%,#435e67 100%);
     background-color: #1c2533;
 }
 
@@ -262,6 +289,11 @@ hr {
     border-left: 3px solid #eee;
 }
 
+.notice.notice-sm {
+    margin: 10px 10px !important;
+    padding: 10px !important;
+}
+
 .notice h4 {
     margin-top: 0;
     margin-bottom: 5px;
@@ -279,54 +311,36 @@ hr {
 .notice-success {
     background-color: #d3e4cb;
     border-color: #3C763D;
-}
-
-.notice-success h4 {
     color: #3C763D;
 }
 
 .notice-danger {
     background-color: #dbd0d0;
     border-color: #d9534f;
-}
-
-.notice-danger h4 {
     color: #d9534f;
 }
 
 .notice-warning {
     background-color: #e0dbd2;
     border-color: #f0ad4e;
-}
-
-.notice-warning h4 {
     color: #f0ad4e;
 }
 
 .notice-info {
     background-color: #f4f8fa;
     border-color: #5bc0de;
-}
-
-.notice-info h4 {
     color: #5bc0de;
 }
 
 .notice-default {
     background-color: #EEE;
     border-color: #B4B4B4;
-}
-
-.notice-default h4 {
-    color: #000;
+    color: #B4B4B4;
 }
 
 .notice-info {
     background-color: #FCFCDD;
     border-color: #BDBD89;
-}
-
-.notice-info h4 {
     color: #444;
 }
 
