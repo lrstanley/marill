@@ -205,7 +205,7 @@ $ marill a --domains "somedomain.com:443 domain.com:1234 example.com:123.456.7.8
 
 ### Things to note/Troubleshooting
    * Please remove `/root/tmp/marill` once you are done. This utility is still in alpha stages, and as such, there is no update check functionality. Leaving in place may cause someone in the future to utilize an outdated version of the software.
-   * If there are any problems or bugs, **PLEASE LET ME KNOW!** You can submit bugs if you have a Github account [here](https://github.com/lrstanley/marill/issues/new) or [here if you do not](https://gitreports.com/issue/lrstanley/marill)
+   * If there are any problems or bugs, **PLEASE LET ME KNOW!** You can submit bugs if you have a Github account [here](https://github.com/lrstanley/marill/issues/new) or [here if you do not](https://links.ml/iWQz)
 
 ## FAQ
    1. **Will it cause high load?**
