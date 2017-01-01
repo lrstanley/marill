@@ -5,6 +5,7 @@
 package domfinder
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -141,6 +142,12 @@ func (f *Finder) GetWebservers() (err error) {
 			stdports = f.Procs[i]
 			break
 		}
+	}
+
+	if stdports == nil {
+		// either the webserver isn't bound, or it's on a port for which we
+		// do not support.
+		return errors.New("found webservers listening, however on non-standard ports")
 	}
 
 	if !webservers[stdports.Name] {
