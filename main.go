@@ -39,10 +39,12 @@ import (
 var version, commithash, compiledate = "", "", ""
 
 const updateURI = "https://api.github.com/repos/lrstanley/marill/releases/latest"
+const docURI = "https://marill.liam.sh/"
 
 const motd = `
 {magenta}      {lightgreen}O{magenta}     {yellow}     [ Marill -- Automated site testing utility ]
 {magenta}   {lightgreen}o{magenta} {lightgreen}0{magenta}  {lightgreen}o{magenta}   {lightyellow}             %4s, rev %s
+{magenta}                    Documentation: %s
 {magenta}      {lightgreen}O{magenta}     {lightblue} ___      ___       __        _______    __    ___      ___
 {magenta}    {lightgreen}o{magenta}       {lightblue}|"  \    /"  |     /""\      /"      \  |" \  |"  |    |"  |
 {magenta}   [  ]     {lightblue} \   \  //   |    /    \    |:        | ||  | ||  |    ||  |
@@ -328,8 +330,9 @@ func printBanner() {
 		logger.Printf("marill: version:%s revision:%s", version, commithash)
 		if conf.out.noBanner {
 			out.Printf("{bold}{blue}marill version: %s (rev %s)", version, commithash)
+			out.Printf("{bold}{magenta}documentation: %s", docURI)
 		} else {
-			out.Printf(motd, version, commithash)
+			out.Printf(motd, version, commithash, docURI)
 		}
 	} else {
 		out.Println("{bold}{blue}Running marill (unknown version){c}")
