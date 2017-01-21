@@ -180,6 +180,7 @@ md-toolbar input {
     border-radius: 3px !important;
     box-sizing: border-box !important;
     height: 37px !important;
+    font-size: 15px;
 }
 
 md-list-item:focus {
@@ -198,6 +199,13 @@ md-list-item:focus {
 
 .url-results > md-list-item {
     padding: 0;
+}
+
+.url-results > .noresults {
+    background-color: #2196F3;
+    padding: 20px;
+    color: #FFFFFF;
+    font-weight: 600;
 }
 
 .list-url {

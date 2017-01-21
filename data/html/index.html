@@ -51,17 +51,18 @@
     <script type="text/ng-template" id="/index.html">
         <md-toolbar>
             <div class="md-toolbar-tools">
-                <h2>Scan results</h2>
+                <h2>Scan results <span ng-if="results.length">({{results.length}} total)</span></h2>
                 <span flex></span>
-                <md-button class="md-raised" aria-label="Learn More">Learn More</md-button>
+                <!--<md-button class="md-raised" aria-label="Learn More">Learn More</md-button>-->
                 <md-input-container md-no-float>
-                    <input type="text" ng-model="q" placeholder="Search domains..." ng-model-options="{debounce: 400}">
+                    <input type="text" ng-model="q" placeholder="Search: domain, error, ip" ng-model-options="{debounce: 400}">
                 </md-input-container>
             </div>
         </md-toolbar>
 
         <md-list class="url-results" flex>
-            <div flex ng-repeat="item in $root.data.Out | filter:qfilter track by $index">
+            <div ng-if="!results.length" class="noresults">No items found</div>
+            <div flex ng-repeat="item in results = ($root.data.Out | filter:qfilter) track by $index">
                 <div flex class="list-url" layout="column" ng-class="{'active': urlViewing == $index}">
                     <div class="display">
                         <i class="fa" ng-class="{'fa-check-circle text-success': item.ErrorString == '', 'fa-times-circle text-danger': item.ErrorString != ''}"></i>
