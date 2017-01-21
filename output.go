@@ -22,6 +22,8 @@ import (
 // JSONOutput is the generated json that will be embedded in Angular.
 type JSONOutput struct {
 	Version     string
+	VersionFull string
+	GitRevision string
 	MinScore    float64
 	Out         []*HTMLDomResult
 	Successful  int
@@ -92,7 +94,9 @@ func genJSONOutput(scan *Scan) (*JSONOutput, error) {
 	}
 
 	jsonOut := &JSONOutput{
-		Version:     getVersion(),
+		VersionFull: getVersion(),
+		Version:     version,
+		GitRevision: commithash,
 		MinScore:    8.0,
 		Out:         htmlConvertedResults,
 		Successful:  scan.successful,
