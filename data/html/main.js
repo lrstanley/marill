@@ -74,13 +74,14 @@ angular.module('main').config(function($stateProvider, $urlRouterProvider, $loca
     $urlRouterProvider.otherwise("/");
     $stateProvider
         .state('root', { abstract: true, template: '<ui-view/>' })
-        // .state('root.search', { data: { title: 'Search' }, url: '/search?q&tags&authors', templateUrl: '/tmpl/search.html', controller: 'searchCtrl' })
-        .state('root.home', { data: { title: 'Test Results' }, url: '/?q', templateUrl: '/index.html', controller: 'mainCtrl' })
+        .state('root.home', { data: { title: 'Test Results', rtype: 'all' }, url: '/?q', templateUrl: '/index.html', controller: 'mainCtrl' })
+        .state('root.success', { data: { title: 'Successful Results', rtype: 'success' }, url: '/results/success?q', templateUrl: '/index.html', controller: 'mainCtrl' })
+        .state('root.failed', { data: { title: 'Failed Results', rtype: 'failed' }, url: '/results/failed?q', templateUrl: '/index.html', controller: 'mainCtrl' })
         .state('root.test', { data: { title: 'TESTING' }, url: '/test', templateUrl: '/test.html' })
         .state('root.raw', { data: { title: 'Raw Crawl Results' }, url: '/raw/data', templateUrl: '/raw.html' })
 });
 
-angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $stateParams) {
+angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $state, $stateParams) {
     $scope.urlViewing = -1;
     $scope.q = $stateParams.q;
     $scope.setURL = function (index) {
@@ -93,6 +94,11 @@ angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $sta
     }
 
     $scope.qfilter = function (item) {
+        if ($state.current.data.rtype != null && $state.current.data.rtype != 'none') {
+            if ($state.current.data.rtype == 'success' && (item.ErrorString != "" || item.Score < $rootScope.data.MinScore)) { return false; }
+            if ($state.current.data.rtype == 'failed' && (item.ErrorString == "" && item.Score >= $rootScope.data.MinScore && item.Result.Response != null)) { return false; }
+        }
+
         if ($scope.q == "" || $scope.q == null) { return true; }
 
         if (item.Result.URL.includes($scope.q)) { return true; }
@@ -107,9 +113,7 @@ angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $sta
         return false;
     }
 
-    $scope.$watch("q", function() {
-        $rootScope.updateUrl({ q: $scope.q });
-    });
+    $scope.$watch("q", function() { $rootScope.updateUrl({ q: $scope.q }); });
 
     console.log($rootScope.data);
 });
