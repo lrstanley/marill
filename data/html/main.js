@@ -93,7 +93,7 @@ angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $sta
     }
 
     $scope.qfilter = function (item) {
-        if ($scope.q == "") { return true; }
+        if ($scope.q == "" || $scope.q == null) { return true; }
 
         if (item.Result.URL.includes($scope.q)) { return true; }
 
