@@ -26,6 +26,10 @@
                 <li class="sidebar-list"><a ui-sref-active="active" ui-sref="root.raw">Raw result data <i class="fa fa-info-circle"></i></a></li>
             </ul>
 
+            <div class="sidebar-version" layout="column">
+                <a ng-href="https://github.com/lrstanley/marill/tree/{{$root.data.GitRevision || 'master'}}" target="_blank" title="{{$root.data.VersionFull}}">marill version: {{$root.data.Version || "Unknown"}}</a>
+            </div>
+
             <div class="sidebar-footer" layout="row">
                 <div flex="33"><a href="https://github.com/lrstanley/marill" target="_blank">Github</a></div>
                 <div flex="33"><a href="https://github.com/lrstanley/marill/blob/master/README.md#readme" target="_blank">About</a></div>
@@ -50,11 +54,14 @@
                 <h2>Scan results</h2>
                 <span flex></span>
                 <md-button class="md-raised" aria-label="Learn More">Learn More</md-button>
+                <md-input-container md-no-float>
+                    <input type="text" ng-model="q" placeholder="Search domains..." ng-model-options="{debounce: 400}">
+                </md-input-container>
             </div>
         </md-toolbar>
 
         <md-list class="url-results" flex>
-            <div flex ng-repeat="item in $root.data.Out track by $index">
+            <div flex ng-repeat="item in $root.data.Out | filter:qfilter track by $index">
                 <div flex class="list-url" layout="column" ng-class="{'active': urlViewing == $index}">
                     <div class="display">
                         <i class="fa" ng-class="{'fa-check-circle text-success': item.ErrorString == '', 'fa-times-circle text-danger': item.ErrorString != ''}"></i>

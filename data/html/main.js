@@ -11,8 +11,12 @@ angular.module('main').run(function ($rootScope, $mdToast, $state) {
     $rootScope.$watch("state.url", function () {
         if ($rootScope.state == undefined) { return }
 
-        var parts = $rootScope.state.url.split("/");
+        var uri = $rootScope.state.url;
+        if (uri.indexOf("?") != -1) {
+            uri = uri.slice(0, uri.indexOf("?"))
+        }
 
+        var parts = uri.split("/");
         var out = [];
 
         for (i = 0; i < parts.length; i++) {
@@ -24,12 +28,10 @@ angular.module('main').run(function ($rootScope, $mdToast, $state) {
         if (out.length == 0) {
             $rootScope.pageurl = "/ Dashboard";
             return
-        }       
+        }
 
         $rootScope.pageurl = "/ " + out.join(" / ");
-
-        console.log($rootScope.pageurl);
-    });  
+    });
 
     $rootScope.title = function (text) {
         $rootScope.pagetitle = text;
@@ -37,12 +39,16 @@ angular.module('main').run(function ($rootScope, $mdToast, $state) {
     }
 
     $rootScope.toast = function(text) {
-        console.log("toast: ", text);
+        console.log("notify: ", text);
         $mdToast.showSimple(text);
     };
 
     $rootScope.updateUrl = function(args) {
-        return $state.transitionTo($rootScope.state.name, args, {notify: false});
+        if ($rootScope.state == null) {
+            return
+        }
+
+        $state.transitionTo($rootScope.state.name, args, {notify: false});
     }
 
     $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams, options) {});
@@ -56,11 +62,11 @@ angular.module('main').run(function ($rootScope, $mdToast, $state) {
         $rootScope.state = toState;
         $rootScope.title(toState.data.title);
     });
-    
+
     $rootScope.data = JSON.parse(document.getElementById('data').innerHTML);
     if (!$rootScope.data.Success) {
         // some kind of error occurred.
-        console.log("ERRORS!");
+        console.log("Error parsing embedded json");
     }
 });
 
@@ -69,13 +75,14 @@ angular.module('main').config(function($stateProvider, $urlRouterProvider, $loca
     $stateProvider
         .state('root', { abstract: true, template: '<ui-view/>' })
         // .state('root.search', { data: { title: 'Search' }, url: '/search?q&tags&authors', templateUrl: '/tmpl/search.html', controller: 'searchCtrl' })
-        .state('root.home', { data: { title: 'Test Results' }, url: '/', templateUrl: '/index.html', controller: 'mainCtrl' })
+        .state('root.home', { data: { title: 'Test Results' }, url: '/?q', templateUrl: '/index.html', controller: 'mainCtrl' })
         .state('root.test', { data: { title: 'TESTING' }, url: '/test', templateUrl: '/test.html' })
         .state('root.raw', { data: { title: 'Raw Crawl Results' }, url: '/raw/data', templateUrl: '/raw.html' })
 });
 
-angular.module('main').controller('mainCtrl', function ($scope, $rootScope) {
+angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $stateParams) {
     $scope.urlViewing = -1;
+    $scope.q = $stateParams.q;
     $scope.setURL = function (index) {
         if ($scope.urlViewing == index) {
             $scope.urlViewing = -1;
@@ -83,8 +90,27 @@ angular.module('main').controller('mainCtrl', function ($scope, $rootScope) {
         }
 
         $scope.urlViewing = index;
-    }    
-    
+    }
+
+    $scope.qfilter = function (item) {
+        if ($scope.q == "") { return true; }
+
+        if (item.Result.URL.includes($scope.q)) { return true; }
+
+        if (item.Result.Request != null) {
+            if (item.Result.Request.IP.includes($scope.q)) { return true; }
+        }
+
+        if (angular.isNumber($scope.q) && parseFloat($scope.q) >= item.Score) { return true; }
+        if (item.ErrorString.includes($scope.q)) { return true; }
+
+        return false;
+    }
+
+    $scope.$watch("q", function() {
+        $rootScope.updateUrl({ q: $scope.q });
+    });
+
     console.log($rootScope.data);
 });
 
