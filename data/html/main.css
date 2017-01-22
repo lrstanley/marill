@@ -242,6 +242,40 @@ md-list-item:focus {
     padding: 15px 6px;
 }
 
+.list-url .details md-card-title {
+    padding: 5px 15px 0px;
+}
+
+.list-url .details .result-list {
+    padding: 0 13px;
+    /*max-height: 220px;*/
+    height: 220px;
+    overflow-x: auto;
+}
+
+.list-url .details .result-list .chip.chip-sm {
+    padding: 1px 6px;
+    font-size: 11px;
+}
+
+.list-url .details .result-list ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.list-url .details .result-list ul > li md-divider {
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+.list-url .details .result-list ul h3, .list-url .details .result-list ul p {
+    margin: 8px 0;
+}
+
+.list-url .details .result-list ul h4 {
+    margin: 0;
+}
+
 .list-url .details .stats {
     margin: 0 10px;
     background-color: white;
@@ -268,6 +302,11 @@ md-list-item:focus {
     cursor: pointer;
 }
 
+.list-url .display .url:hover {
+    cursor: pointer;
+    color: #003a98;
+}
+
 .list-url .chip.chip-sm {
     margin: 0;
 }
@@ -275,6 +314,10 @@ md-list-item:focus {
 .list-url .score {
     min-width: 80px;
     display: inline-block;
+}
+
+.list-url .url-buttons > button, .list-url .url-buttons > a.md-button {
+    margin: -11px 2px -5px;
 }
 
 .gradient {

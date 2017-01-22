@@ -2,6 +2,7 @@
 <html lang="en" ng-app="main">
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
     <title>Test Results &middot; Marill &middot; Automated Site Testing Utility</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.1/angular-material.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -61,8 +62,8 @@
         </md-toolbar>
 
         <md-list class="url-results" flex>
-            <div ng-if="!results.length" class="noresults">No items found</div>
-            <div flex ng-repeat="item in results = ($root.data.Out | filter:qfilter) track by $index">
+            <div ng-if="!results.length" class="noresults">No results <span ng-if="q.length"> for "{{q}}" </span>found</div>
+            <div flex ng-repeat="item in results = ($root.data.Out | filter:qfilter | orderBy:'URL') track by $index">
                 <div flex class="list-url" layout="column" ng-class="{'active': urlViewing == $index}">
                     <div class="display">
                         <i class="fa" ng-class="{'fa-check-circle text-success': item.ErrorString == '', 'fa-times-circle text-danger': item.ErrorString != ''}"></i>
@@ -74,8 +75,11 @@
                                         'chip-danger': item.Score < $root.data.MinScore || item.ErrorString != ''}">{{ item.Score }}/10</span>
                         </span>
                         <span ng-click="setURL($index)" class="url">{{ item.Result.URL }}</span>
-                        <md-button class="md-raised md-accent pull-right" ng-click="setURL($index)">Details</md-button>
-                        <span class="pull-right chip chip-sm chip-default">{{ item.Result.TotalTime.Milli }}ms</span>
+                        <span class="pull-right url-buttons">
+                            <span class="chip chip-sm chip-default">{{ item.Result.TotalTime.Milli }}ms</span>
+                            <md-button class="md-raised md-accent" ng-click="setURL($index)">Details</md-button>
+                            <md-button class="md-raised md-primary" target="_blank" ng-href="{{item.URLString}}">Open</md-button>
+                        </span>
                     </div>
                     <div ng-if="urlViewing == $index" class="details">
                         <!--[ some useful information here ]-->
@@ -97,6 +101,45 @@
                             </div>
                             <div flex-xs flex-gt-xs="25" class="gradient-single stats md-whiteframe-4dp">Assets: {{item.Result.Assets.length || 0}}</div>
                         </div>
+
+                        <div layout="row" layout-align="space-around start">
+                            <md-card ng-if="item.Result.Response.Headers">
+                                <md-card-title>
+                                    <md-card-title-text><span class="md-headline">Headers</span></md-card-title-text>
+                                </md-card-title>
+
+                                <div class="result-list">
+                                    <ul ng-repeat="(key, header) in item.Result.Response.Headers">
+                                        <li>
+                                            <h3>{{key}}</h3>
+                                            <p>{{header.join(", ")}}</p>
+                                            <md-divider ng-if="!$last"></md-divider>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </md-card>
+
+                            <md-card ng-if="item.Result.Assets">
+                                <md-card-title>
+                                    <md-card-title-text><span class="md-headline">Assets</span></md-card-title-text>
+                                </md-card-title>
+
+                                <div class="result-list">
+                                    <ul>
+                                        <li ng-repeat="asset in item.Result.Assets">
+                                            <div>
+                                                <a ng-href="{{asset.URL}}" target="_blank" ng-class="{'text-success': asset.Error == null, 'text-danger': asset.Error != null}">{{asset.URL}}</a>
+
+                                                <div class="pull-right">
+                                                    <span class="chip chip-sm chip-default">{{ asset.Time.Milli }}ms</span>
+                                                </div>
+                                            </div>
+                                            <md-divider ng-if="!$last"></md-divider>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </md-card>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -108,7 +151,7 @@
 
     <!-- RAW DATA -->
     <script type="text/ng-template" id="/raw.html">
-        <code><pre style="padding: 12px; background-color: #252525; color: white;margin-top: 0;">{{ $root.data.HostFile }}</pre></code>
+        <code ng-if="$root.data.HostFile"><pre style="padding: 12px; background-color: #252525; color: white;margin-top: 0;">{{ $root.data.HostFile }}</pre></code>
         <code><pre style="padding: 12px; background-color: white;">{{ $root.data | prettyJSON }}</pre></code>
     </script>
 
