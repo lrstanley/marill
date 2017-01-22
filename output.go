@@ -69,6 +69,7 @@ func (j *JSONOutput) StringPretty() string {
 type HTMLDomResult struct {
 	*TestResult
 	ErrorString string // string representation of any errors
+	URLString   string // string representation of the resulting URL.
 }
 
 func genJSONOutput(scan *Scan) (*JSONOutput, error) {
@@ -81,6 +82,10 @@ func genJSONOutput(scan *Scan) (*JSONOutput, error) {
 			htmlConvertedResults[i].ErrorString = htmlConvertedResults[i].Result.Error.Error()
 			// make it so errors are still true, but it doesn't bloat the json
 			htmlConvertedResults[i].Result.Error = errors.New(htmlConvertedResults[i].ErrorString)
+		}
+
+		if htmlConvertedResults[i].Result.Response.URL != nil {
+			htmlConvertedResults[i].URLString = htmlConvertedResults[i].Result.Response.URL.String()
 		}
 
 		// trim out some of the bulk here
