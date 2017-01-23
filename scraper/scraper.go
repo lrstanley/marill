@@ -26,7 +26,7 @@ var reIP = regexp.MustCompile(`^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$`)
 type Response struct {
 	Remote        bool         // Remote is true if the origin is remote (unknown ip)
 	Code          int          // Code is the numeric HTTP based status code
-	URL           *url.URL     // URL is the resulting static URL derived by the original result page
+	URL           *url.URL     `json:"-"` // URL is the resulting static URL derived by the original result page
 	Body          string       // Body is the response body. Used for primary requests, ignored for Resource structs.
 	Headers       http.Header  // Headers is a map[string][]string of headers
 	ContentLength int64        // ContentLength is the number of bytes in the body of the response
@@ -54,7 +54,7 @@ func (r *Resource) String() string {
 // FetchResult -- struct returned by Crawl() to represent the entire crawl process
 type FetchResult struct {
 	Resource                        // Inherit the Resource struct
-	Assets       []*Resource        // Assets containing the needed resources for the given URL
+	Assets       []*Resource        `json:"-"` // Assets containing the needed resources for the given URL
 	ResourceTime *utils.TimerResult // ResourceTime is the time it took to fetch all resources
 	TotalTime    *utils.TimerResult // TotalTime is the time it took to crawl the site
 }
@@ -70,7 +70,7 @@ func (r *FetchResult) String() string {
 // Domain represents a url we need to fetch, including the items needed to
 // fetch said url. E.g: host, port, ip, scheme, path, etc.
 type Domain struct {
-	URL *url.URL
+	URL *url.URL `json:"-"`
 	IP  string
 }
 
