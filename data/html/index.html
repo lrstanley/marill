@@ -89,7 +89,7 @@
                                 Score: <span ng-class="{
                                     'text-success': item.Score >= (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.ErrorString == '',
                                     'text-warning': item.Score < (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.Score >= $root.data.MinScore && item.ErrorString == '',
-                                    'text-danger': item.Score < $root.data.MinScore || item.ErrorString != ''}">{{item.Score}}
+                                    'text-danger': item.Score < $root.data.MinScore || item.ErrorString != ''}">{{item.Score}}/10
                                 <i class="fa" ng-class="{'fa-arrow-up text-success': item.ErrorString == '', 'fa-arrow-down text-danger': item.ErrorString != ''}"></i></span>
                             </div>
                             <div flex-xs flex-gt-xs="25" class="gradient-single stats md-whiteframe-4dp">
