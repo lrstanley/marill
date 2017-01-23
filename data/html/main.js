@@ -93,7 +93,7 @@ angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $sta
 
     $scope.getAssetStats = function (index) {
         var out = { labels: [], data: [] };
-        if (index == -1) {
+        if (index == -1 || $rootScope.data.Out[index].Assets == null) {
             return out;
         }
 
