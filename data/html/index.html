@@ -99,19 +99,19 @@
                                 <span ng-if="item.Result.Response.Headers['Content-Length']">Size: {{item.Result.Response.Headers['Content-Length']*8/1024 | number: 2}}kb</span>
                                 <span ng-if="!item.Result.Response.Headers['Content-Length']">{{(item.Result.Response.Headers['Server'].length == 1 && item.Result.Response.Headers['Server'][0] || item.Result.Response.Headers['Server']) || 'n/a'}}</span>
                             </div>
-                            <div flex-xs flex-gt-xs="25" class="gradient-single stats md-whiteframe-4dp">Assets: {{item.Result.Assets.length || 0}}</div>
+                            <div flex-xs flex-gt-xs="25" class="gradient-single stats md-whiteframe-4dp">Assets: {{item.Assets.length || 0}}</div>
                         </div>
 
-                        <div layout="row" layout-align="space-around start">
+                        <div layout="row" layout-align="start start"> <!-- space-around -->
                             <md-card ng-if="item.Result.Response.Headers">
                                 <md-card-title>
                                     <md-card-title-text><span class="md-headline">Headers</span></md-card-title-text>
                                 </md-card-title>
 
                                 <div class="result-list">
-                                    <ul ng-repeat="(key, header) in item.Result.Response.Headers">
-                                        <li>
-                                            <h3>{{key}}</h3>
+                                    <ul>
+                                        <li ng-repeat="(key, header) in item.Result.Response.Headers">
+                                            <h4>{{key}}</h4>
                                             <p>{{header.join(", ")}}</p>
                                             <md-divider ng-if="!$last"></md-divider>
                                         </li>
@@ -119,16 +119,20 @@
                                 </div>
                             </md-card>
 
-                            <md-card ng-if="item.Result.Assets">
+                            <md-card ng-if="item.Assets">
                                 <md-card-title>
                                     <md-card-title-text><span class="md-headline">Assets</span></md-card-title-text>
                                 </md-card-title>
 
                                 <div class="result-list">
                                     <ul>
-                                        <li ng-repeat="asset in item.Result.Assets">
+                                        <li ng-repeat="asset in item.Assets | orderBy:'-ContentLength'">
                                             <div>
-                                                <a ng-href="{{asset.URL}}" target="_blank" ng-class="{'text-success': asset.Error == null, 'text-danger': asset.Error != null}">{{asset.URL}}</a>
+                                                <md-tooltip md-direction="top">{{assetStatus(asset)}}</md-tooltip>
+                                                <a class="asset-url" ng-href="{{asset.URL}}" target="_blank"
+                                                   ng-class="{'text-success': !asset.Error.length, 'text-danger': asset.Error.length}">
+                                                    {{asset.URL | limitTo:70 }}{{asset.URL.length > 70 ? '&hellip;' : ''}}
+                                                </a>
 
                                                 <div class="pull-right">
                                                     <span class="chip chip-sm chip-default">{{ asset.Time.Milli }}ms</span>
@@ -138,6 +142,16 @@
                                         </li>
                                     </ul>
                                 </div>
+                            </md-card>
+
+                            <md-card ng-if="item.Assets">
+                                <md-card-title>
+                                    <md-card-title-text><span class="md-headline">Top asset types</span></md-card-title-text>
+                                </md-card-title>
+
+                                <!--<div class="result-list">-->
+                                    <canvas height="220px" id="pie" class="chart chart-pie" chart-data="curResult.data" chart-labels="curResult.labels"></canvas>
+                                <!--</div>-->
                             </md-card>
                         </div>
                     </div>
@@ -161,6 +175,8 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-messages.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.1/angular-material.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.3.1/angular-ui-router.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-chart.js/1.1.1/angular-chart.min.js"></script>
 	<script type="text/javascript">{[ .JS ]}</script>
 </body>
 </html>

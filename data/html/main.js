@@ -1,9 +1,4 @@
-angular.module('main', ['ngMaterial', 'ui.router']);
-
-// change angularjs interpoles to {[stuff]} rather than {{stuff}}
-// angular.module('main').config(function($interpolateProvider) {
-//     $interpolateProvider.startSymbol('{[').endSymbol(']}');
-// });
+angular.module('main', ['ngMaterial', 'ui.router', 'chart.js']);
 
 angular.module('main').run(function ($rootScope, $mdToast, $state) {
     $rootScope.pagetitle = "--";
@@ -38,12 +33,12 @@ angular.module('main').run(function ($rootScope, $mdToast, $state) {
         window.document.title = text + ' - Marill - Automated Site Testing Utility';
     }
 
-    $rootScope.toast = function(text) {
+    $rootScope.toast = function (text) {
         console.log("notify: ", text);
         $mdToast.showSimple(text);
     };
 
-    $rootScope.updateUrl = function(args) {
+    $rootScope.updateUrl = function (args) {
         if ($rootScope.state == null) {
             return
         }
@@ -51,12 +46,12 @@ angular.module('main').run(function ($rootScope, $mdToast, $state) {
         $state.transitionTo($rootScope.state.name, args, {notify: false});
     }
 
-    $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams, options) {});
-    $rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
+    $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams, options) {});
+    $rootScope.$on('$stateChangeError', function (event, toState, toParams, fromState, fromParams, error) {
         console.log(error);
     });
 
-    $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+    $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
         console.log(`state-redirect: ${fromState.name} => ${toState.name}`);
 
         $rootScope.state = toState;
@@ -70,7 +65,7 @@ angular.module('main').run(function ($rootScope, $mdToast, $state) {
     }
 });
 
-angular.module('main').config(function($stateProvider, $urlRouterProvider, $locationProvider) {
+angular.module('main').config(function ($stateProvider, $urlRouterProvider, $locationProvider) {
     $urlRouterProvider.otherwise("/");
     $stateProvider
         .state('root', { abstract: true, template: '<ui-view/>' })
@@ -81,16 +76,60 @@ angular.module('main').config(function($stateProvider, $urlRouterProvider, $loca
         .state('root.raw', { data: { title: 'Raw Crawl Results' }, url: '/raw/data', templateUrl: '/raw.html' })
 });
 
-angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $state, $stateParams) {
+angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $state, $stateParams, $filter) {
     $scope.urlViewing = -1;
     $scope.q = $stateParams.q;
+
     $scope.setURL = function (index) {
         if ($scope.urlViewing == index) {
             $scope.urlViewing = -1;
+            $scope.curResult = {};
             return
         }
 
+        $scope.curResult = $scope.getAssetStats(index);
         $scope.urlViewing = index;
+    }
+
+    $scope.getAssetStats = function (index) {
+        var out = { labels: [], data: [] };
+        if (index == -1) {
+            return out;
+        }
+
+        var tmp = {};
+
+        for (i = 0; i < $rootScope.data.Out[index].Assets.length; i++) {
+            var ctype = $rootScope.data.Out[index].Assets[i].ContentType;
+            if (ctype.indexOf(";") != -1) {
+                ctype = ctype.split(0, ctype.indexOf(";"));
+            }
+
+            if (tmp[ctype] == null) { tmp[ctype] = 0; }
+            tmp[ctype] += 1;
+        }
+
+        for (var ctype in tmp) {
+            out.labels.push(ctype);
+            out.data.push(tmp[ctype]);
+        }
+
+        return out;
+    }
+    $scope.curResult = $scope.getAssetStats(-1);
+
+    $scope.assetStatus = function (asset) {
+        var out = "Status: " + asset.Code;
+
+        if (asset.ContentLength > 0) {
+            out += " Size: " + $filter('number')(asset.ContentLength / 1024, 2) + "kb";
+        }
+
+        if (asset.Error.length) {
+            out += " Error: " + asset.Error;
+        }
+
+        return out
     }
 
     $scope.qfilter = function (item) {
@@ -113,13 +152,13 @@ angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $sta
         return false;
     }
 
-    $scope.$watch("q", function() { $rootScope.updateUrl({ q: $scope.q }); });
+    $scope.$watch("q", function () { $rootScope.updateUrl({ q: $scope.q }); });
 
     console.log($rootScope.data);
 });
 
-angular.module('main').filter('prettyJSON', function() {
-    return function(json) { return angular.toJson(json, true); }
+angular.module('main').filter('prettyJSON', function () {
+    return function (json) { return angular.toJson(json, true); }
 });
 
 function capitalizeFirstLetter(string) {
