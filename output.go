@@ -80,6 +80,7 @@ type JSONTestResource struct {
 	ContentLength int64
 	Error         string
 	Time          *utils.TimerResult
+	ContentType   string
 }
 
 func genJSONOutput(scan *Scan) (*JSONOutput, error) {
@@ -104,6 +105,7 @@ func genJSONOutput(scan *Scan) (*JSONOutput, error) {
 					ContentLength: htmlConvertedResults[i].Result.Assets[j].Response.ContentLength,
 					Error:         errString,
 					Time:          htmlConvertedResults[i].Result.Assets[j].Time,
+					ContentType:   htmlConvertedResults[i].Result.Assets[j].Response.Headers.Get("Content-Type"),
 				})
 			}
 		}
