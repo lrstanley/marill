@@ -7,6 +7,7 @@ package scraper
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -115,6 +116,12 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	}
 
 	if resp.Body != nil {
+		// we don't care about the body, but we want to know how large it is.
+		// count the bytes but discard them.
+		if resp.ContentLength < 1 {
+			resp.ContentLength, _ = io.Copy(ioutil.Discard, resp.Body)
+		}
+
 		resp.Body.Close() // ensure the body stream is closed
 	}
 
@@ -190,6 +197,10 @@ func (c *Crawler) Fetch(res *FetchResult) {
 	bbytes, err := ioutil.ReadAll(bytes.NewBuffer(buf))
 	if err == nil && len(bbytes) != 0 {
 		res.Response.Body = string(bbytes[:])
+	}
+
+	if res.Response.ContentLength < 1 {
+		res.Response.ContentLength = int64(len(buf))
 	}
 
 	c.Log.Printf("fetched %s in %dms with status %d", res.Response.URL.String(), res.Time.Milli, res.Response.Code)
