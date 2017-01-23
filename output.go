@@ -13,6 +13,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/lrstanley/marill/utils"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/css"
 	"github.com/tdewolff/minify/html"
@@ -25,7 +26,7 @@ type JSONOutput struct {
 	VersionFull string
 	GitRevision string
 	MinScore    float64
-	Out         []*HTMLDomResult
+	Out         []*JSONTestResult
 	Successful  int
 	Failed      int
 	Success     bool
@@ -63,21 +64,50 @@ func (j *JSONOutput) StringPretty() string {
 	return fmt.Sprintf("%s", jsonBytes)
 }
 
-// HTMLDomResult is a wrapper around the test results, providing string
+// JSONTestResult is a wrapper around the test results, providing string
 // representations of some errors and other items that during JSON conversion
 // get converted to structs.
-type HTMLDomResult struct {
+type JSONTestResult struct {
 	*TestResult
+	Assets      []*JSONTestResource
 	ErrorString string // string representation of any errors
 	URLString   string // string representation of the resulting URL.
 }
 
+type JSONTestResource struct {
+	URL           string
+	Code          int
+	ContentLength int64
+	Error         string
+	Time          *utils.TimerResult
+}
+
 func genJSONOutput(scan *Scan) (*JSONOutput, error) {
-	htmlConvertedResults := make([]*HTMLDomResult, len(scan.results))
+	htmlConvertedResults := make([]*JSONTestResult, len(scan.results))
 	var hosts string
 
 	for i := 0; i < len(scan.results); i++ {
-		htmlConvertedResults[i] = &HTMLDomResult{TestResult: scan.results[i]}
+		htmlConvertedResults[i] = &JSONTestResult{TestResult: scan.results[i]}
+
+		// Make the footprint of assets much smaller.
+		if htmlConvertedResults[i].Result.Assets != nil && len(htmlConvertedResults[i].Result.Assets) > 0 {
+			for j := 0; j < len(htmlConvertedResults[i].Result.Assets); j++ {
+				var errString string
+				err := htmlConvertedResults[i].Result.Assets[j].Error
+				if err != nil {
+					errString = htmlConvertedResults[i].Result.Assets[j].Error.Error()
+				}
+
+				htmlConvertedResults[i].Assets = append(htmlConvertedResults[i].Assets, &JSONTestResource{
+					URL:           htmlConvertedResults[i].Result.Assets[j].URL,
+					Code:          htmlConvertedResults[i].Result.Assets[j].Response.Code,
+					ContentLength: htmlConvertedResults[i].Result.Assets[j].Response.ContentLength,
+					Error:         errString,
+					Time:          htmlConvertedResults[i].Result.Assets[j].Time,
+				})
+			}
+		}
+
 		if htmlConvertedResults[i].Result.Error != nil {
 			htmlConvertedResults[i].ErrorString = htmlConvertedResults[i].Result.Error.Error()
 			// make it so errors are still true, but it doesn't bloat the json
