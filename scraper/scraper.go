@@ -108,10 +108,12 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 	var err error
 
 	rsrc.URL = rsrc.Request.URL.String()
+	crawlTimer := utils.NewTimer()
 
 	resp, err := c.Get(rsrc.Request.URL.String())
 	if err != nil {
 		rsrc.Error = err
+		crawlTimer.End()
 		return
 	}
 
@@ -124,6 +126,8 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 
 		resp.Body.Close() // ensure the body stream is closed
 	}
+
+	crawlTimer.End()
 
 	rsrc.Response = Response{
 		URL:           resp.URL,
@@ -142,7 +146,7 @@ func (c *Crawler) fetchResource(rsrc *Resource) {
 		rsrc.URL = fmt.Sprintf("%s (-> %s)", rsrc.Request.URL, rsrc.URL)
 	}
 
-	rsrc.Time = resp.Time
+	rsrc.Time = crawlTimer.Result
 
 	c.Log.Printf("fetched %s in %dms with status %d", rsrc.Response.URL, rsrc.Time.Milli, rsrc.Response.Code)
 }
