@@ -586,7 +586,6 @@ func checkDomain(dom *scraper.FetchResult, tests []*Test) *TestResult {
 	}
 
 	for _, t := range tests {
-		logger.Printf("running test %s against %s", t, dom.Response.URL.String())
 		res.TestMatch(dom, t)
 	}
 
