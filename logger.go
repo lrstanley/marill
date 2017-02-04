@@ -29,10 +29,10 @@ func initLoggerWriter(w io.Writer) {
 
 func initLogger() {
 	var err error
-	if conf.out.debugLog != "" && conf.out.printDebug {
-		logf, err = os.OpenFile(conf.out.debugLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if conf.out.DebugLog != "" && conf.out.PrintDebug {
+		logf, err = os.OpenFile(conf.out.DebugLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			fmt.Printf("error opening log file: %s, %v", conf.out.debugLog, err)
+			fmt.Printf("error opening log file: %s, %v", conf.out.DebugLog, err)
 			os.Exit(1)
 		}
 
@@ -40,10 +40,10 @@ func initLogger() {
 		return
 	}
 
-	if conf.out.debugLog != "" {
-		logf, err = os.OpenFile(conf.out.debugLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if conf.out.DebugLog != "" {
+		logf, err = os.OpenFile(conf.out.DebugLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			fmt.Printf("error opening log file: %s, %v", conf.out.debugLog, err)
+			fmt.Printf("error opening log file: %s, %v", conf.out.DebugLog, err)
 			os.Exit(1)
 		}
 
@@ -51,7 +51,7 @@ func initLogger() {
 		return
 	}
 
-	if conf.out.printDebug {
+	if conf.out.PrintDebug {
 		initLoggerWriter(os.Stdout)
 		return
 	}
@@ -122,19 +122,19 @@ func initOutWriter(w ...io.Writer) {
 
 func initOut(w io.Writer) {
 	var err error
-	if conf.out.log != "" && !conf.out.ignoreStd {
-		out.logf, err = os.OpenFile(conf.out.log, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if conf.out.Log != "" && !conf.out.IgnoreStd {
+		out.logf, err = os.OpenFile(conf.out.Log, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			fmt.Printf("error opening log file: %s, %v", conf.out.log, err)
+			fmt.Printf("error opening log file: %s, %v", conf.out.Log, err)
 			os.Exit(1)
 		}
 
 		initOutWriter(w, utils.NewFuncWriter(StripColorBytes, out.logf))
 		return
-	} else if conf.out.log != "" {
-		out.logf, err = os.OpenFile(conf.out.log, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	} else if conf.out.Log != "" {
+		out.logf, err = os.OpenFile(conf.out.Log, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			fmt.Printf("error opening log file: %s, %v", conf.out.log, err)
+			fmt.Printf("error opening log file: %s, %v", conf.out.Log, err)
 			os.Exit(1)
 		}
 
@@ -142,7 +142,7 @@ func initOut(w io.Writer) {
 		return
 	}
 
-	if !conf.out.ignoreStd {
+	if !conf.out.IgnoreStd {
 		initOutWriter(w)
 		return
 	}
@@ -160,7 +160,7 @@ func (o Output) Write(b []byte) (int, error) {
 	str := fmt.Sprintf("%s", b)
 	o.AddLog(str)
 
-	FmtColor(&str, conf.out.noColors)
+	FmtColor(&str, conf.out.NoColors)
 	o.log.Print(str)
 
 	return len(b), nil
@@ -173,11 +173,11 @@ func (o *Output) AddLog(line string) {
 
 // Printf interprets []*Color{} escape codes and prints them to stdout
 func (o *Output) Printf(format string, a ...interface{}) {
-	if conf.out.ignoreStd {
+	if conf.out.IgnoreStd {
 		return
 	}
 
-	FmtColor(&format, conf.out.noColors)
+	FmtColor(&format, conf.out.NoColors)
 
 	out.log.Printf(format, a...)
 	o.AddLog(fmt.Sprintf(format, a...))
@@ -185,12 +185,12 @@ func (o *Output) Printf(format string, a ...interface{}) {
 
 // Println interprets []*Color{} escape codes and prints them to stdout
 func (o *Output) Println(a ...interface{}) {
-	if conf.out.ignoreStd {
+	if conf.out.IgnoreStd {
 		return
 	}
 
 	str := fmt.Sprint(a...)
-	FmtColor(&str, conf.out.noColors)
+	FmtColor(&str, conf.out.NoColors)
 
 	out.log.Print(str)
 	o.AddLog(str)
@@ -199,9 +199,9 @@ func (o *Output) Println(a ...interface{}) {
 // Fatalf interprets []*Color{} escape codes and prints them to stdout/logger, and exits
 func (o *Output) Fatalf(format string, a ...interface{}) {
 	// print to regular stdout
-	if !conf.out.ignoreStd {
+	if !conf.out.IgnoreStd {
 		str := fmt.Sprintf(fmt.Sprintf("{bold}{red}error:{c} %s", format), a...)
-		FmtColor(&str, conf.out.noColors)
+		FmtColor(&str, conf.out.NoColors)
 		out.log.Print(str)
 		o.AddLog(str)
 	}
@@ -214,9 +214,9 @@ func (o *Output) Fatalf(format string, a ...interface{}) {
 // Fatal interprets []*Color{} escape codes and prints them to stdout, and exits
 func (o *Output) Fatal(a ...interface{}) {
 	// print to regular stdout
-	if !conf.out.ignoreStd {
+	if !conf.out.IgnoreStd {
 		str := fmt.Sprintf("{bold}{red}error:{c} %s", fmt.Sprintln(a...))
-		FmtColor(&str, conf.out.noColors)
+		FmtColor(&str, conf.out.NoColors)
 		out.log.Print(str)
 		o.AddLog(str)
 	}

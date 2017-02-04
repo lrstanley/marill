@@ -31,7 +31,7 @@ func crawl() (*Scan, error) {
 	res.crawler = &scraper.Crawler{Log: logger}
 	res.finder = &domfinder.Finder{Log: logger}
 
-	if conf.scan.manualList != "" {
+	if conf.scan.ManualList != "" {
 		logger.Println("manually supplied url list")
 		res.crawler.Cnf.Domains, err = parseManualList()
 		if err != nil {
@@ -58,10 +58,10 @@ func crawl() (*Scan, error) {
 		}
 
 		res.finder.Filter(domfinder.DomainFilter{
-			IgnoreHTTP:  conf.scan.ignoreHTTP,
-			IgnoreHTTPS: conf.scan.ignoreHTTPS,
-			IgnoreMatch: conf.scan.ignoreMatch,
-			MatchOnly:   conf.scan.matchOnly,
+			IgnoreHTTP:  conf.scan.IgnoreHTTP,
+			IgnoreHTTPS: conf.scan.IgnoreHTTPS,
+			IgnoreMatch: conf.scan.IgnoreMatch,
+			MatchOnly:   conf.scan.MatchOnly,
 		})
 
 		if len(res.finder.Domains) == 0 {
@@ -75,11 +75,11 @@ func crawl() (*Scan, error) {
 		}
 	}
 
-	res.crawler.Cnf.Assets = conf.scan.assets
-	res.crawler.Cnf.NoRemote = conf.scan.ignoreRemote
-	res.crawler.Cnf.Delay = conf.scan.delay
-	res.crawler.Cnf.AllowInsecure = conf.scan.allowInsecure
-	res.crawler.Cnf.HTTPTimeout = conf.scan.httptimeout
+	res.crawler.Cnf.Assets = conf.scan.Assets
+	res.crawler.Cnf.NoRemote = conf.scan.IgnoreRemote
+	res.crawler.Cnf.Delay = conf.scan.Delay
+	res.crawler.Cnf.AllowInsecure = conf.scan.AllowInsecure
+	res.crawler.Cnf.HTTPTimeout = conf.scan.HTTPTimeout
 
 	logger.Print("starting crawler...")
 	out.Printf("starting scan on %d domains", len(res.crawler.Cnf.Domains))

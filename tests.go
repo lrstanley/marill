@@ -181,20 +181,20 @@ func parseTests(raw []byte, originType, origin string) (tests []*Test, err error
 func genTests() (tests []*Test) {
 	tmp := []*Test{}
 
-	if len(conf.scan.testPassText) != 0 {
+	if len(conf.scan.TestPassText) != 0 {
 		tmp = append(tmp, &Test{
 			Name:     "--pass-text matched",
 			Weight:   10,
-			RawMatch: []string{fmt.Sprintf("glob:text:*%s*", conf.scan.testPassText)},
+			RawMatch: []string{fmt.Sprintf("glob:text:*%s*", conf.scan.TestPassText)},
 			Origin:   "cli-args",
 		})
 	}
 
-	if len(conf.scan.testFailText) != 0 {
+	if len(conf.scan.TestFailText) != 0 {
 		tmp = append(tmp, &Test{
 			Name:     "--fail-text matched",
 			Weight:   -10,
-			RawMatch: []string{fmt.Sprintf("glob:text:*%s*", conf.scan.testFailText)},
+			RawMatch: []string{fmt.Sprintf("glob:text:*%s*", conf.scan.TestFailText)},
 			Origin:   "cli-args",
 		})
 	}
@@ -203,8 +203,8 @@ func genTests() (tests []*Test) {
 	genTestsFromPath(&tmp)
 	genTestsFromURL(&tmp)
 
-	blacklist := strings.Split(conf.scan.ignoreTest, "|")
-	whitelist := strings.Split(conf.scan.matchTest, "|")
+	blacklist := strings.Split(conf.scan.IgnoreTest, "|")
+	whitelist := strings.Split(conf.scan.MatchTest, "|")
 
 	// Loop through each test and ensure that they match our criteria, and
 	// are safe to start testing against.
@@ -212,7 +212,7 @@ func genTests() (tests []*Test) {
 		var matches bool
 
 		// Check to see if it matches our blacklist. if so, ignore it.
-		if len(conf.scan.ignoreTest) != 0 {
+		if len(conf.scan.IgnoreTest) != 0 {
 			for _, match := range blacklist {
 				if utils.Glob(test.Name, match) {
 					matches = true
@@ -235,7 +235,7 @@ func genTests() (tests []*Test) {
 		matches = false
 
 		// Check to see if it matches our whitelist. if not, ignore it.
-		if len(conf.scan.matchTest) != 0 {
+		if len(conf.scan.MatchTest) != 0 {
 			for _, match := range whitelist {
 				if !utils.Glob(test.Name, match) {
 					matches = true
@@ -272,7 +272,7 @@ func genTests() (tests []*Test) {
 
 // genTestsFromStd reads from builtin tests (e.g. bindata).
 func genTestsFromStd(tests *[]*Test) {
-	if conf.scan.ignoreStdTests {
+	if conf.scan.IgnoreStdTests {
 		logger.Print("ignoring all standard (built-in) tests per request")
 	} else {
 		fns := AssetNames()
@@ -303,7 +303,7 @@ func genTestsFromStd(tests *[]*Test) {
 
 // genTestsFromPath reads tests from a user-specified path.
 func genTestsFromPath(tests *[]*Test) {
-	if len(conf.scan.testsFromPath) == 0 {
+	if len(conf.scan.TestsFromPath) == 0 {
 		return
 	}
 
@@ -327,12 +327,12 @@ func genTestsFromPath(tests *[]*Test) {
 		return nil
 	}
 
-	err := filepath.Walk(conf.scan.testsFromPath, testPathCheck)
+	err := filepath.Walk(conf.scan.TestsFromPath, testPathCheck)
 	if err != nil {
-		out.Fatalf("unable to scan path '%s' for tests: %s", conf.scan.testsFromPath, err)
+		out.Fatalf("unable to scan path '%s' for tests: %s", conf.scan.TestsFromPath, err)
 	}
 
-	logger.Printf("found %d test files within path: %s", len(matches), conf.scan.testsFromPath)
+	logger.Printf("found %d test files within path: %s", len(matches), conf.scan.TestsFromPath)
 
 	count := 0
 	for i := 0; i < len(matches); i++ {
@@ -350,12 +350,12 @@ func genTestsFromPath(tests *[]*Test) {
 		count++
 	}
 
-	logger.Printf("loaded %d tests from path: %s", count, conf.scan.testsFromPath)
+	logger.Printf("loaded %d tests from path: %s", count, conf.scan.TestsFromPath)
 }
 
 // genTestsFromURL reads tests from a user-specified remote http-url.
 func genTestsFromURL(tests *[]*Test) {
-	if len(conf.scan.testsFromURL) == 0 {
+	if len(conf.scan.TestsFromURL) == 0 {
 		return
 	}
 
@@ -370,16 +370,16 @@ func genTestsFromURL(tests *[]*Test) {
 		Transport: transport,
 	}
 
-	logger.Printf("attempting to pull tests from: %s", conf.scan.testsFromURL)
+	logger.Printf("attempting to pull tests from: %s", conf.scan.TestsFromURL)
 
-	req, err := http.NewRequest("GET", conf.scan.testsFromURL, nil)
+	req, err := http.NewRequest("GET", conf.scan.TestsFromURL, nil)
 	if err != nil {
-		out.Fatalf("unable to load tests from %s: %s", conf.scan.testsFromURL, err)
+		out.Fatalf("unable to load tests from %s: %s", conf.scan.TestsFromURL, err)
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		out.Fatalf("in fetch of tests from %s: %s", conf.scan.testsFromURL, err)
+		out.Fatalf("in fetch of tests from %s: %s", conf.scan.TestsFromURL, err)
 	}
 
 	if resp.Body != nil {
@@ -388,17 +388,17 @@ func genTestsFromURL(tests *[]*Test) {
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		out.Fatalf("unable to parse JSON from %s: %s", conf.scan.testsFromURL, err)
+		out.Fatalf("unable to parse JSON from %s: %s", conf.scan.TestsFromURL, err)
 	}
 
-	parsedTests, err := parseTests(bodyBytes, "url", conf.scan.testsFromURL)
+	parsedTests, err := parseTests(bodyBytes, "url", conf.scan.TestsFromURL)
 	if err != nil {
 		out.Fatal(err)
 	}
 
 	*tests = append(*tests, parsedTests...)
 
-	logger.Printf("loaded %d tests from url: %s", len(parsedTests), conf.scan.testsFromURL)
+	logger.Printf("loaded %d tests from url: %s", len(parsedTests), conf.scan.TestsFromURL)
 }
 
 // checkTests iterates over all domains and runs checks across all domains.
@@ -428,7 +428,7 @@ func checkTests(results []*scraper.FetchResult, tests []*Test) []*TestResult {
 			continue
 		}
 
-		if completedTests[i].Score < conf.scan.minScore {
+		if completedTests[i].Score < conf.scan.MinScore {
 			completedTests[i].Result.Error = errors.New(completedTests[i].FailedTests())
 		}
 	}

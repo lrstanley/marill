@@ -11,10 +11,10 @@ import (
 	"log"
 	"strings"
 
+	"github.com/jroimartin/gocui"
 	"github.com/lrstanley/marill/domfinder"
 	"github.com/lrstanley/marill/scraper"
 	"github.com/lrstanley/marill/utils"
-	"github.com/jroimartin/gocui"
 )
 
 // mMenu holds X/Y coords of the menu for calculation from other views
@@ -546,10 +546,10 @@ func uiCrawl(gooey *gocui.Gui, view *gocui.View) error {
 
 	// ensure configurations are loaded
 	menu.scan.finder.Filter(domfinder.DomainFilter{
-		IgnoreHTTP:  conf.scan.ignoreHTTP,
-		IgnoreHTTPS: conf.scan.ignoreHTTPS,
-		IgnoreMatch: conf.scan.ignoreMatch,
-		MatchOnly:   conf.scan.matchOnly,
+		IgnoreHTTP:  conf.scan.IgnoreHTTP,
+		IgnoreHTTPS: conf.scan.IgnoreHTTPS,
+		IgnoreMatch: conf.scan.IgnoreMatch,
+		MatchOnly:   conf.scan.MatchOnly,
 	})
 
 	// Start the crawl in a goroutine so it doesn't cause the UI to hang.  This also allows
@@ -749,7 +749,7 @@ func uiInit() error {
 	gooey.Mouse = true
 
 	initOut(ioutil.Discard)
-	conf.out.noColors = true
+	conf.out.NoColors = true
 
 	if err := gooey.MainLoop(); err != nil && err != gocui.ErrQuit {
 		return err

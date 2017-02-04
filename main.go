@@ -79,51 +79,51 @@ var textTeplate = `
 {{- " "}}{{- .Result.URL }}
 {{- if .Result.Error }} ({red}errors: {{ .Result.Error }}{c}){{- end }}`
 
-// outputConfig handles what the user sees (stdout, debugging, logs, etc).
-type outputConfig struct {
-	noColors   bool   // Don't print colors to stdout.
-	noBanner   bool   // Don't print the app banner.
-	printDebug bool   // Print debugging information.
-	ignoreStd  bool   // Ignore regular stdout (human-formatted).
-	log        string // Optional log file to dump regular logs.
-	debugLog   string // Optional log file to dump debugging info.
-	resultFile string // Filename/path of file which to dump results to.
+// OutputConfig handles what the user sees (stdout, debugging, logs, etc).
+type OutputConfig struct {
+	NoColors   bool   // Don't print colors to stdout.
+	NoBanner   bool   // Don't print the app banner.
+	PrintDebug bool   // Print debugging information.
+	IgnoreStd  bool   // Ignore regular stdout (human-formatted).
+	Log        string // Optional log file to dump regular logs.
+	DebugLog   string // Optional log file to dump debugging info.
+	ResultFile string // Filename/path of file which to dump results to.
 }
 
-// scanConfig handles how and what is scanned/crawled.
-type scanConfig struct {
-	threads       int           // Number of threads to run the scanner in.
-	manualList    string        // List of manually supplied domains.
-	assets        bool          // Pull all assets for the page.
-	ignoreSuccess bool          // Ignore urls/domains that were successfully fetched.
-	allowInsecure bool          // If SSL errors should be ignored.
-	delay         time.Duration // Delay for the stasrt of each resource crawl.
-	httptimeout   time.Duration // Timeout before http request becomes stale.
+// ScanConfig handles how and what is scanned/crawled.
+type ScanConfig struct {
+	Threads       int           // Number of threads to run the scanner in.
+	ManualList    string        // List of manually supplied domains.
+	Assets        bool          // Pull all assets for the page.
+	IgnoreSuccess bool          // Ignore urls/domains that were successfully fetched.
+	AllowInsecure bool          // If SSL errors should be ignored.
+	Delay         time.Duration // Delay for the stasrt of each resource crawl.
+	HTTPTimeout   time.Duration // Timeout before http request becomes stale.
 
 	// Domain filter related.
-	ignoreHTTP   bool   // Ignore http://.
-	ignoreHTTPS  bool   // Ignore https://.
-	ignoreRemote bool   // Ignore resources where the domain is using remote ip.
-	ignoreMatch  string // Glob match of domains to blacklist.
-	matchOnly    string // Glob match of domains to whitelist.
+	IgnoreHTTP   bool   // Ignore http://.
+	IgnoreHTTPS  bool   // Ignore https://.
+	IgnoreRemote bool   // Ignore resources where the domain is using remote ip.
+	IgnoreMatch  string // Glob match of domains to blacklist.
+	MatchOnly    string // Glob match of domains to whitelist.
 
 	// Test related.
-	minScore       float64 // Minimum score before a resource is considered "failed".
-	ignoreTest     string  // Glob match of tests to blacklist.
-	matchTest      string  // Glob match of tests to whitelist.
-	testsFromURL   string  // Load tests from a remote url.
-	testsFromPath  string  // Load tests from a specified path.
-	ignoreStdTests bool    // Don't execute standard builtin tests.
+	MinScore       float64 // Minimum score before a resource is considered "failed".
+	IgnoreTest     string  // Glob match of tests to blacklist.
+	MatchTest      string  // Glob match of tests to whitelist.
+	TestsFromURL   string  // Load tests from a remote url.
+	TestsFromPath  string  // Load tests from a specified path.
+	IgnoreStdTests bool    // Don't execute standard builtin tests.
 
 	// User input tests.
-	testPassText string // Glob match against body, will give it a weight of 10.
-	testFailText string // Glob match against body, will take away a weight of 10.
+	TestPassText string // Glob match against body, will give it a weight of 10.
+	TestFailText string // Glob match against body, will take away a weight of 10.
 
 	// Output related.
-	outTmpl    string // The output text/template template for use with printing results.
-	htmlFile   string // The file path to dump results in html.
-	jsonFile   string // The file path to dump results in json.
-	jsonPretty bool   // Prettifies the json output.
+	OutTmpl    string // The output text/template template for use with printing results.
+	HTMLFile   string // The file path to dump results in html.
+	JsonFile   string // The file path to dump results in json.
+	JsonPretty bool   // Prettifies the json output.
 }
 
 // appConfig handles what the app does (scans/crawls, printing data, some
@@ -136,8 +136,8 @@ type appConfig struct {
 // config is a wrapper for all the other configs to put them in one place.
 type config struct {
 	app  appConfig
-	scan scanConfig
-	out  outputConfig
+	scan ScanConfig
+	out  OutputConfig
 }
 
 var conf config
@@ -187,24 +187,24 @@ func statsLoop(done <-chan struct{}) {
 // numThreads calculates the number of threads to use.
 func numThreads() {
 	// Use runtime.NumCPU for judgement call.
-	if conf.scan.threads < 1 {
+	if conf.scan.Threads < 1 {
 		if runtime.NumCPU() >= 2 {
-			conf.scan.threads = runtime.NumCPU() / 2
+			conf.scan.Threads = runtime.NumCPU() / 2
 		} else {
-			conf.scan.threads = 1
+			conf.scan.Threads = 1
 		}
-	} else if conf.scan.threads > runtime.NumCPU() {
-		logger.Printf("warning: %d threads specified, which is more than the amount of cores", conf.scan.threads)
-		out.Printf("{yellow}warning: %d threads specified, which is more than the amount of cores on the server!{c}", conf.scan.threads)
+	} else if conf.scan.Threads > runtime.NumCPU() {
+		logger.Printf("warning: %d threads specified, which is more than the amount of cores", conf.scan.Threads)
+		out.Printf("{yellow}warning: %d threads specified, which is more than the amount of cores on the server!{c}", conf.scan.Threads)
 
 		// Set it to the amount of cores on the server. go will do this
 		// regardless, so.
-		conf.scan.threads = runtime.NumCPU()
-		logger.Printf("limiting number of threads to %d", conf.scan.threads)
-		out.Printf("limiting number of threads to %d", conf.scan.threads)
+		conf.scan.Threads = runtime.NumCPU()
+		logger.Printf("limiting number of threads to %d", conf.scan.Threads)
+		out.Printf("limiting number of threads to %d", conf.scan.Threads)
 	}
 
-	logger.Printf("using %d cores (max %d)", conf.scan.threads, runtime.NumCPU())
+	logger.Printf("using %d cores (max %d)", conf.scan.Threads, runtime.NumCPU())
 
 	return
 }
@@ -219,7 +219,7 @@ var reSpaces = regexp.MustCompile(`[\t\n\v\f\r ]+`)
 
 /// parseManualList parses the list of domains specified from --domains.
 func parseManualList() (domlist []*scraper.Domain, err error) {
-	input := strings.Split(reSpaces.ReplaceAllString(conf.scan.manualList, " "), " ")
+	input := strings.Split(reSpaces.ReplaceAllString(conf.scan.ManualList, " "), " ")
 
 	for _, item := range input {
 		item = strings.TrimSuffix(strings.TrimPrefix(item, " "), " ")
@@ -257,7 +257,7 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 func printUrls(c *cli.Context) error {
 	printBanner()
 
-	if conf.scan.manualList != "" {
+	if conf.scan.ManualList != "" {
 		domains, err := parseManualList()
 		if err != nil {
 			out.Fatal(NewErr{Code: ErrDomains, deepErr: err})
@@ -277,10 +277,10 @@ func printUrls(c *cli.Context) error {
 		}
 
 		finder.Filter(domfinder.DomainFilter{
-			IgnoreHTTP:  conf.scan.ignoreHTTP,
-			IgnoreHTTPS: conf.scan.ignoreHTTPS,
-			IgnoreMatch: conf.scan.ignoreMatch,
-			MatchOnly:   conf.scan.matchOnly,
+			IgnoreHTTP:  conf.scan.IgnoreHTTP,
+			IgnoreHTTPS: conf.scan.IgnoreHTTPS,
+			IgnoreMatch: conf.scan.IgnoreMatch,
+			MatchOnly:   conf.scan.MatchOnly,
 		})
 
 		if len(finder.Domains) == 0 {
@@ -331,7 +331,7 @@ func listTests(c *cli.Context) error {
 func printBanner() {
 	if len(version) != 0 && len(commithash) != 0 {
 		logger.Printf("marill: version:%s revision:%s", version, commithash)
-		if conf.out.noBanner {
+		if conf.out.NoBanner {
 			out.Printf("{bold}{blue}marill version: %s (rev %s)", version, commithash)
 			out.Printf("{bold}{magenta}documentation: %s", docURI)
 		} else {
@@ -446,8 +446,8 @@ func updateCheck() {
 }
 
 func run(c *cli.Context) error {
-	if len(conf.scan.manualList) == 0 {
-		conf.scan.manualList = strings.Join(c.Args(), " ")
+	if len(conf.scan.ManualList) == 0 {
+		conf.scan.ManualList = strings.Join(c.Args(), " ")
 	}
 
 	printBanner()
@@ -457,18 +457,18 @@ func run(c *cli.Context) error {
 	}
 
 	var text string
-	if len(conf.scan.outTmpl) > 0 {
-		text = conf.scan.outTmpl
+	if len(conf.scan.OutTmpl) > 0 {
+		text = conf.scan.OutTmpl
 	} else {
 		text = textTeplate
 	}
 
 	var resultFn *os.File
 	var err error
-	if len(conf.out.resultFile) > 0 {
+	if len(conf.out.ResultFile) > 0 {
 		// Open up the requested resulting file. Make sure only to do this
 		// in write-only and creation mode.
-		resultFn, err = os.OpenFile(conf.out.resultFile, os.O_CREATE|os.O_WRONLY, 0666)
+		resultFn, err = os.OpenFile(conf.out.ResultFile, os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
 			out.Fatal(err)
 		}
@@ -480,7 +480,7 @@ func run(c *cli.Context) error {
 	StripColor(&text)
 
 	// Ensure we check to see if they want color with regular output.
-	FmtColor(&textFmt, conf.out.noColors)
+	FmtColor(&textFmt, conf.out.NoColors)
 
 	tmpl := template.Must(template.New("success").Parse(text + "\n"))
 	tmplFormatted := template.Must(template.New("success").Parse(textFmt + "\n"))
@@ -492,7 +492,7 @@ func run(c *cli.Context) error {
 
 	for _, res := range scan.results {
 		// Ignore successful, per request.
-		if conf.scan.ignoreSuccess && res.Result.Error == nil {
+		if conf.scan.IgnoreSuccess && res.Result.Error == nil {
 			continue
 		}
 
@@ -502,7 +502,7 @@ func run(c *cli.Context) error {
 			out.Fatal("executing template:", err)
 		}
 
-		if len(conf.out.resultFile) > 0 {
+		if len(conf.out.ResultFile) > 0 {
 			// Pipe it to the result file as necessary.
 			err = tmpl.Execute(resultFn, res)
 			if err != nil {
@@ -514,31 +514,31 @@ func run(c *cli.Context) error {
 
 	var jsonOut *JSONOutput
 
-	if conf.scan.jsonFile != "" || conf.scan.htmlFile != "" {
+	if conf.scan.JsonFile != "" || conf.scan.HTMLFile != "" {
 		if jsonOut, err = genJSONOutput(scan); err != nil {
 			out.Fatal(err)
 		}
 	}
 
-	if conf.scan.jsonFile != "" {
-		if conf.scan.jsonPretty {
-			if err := ioutil.WriteFile(conf.scan.jsonFile, []byte(jsonOut.StringPretty()), 0666); err != nil {
+	if conf.scan.JsonFile != "" {
+		if conf.scan.JsonPretty {
+			if err := ioutil.WriteFile(conf.scan.JsonFile, []byte(jsonOut.StringPretty()), 0666); err != nil {
 				out.Fatal(err)
 			}
 		} else {
-			if err := ioutil.WriteFile(conf.scan.jsonFile, jsonOut.Bytes(), 0666); err != nil {
+			if err := ioutil.WriteFile(conf.scan.JsonFile, jsonOut.Bytes(), 0666); err != nil {
 				out.Fatal(err)
 			}
 		}
 	}
 
-	if conf.scan.htmlFile != "" {
+	if conf.scan.HTMLFile != "" {
 		htmlOut, err := genHTMLOutput(jsonOut)
 		if err != nil {
 			out.Fatal(err)
 		}
 
-		if err := ioutil.WriteFile(conf.scan.htmlFile, htmlOut, 0666); err != nil {
+		if err := ioutil.WriteFile(conf.scan.HTMLFile, htmlOut, 0666); err != nil {
 			out.Fatal(err)
 		}
 	}
@@ -650,22 +650,22 @@ func main() {
 		cli.BoolFlag{
 			Name:        "d, debug",
 			Usage:       "Print debugging information to stdout",
-			Destination: &conf.out.printDebug,
+			Destination: &conf.out.PrintDebug,
 		},
 		cli.BoolFlag{
 			Name:        "q, quiet",
 			Usage:       "Do not print regular stdout messages",
-			Destination: &conf.out.ignoreStd,
+			Destination: &conf.out.IgnoreStd,
 		},
 		cli.BoolFlag{
 			Name:        "no-color",
 			Usage:       "Do not print with color",
-			Destination: &conf.out.noColors,
+			Destination: &conf.out.NoColors,
 		},
 		cli.BoolFlag{
 			Name:        "no-banner",
 			Usage:       "Do not print the colorful banner",
-			Destination: &conf.out.noBanner,
+			Destination: &conf.out.NoBanner,
 		},
 		cli.BoolFlag{
 			Name:        "exit-on-fail",
@@ -675,17 +675,17 @@ func main() {
 		cli.StringFlag{
 			Name:        "log",
 			Usage:       "Log information to `FILE`",
-			Destination: &conf.out.log,
+			Destination: &conf.out.Log,
 		},
 		cli.StringFlag{
 			Name:        "debug-log",
 			Usage:       "Log debugging information to `FILE`",
-			Destination: &conf.out.debugLog,
+			Destination: &conf.out.DebugLog,
 		},
 		cli.StringFlag{
 			Name:        "result-file",
 			Usage:       "Dump result template into `FILE` (will overwrite!)",
-			Destination: &conf.out.resultFile,
+			Destination: &conf.out.ResultFile,
 		},
 		cli.BoolFlag{
 			Name:        "no-updates",
@@ -697,129 +697,129 @@ func main() {
 		cli.IntFlag{
 			Name:        "threads",
 			Usage:       "Use `n` threads to fetch data (0 defaults to server cores/2)",
-			Destination: &conf.scan.threads,
+			Destination: &conf.scan.Threads,
 		},
 		cli.DurationFlag{
 			Name:        "delay",
 			Usage:       "Delay `DURATION` before each resource is crawled (e.g. 5s, 1m, 100ms)",
-			Destination: &conf.scan.delay,
+			Destination: &conf.scan.Delay,
 		},
 		cli.DurationFlag{
 			Name:        "http-timeout",
 			Usage:       "`DURATION` before an http request is timed out (e.g. 5s, 10s, 1m)",
-			Destination: &conf.scan.httptimeout,
+			Destination: &conf.scan.HTTPTimeout,
 			Value:       10 * time.Second,
 		},
 		cli.StringFlag{
 			Name:        "domains",
 			Usage:       "Manually specify list of domains to scan in form: `DOMAIN:IP ...`, or DOMAIN:IP:PORT",
-			Destination: &conf.scan.manualList,
+			Destination: &conf.scan.ManualList,
 		},
 		cli.Float64Flag{
 			Name:        "min-score",
 			Usage:       "Minimum score for domain",
 			Value:       8.0,
-			Destination: &conf.scan.minScore,
+			Destination: &conf.scan.MinScore,
 		},
 		cli.BoolFlag{
 			Name:        "a, assets",
 			Usage:       "Crawl assets (css/js/images) for each page",
-			Destination: &conf.scan.assets,
+			Destination: &conf.scan.Assets,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-success",
 			Usage:       "Only print results if they are considered failed",
-			Destination: &conf.scan.ignoreSuccess,
+			Destination: &conf.scan.IgnoreSuccess,
 		},
 		cli.BoolFlag{
 			Name:        "allow-insecure",
 			Usage:       "Don't check to see if an SSL certificate is valid",
-			Destination: &conf.scan.allowInsecure,
+			Destination: &conf.scan.AllowInsecure,
 		},
 		cli.StringFlag{
 			Name:        "tmpl",
 			Usage:       "Golang text/template string template for use with formatting scan output",
-			Destination: &conf.scan.outTmpl,
+			Destination: &conf.scan.OutTmpl,
 		},
 		cli.StringFlag{
 			Name:        "html",
 			Usage:       "Optional `PATH` to output html results to",
 			Hidden:      true,
-			Destination: &conf.scan.htmlFile,
+			Destination: &conf.scan.HTMLFile,
 		},
 		cli.StringFlag{
 			Name:        "json",
 			Usage:       "Optional `PATH` to output json results to",
-			Destination: &conf.scan.jsonFile,
+			Destination: &conf.scan.JsonFile,
 		},
 		cli.BoolFlag{
 			Name:        "json-pretty",
 			Usage:       "Used with [--json], pretty-prints the output json",
-			Destination: &conf.scan.jsonPretty,
+			Destination: &conf.scan.JsonPretty,
 		},
 
 		// Domain filtering.
 		cli.BoolFlag{
 			Name:        "ignore-http",
 			Usage:       "Ignore http-based URLs during domain search",
-			Destination: &conf.scan.ignoreHTTP,
+			Destination: &conf.scan.IgnoreHTTP,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-https",
 			Usage:       "Ignore https-based URLs during domain search",
-			Destination: &conf.scan.ignoreHTTPS,
+			Destination: &conf.scan.IgnoreHTTPS,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-remote",
 			Usage:       "Ignore all resources that resolve to a remote IP (use with --assets)",
-			Destination: &conf.scan.ignoreRemote,
+			Destination: &conf.scan.IgnoreRemote,
 		},
 		cli.StringFlag{
 			Name:        "domain-ignore",
 			Usage:       "Ignore URLS during domain search that match `GLOB`, pipe separated list",
-			Destination: &conf.scan.ignoreMatch,
+			Destination: &conf.scan.IgnoreMatch,
 		},
 		cli.StringFlag{
 			Name:        "domain-match",
 			Usage:       "Allow URLS during domain search that match `GLOB`, pipe separated list",
-			Destination: &conf.scan.matchOnly,
+			Destination: &conf.scan.MatchOnly,
 		},
 
 		// Test filtering.
 		cli.StringFlag{
 			Name:        "test-ignore",
 			Usage:       "Ignore tests that match `GLOB`, pipe separated list",
-			Destination: &conf.scan.ignoreTest,
+			Destination: &conf.scan.IgnoreTest,
 		},
 		cli.StringFlag{
 			Name:        "test-match",
 			Usage:       "Allow tests that match `GLOB`, pipe separated list",
-			Destination: &conf.scan.matchTest,
+			Destination: &conf.scan.MatchTest,
 		},
 		cli.StringFlag{
 			Name:        "tests-url",
 			Usage:       "Import tests from a specified `URL`",
-			Destination: &conf.scan.testsFromURL,
+			Destination: &conf.scan.TestsFromURL,
 		},
 		cli.StringFlag{
 			Name:        "tests-path",
 			Usage:       "Import tests from a specified file-system `PATH`",
-			Destination: &conf.scan.testsFromPath,
+			Destination: &conf.scan.TestsFromPath,
 		},
 		cli.BoolFlag{
 			Name:        "ignore-std-tests",
 			Usage:       "Ignores all built-in tests (useful with --tests-url)",
-			Destination: &conf.scan.ignoreStdTests,
+			Destination: &conf.scan.IgnoreStdTests,
 		},
 		cli.StringFlag{
 			Name:        "pass-text",
 			Usage:       "Give sites a +10 score if body matches `GLOB`",
-			Destination: &conf.scan.testPassText,
+			Destination: &conf.scan.TestPassText,
 		},
 		cli.StringFlag{
 			Name:        "fail-text",
 			Usage:       "Give sites a -10 score if body matches `GLOB`",
-			Destination: &conf.scan.testFailText,
+			Destination: &conf.scan.TestFailText,
 		},
 	}
 

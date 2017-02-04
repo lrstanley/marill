@@ -32,6 +32,7 @@ type JSONOutput struct {
 	Success     bool
 	HostFile    string
 	TimeScanned string
+	ScanConfig  ScanConfig
 }
 
 // Bytes returns a bytes array representation of JSONOutput.
@@ -141,6 +142,7 @@ func genJSONOutput(scan *Scan) (*JSONOutput, error) {
 		HostFile:    strings.TrimRight(hosts, "\n"),
 		Success:     true,
 		TimeScanned: time.Now().Format(time.RFC3339),
+		ScanConfig:  conf.scan,
 	}
 
 	return jsonOut, nil
