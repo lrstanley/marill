@@ -35,7 +35,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-// these /SHOULD/ be defined during the make process. not always however.
+// These should be defined during the make process, not always however.
 var version, commithash, compiledate = "", "", ""
 
 const updateURI = "https://api.github.com/repos/lrstanley/marill/releases/latest"
@@ -54,7 +54,7 @@ const motd = `
 {magenta}[________]  {lightblue}|___|\__/|___|(___/    \___)|__|  \___)(__\_|_)\_______)\_______)
 `
 
-var successTemplate = `
+var textTeplate = `
 {{- if .Result.Error }}{red}{bold}[FAILURE]{c}{{- else }}{green}{bold}[SUCCESS]{c}{{- end }}
 
 {{- /* add colors for the score */}} [score:
@@ -79,60 +79,61 @@ var successTemplate = `
 {{- " "}}{{- .Result.URL }}
 {{- if .Result.Error }} ({red}errors: {{ .Result.Error }}{c}){{- end }}`
 
-// outputConfig handles what the user sees (stdout, debugging, logs, etc)
+// outputConfig handles what the user sees (stdout, debugging, logs, etc).
 type outputConfig struct {
-	noColors   bool   // don't print colors to stdout
-	noBanner   bool   // don't print the app banner
-	printDebug bool   // print debugging information
-	ignoreStd  bool   // ignore regular stdout (human-formatted)
-	log        string // optional log file to dump regular logs
-	debugLog   string // optional log file to dump debugging info
-	resultFile string // filename/path of file which to dump results to
+	noColors   bool   // Don't print colors to stdout.
+	noBanner   bool   // Don't print the app banner.
+	printDebug bool   // Print debugging information.
+	ignoreStd  bool   // Ignore regular stdout (human-formatted).
+	log        string // Optional log file to dump regular logs.
+	debugLog   string // Optional log file to dump debugging info.
+	resultFile string // Filename/path of file which to dump results to.
 }
 
-// scanConfig handles how and what is scanned/crawled
+// scanConfig handles how and what is scanned/crawled.
 type scanConfig struct {
-	threads       int           // number of threads to run the scanner in
-	manualList    string        // list of manually supplied domains
-	assets        bool          // pull all assets for the page
-	ignoreSuccess bool          // ignore urls/domains that were successfully fetched
-	allowInsecure bool          // if SSL errors should be ignored
-	delay         time.Duration // delay for the stasrt of each resource crawl
-	httptimeout   time.Duration // timeout before http request becomes stale
+	threads       int           // Number of threads to run the scanner in.
+	manualList    string        // List of manually supplied domains.
+	assets        bool          // Pull all assets for the page.
+	ignoreSuccess bool          // Ignore urls/domains that were successfully fetched.
+	allowInsecure bool          // If SSL errors should be ignored.
+	delay         time.Duration // Delay for the stasrt of each resource crawl.
+	httptimeout   time.Duration // Timeout before http request becomes stale.
 
-	// domain filter related
-	ignoreHTTP   bool   // ignore http://
-	ignoreHTTPS  bool   // ignore https://
-	ignoreRemote bool   // ignore resources where the domain is using remote ip
-	ignoreMatch  string // glob match of domains to blacklist
-	matchOnly    string // glob match of domains to whitelist
+	// Domain filter related.
+	ignoreHTTP   bool   // Ignore http://.
+	ignoreHTTPS  bool   // Ignore https://.
+	ignoreRemote bool   // Ignore resources where the domain is using remote ip.
+	ignoreMatch  string // Glob match of domains to blacklist.
+	matchOnly    string // Glob match of domains to whitelist.
 
-	// test related
-	minScore       float64 // minimum score before a resource is considered "failed"
-	ignoreTest     string  // glob match of tests to blacklist
-	matchTest      string  // glob match of tests to whitelist
-	testsFromURL   string  // load tests from a remote url
-	testsFromPath  string  // load tests from a specified path
-	ignoreStdTests bool    // don't execute standard builtin tests
+	// Test related.
+	minScore       float64 // Minimum score before a resource is considered "failed".
+	ignoreTest     string  // Glob match of tests to blacklist.
+	matchTest      string  // Glob match of tests to whitelist.
+	testsFromURL   string  // Load tests from a remote url.
+	testsFromPath  string  // Load tests from a specified path.
+	ignoreStdTests bool    // Don't execute standard builtin tests.
 
-	// user input tests
-	testPassText string // glob match against body, will give it a weight of 10
-	testFailText string // glob match against body, will take away a weight of 10
+	// User input tests.
+	testPassText string // Glob match against body, will give it a weight of 10.
+	testFailText string // Glob match against body, will take away a weight of 10.
 
-	// output related
-	outTmpl    string // the output text/template template for use with printing results
-	htmlFile   string // the file path to dump results in html
-	jsonFile   string // the file path to dump results in json
-	jsonPretty bool   // prettifies the json output
+	// Output related.
+	outTmpl    string // The output text/template template for use with printing results.
+	htmlFile   string // The file path to dump results in html.
+	jsonFile   string // The file path to dump results in json.
+	jsonPretty bool   // Prettifies the json output.
 }
 
-// appConfig handles what the app does (scans/crawls, printing data, some other task, etc)
+// appConfig handles what the app does (scans/crawls, printing data, some
+// other task, etc).
 type appConfig struct {
-	exitOnFail    bool // exit with a status code of 1 if any of the domains failed
-	noUpdateCheck bool
+	exitOnFail    bool // Exit with a status code of 1 if any of the domains failed.
+	noUpdateCheck bool // Don't check to see if an update exists at Github.
 }
 
-// config is a wrapper for all the other configs to put them in one place
+// config is a wrapper for all the other configs to put them in one place.
 type config struct {
 	app  appConfig
 	scan scanConfig
@@ -155,7 +156,7 @@ func getVersion() string {
 	return "unknown"
 }
 
-// statsLoop prints out memory/load/runtime statistics to debug output
+// statsLoop prints out memory/load/runtime statistics to debug output.
 func statsLoop(done <-chan struct{}) {
 	mem := &runtime.MemStats{}
 	var numRoutines, numCPU int
@@ -183,9 +184,9 @@ func statsLoop(done <-chan struct{}) {
 	}
 }
 
-// numThreads calculates the number of threads to use
+// numThreads calculates the number of threads to use.
 func numThreads() {
-	// use runtime.NumCPU for judgement call
+	// Use runtime.NumCPU for judgement call.
 	if conf.scan.threads < 1 {
 		if runtime.NumCPU() >= 2 {
 			conf.scan.threads = runtime.NumCPU() / 2
@@ -196,7 +197,8 @@ func numThreads() {
 		logger.Printf("warning: %d threads specified, which is more than the amount of cores", conf.scan.threads)
 		out.Printf("{yellow}warning: %d threads specified, which is more than the amount of cores on the server!{c}", conf.scan.threads)
 
-		// set it to the amount of cores on the server. go will do this regardless, so.
+		// Set it to the amount of cores on the server. go will do this
+		// regardless, so.
 		conf.scan.threads = runtime.NumCPU()
 		logger.Printf("limiting number of threads to %d", conf.scan.threads)
 		out.Printf("limiting number of threads to %d", conf.scan.threads)
@@ -215,7 +217,7 @@ func numThreads() {
 var reManualDomain = regexp.MustCompile(`^(?P<domain>(?:[A-Za-z0-9_.-]{2,350}\.[A-Za-z0-9]{2,63})|https?://[A-Za-z0-9_.-]{2,350}\.[A-Za-z0-9]{2,63}[!-9;-~]+?)(?::(?P<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))?(?::(?P<port>\d{2,5}))?$`)
 var reSpaces = regexp.MustCompile(`[\t\n\v\f\r ]+`)
 
-/// parseManualList parses the list of domains specified from --domains
+/// parseManualList parses the list of domains specified from --domains.
 func parseManualList() (domlist []*scraper.Domain, err error) {
 	input := strings.Split(reSpaces.ReplaceAllString(conf.scan.manualList, " "), " ")
 
@@ -250,7 +252,8 @@ func parseManualList() (domlist []*scraper.Domain, err error) {
 	return domlist, nil
 }
 
-// printUrls prints the urls that /would/ be scanned, if we were to start crawling
+// printUrls prints the urls that /would/ be scanned, if we were to start
+// crawling.
 func printUrls(c *cli.Context) error {
 	printBanner()
 
@@ -292,7 +295,7 @@ func printUrls(c *cli.Context) error {
 	return nil
 }
 
-// listTests lists all loaded tests, based on supplied args to Marill
+// listTests lists all loaded tests, based on supplied args to Marill.
 func listTests(c *cli.Context) error {
 	printBanner()
 
@@ -358,7 +361,7 @@ func updateCheck() {
 		return
 	}
 
-	// set the necessary headers per Github's request.
+	// Set the necessary headers per Github's request.
 	req.Header.Set("User-Agent", "repo: lrstanley/marill (internal update check utility)")
 
 	resp, err := client.Do(req)
@@ -373,7 +376,7 @@ func updateCheck() {
 		logger.Println(NewErr{Code: ErrUpdateUnknownResp, value: "(no body?)"})
 		return
 	}
-	defer resp.Body.Close() // ensure the body is closed.
+	defer resp.Body.Close() // Ensure the body is closed.
 
 	bbytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -403,7 +406,7 @@ func updateCheck() {
 	}
 
 	if resp.StatusCode == 403 {
-		// fail silently
+		// Fail silently.
 		logger.Println(NewErr{Code: ErrUpdateUnknownResp, value: "status code 403 (too many update checks?)"})
 		return
 	}
@@ -457,14 +460,14 @@ func run(c *cli.Context) error {
 	if len(conf.scan.outTmpl) > 0 {
 		text = conf.scan.outTmpl
 	} else {
-		text = successTemplate
+		text = textTeplate
 	}
 
 	var resultFn *os.File
 	var err error
 	if len(conf.out.resultFile) > 0 {
-		// open up the requested resulting file
-		// make sure only to do this in write-only and creation mode
+		// Open up the requested resulting file. Make sure only to do this
+		// in write-only and creation mode.
 		resultFn, err = os.OpenFile(conf.out.resultFile, os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
 			out.Fatal(err)
@@ -473,10 +476,10 @@ func run(c *cli.Context) error {
 
 	textFmt := text
 
-	// ensure we strip color from regular text (to output to a log file)
+	// Ensure we strip color from regular text (to output to a log file).
 	StripColor(&text)
 
-	// ensure we check to see if they want color with regular output
+	// Ensure we check to see if they want color with regular output.
 	FmtColor(&textFmt, conf.out.noColors)
 
 	tmpl := template.Must(template.New("success").Parse(text + "\n"))
@@ -488,7 +491,7 @@ func run(c *cli.Context) error {
 	}
 
 	for _, res := range scan.results {
-		// ignore successful, per request
+		// Ignore successful, per request.
 		if conf.scan.ignoreSuccess && res.Result.Error == nil {
 			continue
 		}
@@ -500,7 +503,7 @@ func run(c *cli.Context) error {
 		}
 
 		if len(conf.out.resultFile) > 0 {
-			// pipe it to the result file as necessary.
+			// Pipe it to the result file as necessary.
 			err = tmpl.Execute(resultFn, res)
 			if err != nil {
 				out.Println("")
@@ -540,7 +543,7 @@ func run(c *cli.Context) error {
 		}
 	}
 
-	// this should be the last thing we do
+	// This should be the last thing we do.
 	if conf.app.exitOnFail && scan.failed > 0 {
 		out.Fatalf("exit-on-error enabled, %d errors. giving status code 1.", scan.failed)
 	}
@@ -549,7 +552,7 @@ func run(c *cli.Context) error {
 }
 
 func main() {
-	defer closeLogger() // ensure we're cleaning up the logger if there is one
+	defer closeLogger() // Ensure we're cleaning up the logger if there is one.
 
 	cli.VersionPrinter = func(c *cli.Context) {
 		if version != "" && commithash != "" && compiledate != "" {
@@ -570,33 +573,33 @@ func main() {
 	app.Name = "marill"
 	app.Version = getVersion()
 
-	// needed for stats look
+	// Needed for stats look.
 	done := make(chan struct{}, 1)
 
 	app.Before = func(c *cli.Context) error {
-		// initialize the standard output
+		// Initialize the standard output.
 		initOut(os.Stdout)
 
-		// initialize the logger
+		// Initialize the logger.
 		initLogger()
 
-		// initialize the max amount of threads to use
+		// Initialize the max amount of threads to use.
 		numThreads()
 
-		// initialize the stats data
+		// Initialize the stats data.
 		go statsLoop(done)
 
 		return nil
 	}
 
 	app.After = func(c *cli.Context) error {
-		// close the stats data goroutine when we're complete.
+		// Close the stats data goroutine when we're complete.
 		done <- struct{}{}
 
-		// close Out log files or anything it has open
+		// Close Out log files or anything it has open.
 		defer closeOut()
 
-		// as with the debug log
+		// As with the debug log.
 		defer closeLogger()
 
 		return nil
@@ -631,8 +634,8 @@ func main() {
 			Hidden: true,
 			Action: func(c *cli.Context) error {
 				if err := uiInit(); err != nil {
-					closeOut()         // close any open files that Out has open
-					initOut(os.Stdout) //re-initialize with stdout so we can give them the error
+					closeOut()         // Close any open files that Out has open.
+					initOut(os.Stdout) // Re-initialize with stdout so we can give them the error.
 					out.Fatal(err)
 				}
 				os.Exit(0)
@@ -643,7 +646,7 @@ func main() {
 	}
 
 	app.Flags = []cli.Flag{
-		// output style flags
+		// Output style flags.
 		cli.BoolFlag{
 			Name:        "d, debug",
 			Usage:       "Print debugging information to stdout",
@@ -690,7 +693,7 @@ func main() {
 			Destination: &conf.app.noUpdateCheck,
 		},
 
-		// scan configuration
+		// Scan configuration.
 		cli.IntFlag{
 			Name:        "threads",
 			Usage:       "Use `n` threads to fetch data (0 defaults to server cores/2)",
@@ -755,7 +758,7 @@ func main() {
 			Destination: &conf.scan.jsonPretty,
 		},
 
-		// domain filtering
+		// Domain filtering.
 		cli.BoolFlag{
 			Name:        "ignore-http",
 			Usage:       "Ignore http-based URLs during domain search",
@@ -782,7 +785,7 @@ func main() {
 			Destination: &conf.scan.matchOnly,
 		},
 
-		// test filtering
+		// Test filtering.
 		cli.StringFlag{
 			Name:        "test-ignore",
 			Usage:       "Ignore tests that match `GLOB`, pipe separated list",
@@ -826,7 +829,7 @@ func main() {
 			Email: "me@liamstanley.io",
 		},
 	}
-	app.Copyright = "(c) 2016 Liam Stanley"
+	app.Copyright = fmt.Sprintf("(c) %d Liam Stanley", time.Now().Year())
 	app.Usage = "Automated website testing utility"
 	app.Action = run
 
