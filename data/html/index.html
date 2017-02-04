@@ -70,9 +70,9 @@
                         <span class="score">
                             <span class="chip chip-sm"
                                   ng-class="{
-                                        'chip-success': item.Score >= (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.ErrorString == '',
-                                        'chip-warn': item.Score < (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.Score >= $root.data.MinScore && item.ErrorString == '',
-                                        'chip-danger': item.Score < $root.data.MinScore || item.ErrorString != ''}">{{ item.Score }}/10</span>
+                                        'chip-success': item.Score >= (((10-$root.data.ScanConfig.MinScore)/2) + $root.data.ScanConfig.MinScore) && item.ErrorString == '',
+                                        'chip-warn': item.Score < (((10-$root.data.ScanConfig.MinScore)/2) + $root.data.ScanConfig.MinScore) && item.Score >= $root.data.ScanConfig.MinScore && item.ErrorString == '',
+                                        'chip-danger': item.Score < $root.data.ScanConfig.MinScore || item.ErrorString != ''}">{{ item.Score }}/10</span>
                         </span>
                         <span ng-click="setURL($index)" class="url">{{ item.Result.URL }}</span>
                         <span class="pull-right url-buttons">
@@ -87,9 +87,9 @@
                         <div layout="row" layout-align="space-around start">
                             <div flex-xs flex-gt-xs="25" class="gradient-single stats md-whiteframe-4dp">
                                 Score: <span ng-class="{
-                                    'text-success': item.Score >= (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.ErrorString == '',
-                                    'text-warning': item.Score < (((10-$root.data.MinScore)/2) + $root.data.MinScore) && item.Score >= $root.data.MinScore && item.ErrorString == '',
-                                    'text-danger': item.Score < $root.data.MinScore || item.ErrorString != ''}">{{item.Score}}/10
+                                    'text-success': item.Score >= (((10-$root.data.ScanConfig.MinScore)/2) + $root.data.ScanConfig.MinScore) && item.ErrorString == '',
+                                    'text-warning': item.Score < (((10-$root.data.ScanConfig.MinScore)/2) + $root.data.ScanConfig.MinScore) && item.Score >= $root.data.ScanConfig.MinScore && item.ErrorString == '',
+                                    'text-danger': item.Score < $root.data.ScanConfig.MinScore || item.ErrorString != ''}">{{item.Score}}/10
                                 <i class="fa" ng-class="{'fa-arrow-up text-success': item.ErrorString == '', 'fa-arrow-down text-danger': item.ErrorString != ''}"></i></span>
                             </div>
                             <div flex-xs flex-gt-xs="25" class="gradient-single stats md-whiteframe-4dp">

@@ -134,8 +134,8 @@ angular.module('main').controller('mainCtrl', function ($scope, $rootScope, $sta
 
     $scope.qfilter = function (item) {
         if ($state.current.data.rtype != null && $state.current.data.rtype != 'none') {
-            if ($state.current.data.rtype == 'success' && (item.ErrorString != "" || item.Score < $rootScope.data.MinScore)) { return false; }
-            if ($state.current.data.rtype == 'failed' && (item.ErrorString == "" && item.Score >= $rootScope.data.MinScore && item.Result.Response != null)) { return false; }
+            if ($state.current.data.rtype == 'success' && (item.ErrorString != "" || item.Score < $rootScope.data.ScanConfig.MinScore)) { return false; }
+            if ($state.current.data.rtype == 'failed' && (item.ErrorString == "" && item.Score >= $rootScope.data.ScanConfig.MinScore && item.Result.Response != null)) { return false; }
         }
 
         if ($scope.q == "" || $scope.q == null) { return true; }

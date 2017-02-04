@@ -25,7 +25,6 @@ type JSONOutput struct {
 	Version     string
 	VersionFull string
 	GitRevision string
-	MinScore    float64
 	Out         []*JSONTestResult
 	Successful  int
 	Failed      int
@@ -135,7 +134,6 @@ func genJSONOutput(scan *Scan) (*JSONOutput, error) {
 		VersionFull: getVersion(),
 		Version:     version,
 		GitRevision: commithash,
-		MinScore:    8.0,
 		Out:         htmlConvertedResults,
 		Successful:  scan.successful,
 		Failed:      scan.failed,
