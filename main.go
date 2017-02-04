@@ -55,10 +55,18 @@ const motd = `
 `
 
 var textTeplate = `
-{{- if .Result.Error }}{red}{bold}[FAILURE]{c}{{- else }}{green}{bold}[SUCCESS]{c}{{- end }}
+{{- if .Result.Error }}{red}{bold}[FAILURE]{c}
+{{- else }}
+	{{- if OutputConfig.ShowWarnings }}
+		{{- if ne .FailedTests "" }}{yellow}{bold}[WARNING]{c}{{- else }}{green}{bold}[SUCCESS]{c}{{- end }}
+	{{- else }}{green}{bold}[SUCCESS]{c}{{- end }}
+{{- end }}
 
 {{- /* add colors for the score */}} [score:
-{{- if gt .Score 8.0 }}{green}{{- else }}{{- if (or (le .Score 8.0) (gt .Score 5.0)) }}{yellow}{{- end }}{{- end }}
+{{- if gt .Score ScanConfig.MinScore }}{green}
+{{- else }}
+	{{- if (or (le .Score ScanConfig.MinScore) (gt .Score 5.0)) }}{yellow}{{- end }}
+{{- end }}
 {{- if lt .Score 5.0 }}{red}{{- end }}
 
 {{- .Score | printf "%5.1f/10.0" }}{c}]
@@ -77,17 +85,23 @@ var textTeplate = `
 {{- if not .Result.Error }} [{green}{{ .Result.Time.Milli }}ms{c}]{{- end }}
 
 {{- " "}}{{- .Result.URL }}
-{{- if .Result.Error }} ({red}errors: {{ .Result.Error }}{c}){{- end }}`
+{{- if .Result.Error }} ({red}errors: {{ .Result.Error }}{c})
+{{- else }}
+	{{- if OutputConfig.ShowWarnings }}
+		{{- if ne .FailedTests "" }} ({yellow}warning: {{ .FailedTests }}{c}){{ end }}
+	{{- end }}
+{{- end }}`
 
 // OutputConfig handles what the user sees (stdout, debugging, logs, etc).
 type OutputConfig struct {
-	NoColors   bool   // Don't print colors to stdout.
-	NoBanner   bool   // Don't print the app banner.
-	PrintDebug bool   // Print debugging information.
-	IgnoreStd  bool   // Ignore regular stdout (human-formatted).
-	Log        string // Optional log file to dump regular logs.
-	DebugLog   string // Optional log file to dump debugging info.
-	ResultFile string // Filename/path of file which to dump results to.
+	NoColors     bool   // Don't print colors to stdout.
+	NoBanner     bool   // Don't print the app banner.
+	PrintDebug   bool   // Print debugging information.
+	IgnoreStd    bool   // Ignore regular stdout (human-formatted).
+	Log          string // Optional log file to dump regular logs.
+	DebugLog     string // Optional log file to dump debugging info.
+	ResultFile   string // Filename/path of file which to dump results to.
+	ShowWarnings bool   // If warnings should be triggered when score > MinScore but not 10/10.
 }
 
 // ScanConfig handles how and what is scanned/crawled.
@@ -482,8 +496,13 @@ func run(c *cli.Context) error {
 	// Ensure we check to see if they want color with regular output.
 	FmtColor(&textFmt, conf.out.NoColors)
 
-	tmpl := template.Must(template.New("success").Parse(text + "\n"))
-	tmplFormatted := template.Must(template.New("success").Parse(textFmt + "\n"))
+	tmplFuncMap := map[string]interface{}{
+		"ScanConfig":   func() ScanConfig { return conf.scan },
+		"OutputConfig": func() OutputConfig { return conf.out },
+	}
+
+	tmpl := template.Must(template.New("success").Funcs(tmplFuncMap).Parse(text + "\n"))
+	tmplFormatted := template.Must(template.New("success").Funcs(tmplFuncMap).Parse(textFmt + "\n"))
 
 	scan, err := crawl()
 	if err != nil {
@@ -666,6 +685,11 @@ func main() {
 			Name:        "no-banner",
 			Usage:       "Do not print the colorful banner",
 			Destination: &conf.out.NoBanner,
+		},
+		cli.BoolFlag{
+			Name:        "show-warnings",
+			Usage:       "Show warnings if any tests failed, even it isn't a failure",
+			Destination: &conf.out.ShowWarnings,
 		},
 		cli.BoolFlag{
 			Name:        "exit-on-fail",
