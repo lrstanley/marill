@@ -429,16 +429,7 @@ func checkTests(results []*scraper.FetchResult, tests []*Test) []*TestResult {
 		}
 
 		if completedTests[i].Score < conf.scan.minScore {
-			failedTests := []string{}
-			for k := range completedTests[i].MatchedTests {
-				if completedTests[i].TestCount[k] > 1 {
-					k += fmt.Sprintf(" [%d matched]", completedTests[i].TestCount[k])
-				}
-
-				failedTests = append(failedTests, k)
-			}
-
-			completedTests[i].Result.Error = errors.New("failed tests: " + strings.Join(failedTests, ", "))
+			completedTests[i].Result.Error = errors.New(completedTests[i].FailedTests())
 		}
 	}
 
@@ -451,6 +442,20 @@ type TestResult struct {
 	Score        float64              // Resulting score, skewed off defaultScore.
 	MatchedTests map[string]float64   // Map of negative affecting tests that were applied.
 	TestCount    map[string]int       // Map of times the negative affecting tests matched.
+}
+
+func (r *TestResult) FailedTests() string {
+	var failed []string
+
+	for k := range r.MatchedTests {
+		if r.TestCount[k] > 1 {
+			k += fmt.Sprintf(" [%d matched]", r.TestCount[k])
+		}
+
+		failed = append(failed, k)
+	}
+
+	return strings.Join(failed, ", ")
 }
 
 // applyScore applies the score from test to the result, assuming test matched.
