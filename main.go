@@ -69,7 +69,7 @@ var textTeplate = `
 {{- end }}
 {{- if lt .Score 5.0 }}{red}{{- end }}
 
-{{- .Score | printf "%5.1f/10.0" }}{c}]
+{{- .Score | printf "%5.1f/10" }}{c}]
 
 {{- /* status code output */}}
 {{- if .Result.Resource }} [code:{yellow}{{ if .Result.Response.Code }}{{ .Result.Response.Code }}{{ else }}---{{ end }}{c}]
