@@ -30,7 +30,10 @@ func stripDups(domains *[]*Domain) {
 	return
 }
 
-var predefined = [...]string{"cpanel", "webmail", "mail", "whm", "cpcalendars", "cpcontacts"}
+var predefined = [...]string{
+	"cpanel", "webmail", "mail", "whm", "cpcalendars", "cpcontacts",
+	"_wildcard_",
+}
 
 func stripPredefined(domains *[]*Domain) {
 	var tmp []*Domain

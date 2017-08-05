@@ -227,7 +227,7 @@ func (f *Finder) GetDomains() Err {
 		select {
 		case <-time.After(10 * time.Second):
 			_ = cmd.Process.Kill()
-			return &NewErr{Code: ErrApacheFetchVhosts, value: "httpd timeouted out during execution"}
+			return &NewErr{Code: ErrApacheFetchVhosts, value: "httpd timed out during execution"}
 		case <-done:
 		}
 
