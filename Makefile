@@ -5,6 +5,7 @@ PATH := $(GOPATH)/bin:$(PATH)
 export $(PATH)
 
 BINARY=marill
+LD_FLAGS += -s -w
 
 generate:
 	@echo -e "\n\033[0;36m [ Generating gocode from assets... ]\033[0;m"
