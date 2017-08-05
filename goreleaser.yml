@@ -1,0 +1,17 @@
+# goreleaser.yml
+project_name: marill
+build:
+  binary: marill
+  goos:
+    - linux
+    - freebsd
+  goarch:
+    - amd64
+    - 386
+  ldflags: -s -w -X main.version=v{{.Version}} -X main.commithash={{.Commit}} -X main.compiledate={{.Date}}
+  hooks:
+    post: make compress
+release:
+  draft: true
+snapshot:
+  name_template: SNAPSHOT-{{.Commit}}
