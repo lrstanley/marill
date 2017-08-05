@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/lrstanley/marill/procfinder"
 	"github.com/lrstanley/marill/utils"
@@ -211,7 +212,25 @@ func (f *Finder) GetDomains() Err {
 	if f.MainProc.Name == "httpd" || f.MainProc.Name == "apache" || f.MainProc.Name == "lshttpd" {
 		// assume apache based. should be able to use "-S" switch:
 		// docs: http://httpd.apache.org/docs/current/vhosts/#directives
-		output, err := exec.Command(f.MainProc.Exe, "-S").Output()
+
+		var output []byte
+		var err error
+		done := make(chan bool, 1)
+		cmd := exec.Command(f.MainProc.Exe, "-S")
+
+		go func() {
+			output, err = cmd.Output()
+			done <- true
+		}()
+
+		// timeout if we don't hear back from httpd fast enough.
+		select {
+		case <-time.After(10 * time.Second):
+			_ = cmd.Process.Kill()
+			return &NewErr{Code: ErrApacheFetchVhosts, value: "httpd timeouted out during execution"}
+		case <-done:
+		}
+
 		out := string(output)
 
 		if err != nil {
