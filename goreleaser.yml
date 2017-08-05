@@ -15,3 +15,13 @@ release:
   draft: true
 snapshot:
   name_template: SNAPSHOT-{{.Commit}}
+fpm:
+  homepage: https://marill.liam.sh/
+  maintainer: Liam Stanley <me@liamstanley.io>
+  description: Automated site testing utility.
+  license: MIT
+
+  # Formats to generate as output
+  formats:
+    - deb
+    - rpm
