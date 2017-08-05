@@ -26,13 +26,13 @@ update-deps: fetch
 	$(GOPATH)/bin/govendor remove +unused
 	$(GOPATH)/bin/govendor update +external
 
-release: fetch generate
+release: clean fetch generate
 	$(GOPATH)/bin/goreleaser --skip-publish
 
-publish: fetch generate
+publish: clean fetch generate
 	$(GOPATH)/bin/goreleaser
 
-snapshot: fetch generate
+snapshot: clean fetch generate
 	$(GOPATH)/bin/goreleaser --snapshot --skip-validate --skip-publish
 
 lint: clean fetch generate
