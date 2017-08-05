@@ -121,6 +121,8 @@ func (f *Finder) ReadCpanelVars() error {
 		}
 	}
 
+	stripDups(&domains)
+	stripPredefined(&domains)
 	f.Domains = domains
 
 	return nil
@@ -236,7 +238,7 @@ func (f *Finder) ReadApacheVhosts(raw string) error {
 	}
 
 	stripDups(&domains)
-
+	stripPredefined(&domains)
 	f.Domains = domains
 
 	return nil
