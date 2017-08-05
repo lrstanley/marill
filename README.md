@@ -88,13 +88,13 @@ NAME:
 
 USAGE:
    marill [global options] command [command options] [arguments...]
-   
+
 VERSION:
    git revision XXXXXX
-   
+
 AUTHOR(S):
-   Liam Stanley <user@domain.com> 
-   
+   Liam Stanley <user@domain.com>
+
 COMMANDS:
      scan           [DEFAULT] Start scan for all domains on server
      urls, domains  Print the list of urls as if they were going to be scanned
@@ -106,6 +106,7 @@ GLOBAL OPTIONS:
    -q, --quiet              Do not print regular stdout messages
    --no-color               Do not print with color
    --no-banner              Do not print the colorful banner
+   --show-warnings          Show a warning if one or more test failed, even if it didn't drop below min-score
    --exit-on-fail           Send exit code 1 if any domains fail tests
    --log FILE               Log information to FILE
    --debug-log FILE         Log debugging information to FILE
@@ -125,10 +126,10 @@ GLOBAL OPTIONS:
    --ignore-http            Ignore http-based URLs during domain search
    --ignore-https           Ignore https-based URLs during domain search
    --ignore-remote          Ignore all resources that resolve to a remote IP (use with --assets)
-   --domain-ignore GLOB     Ignore URLS during domain search that match GLOB, pipe separated list
-   --domain-match GLOB      Allow URLS during domain search that match GLOB, pipe separated list
-   --test-ignore GLOB       Ignore tests that match GLOB, pipe separated list
-   --test-match GLOB        Allow tests that match GLOB, pipe separated list
+   --ignore-domains GLOB    Ignore URLS during domain search that match GLOB, pipe separated list
+   --match-domains GLOB     Allow URLS during domain search that match GLOB, pipe separated list
+   --ignore-test GLOB       Ignore tests that match GLOB, pipe separated list
+   --match-test GLOB        Allow tests that match GLOB, pipe separated list
    --tests-url URL          Import tests from a specified URL
    --tests-path PATH        Import tests from a specified file-system PATH
    --ignore-std-tests       Ignores all built-in tests (useful with --tests-url)
@@ -136,7 +137,7 @@ GLOBAL OPTIONS:
    --fail-text GLOB         Give sites a -10 score if body matches GLOB
    --help, -h               show help
    --version, -v            print the version
-   
+
 COPYRIGHT:
    (c) 2016 Liam Stanley
 ```
@@ -162,7 +163,7 @@ The main arguments that may be useful are:
    * `-d` or `--debug`: This will enable debugging. It doesn't provide a whole lot more information, but can help if something isn't working.
    * `--delay`: Utilize this if the load caused by the crawling is too high. E.g. `--delay 10s`.
    * `--threads`: This is the amount of parallel scans that will run at a single time. By default it will be 1/2 the amount of cores on the server.
-   * `--domain-ignore` and `--domain-match`: utilize these to skip or only scan certain domains during the crawl. E.g. `--domains-ignore "*domain.com|someotherdomain.com"`
+   * `--ignore-domains` and `--match-domains`: utilize these to skip or only scan certain domains during the crawl. E.g. `--ignore-domains "*domain.com|someotherdomain.com"`
 
 So, for example, to start off with:
 
@@ -204,7 +205,6 @@ $ marill a --domains "somedomain.com:443 domain.com:1234 example.com:123.456.7.8
 ```
 
 ### Things to note/Troubleshooting
-   * Please remove `/root/tmp/marill` once you are done. This utility is still in alpha stages, and as such, there is no update check functionality. Leaving in place may cause someone in the future to utilize an outdated version of the software.
    * If there are any problems or bugs, **PLEASE LET ME KNOW!** You can submit bugs if you have a Github account [here](https://github.com/lrstanley/marill/issues/new) or [here if you do not](https://links.ml/iWQz)
 
 ## FAQ
@@ -249,7 +249,7 @@ $ marill a --domains "somedomain.com:443 domain.com:1234 example.com:123.456.7.8
       ```
 
 ## Building
-Marill supports building on 1.3+ (or even possibly older), however it is recommended to build on the latest go release. Note that you will not be able to use the Makefile to compile Marill if you are trying to build on go 1.4 or lower. You will need to manually compile it, due to limitations with ldflag support.
+Marill supports building on 1.6+ (or even possibly older), however it is recommended to build on the latest go release. Note that you will not be able to use the Makefile to compile Marill if you are trying to build on go 1.4 or lower. You will need to manually compile it, due to limitations with ldflag support.
 
 ```bash
 $ git clone https://github.com/lrstanley/marill.git
@@ -302,10 +302,10 @@ Other syntactical and Golang-specific things:
     to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
     copies of the Software, and to permit persons to whom the Software is
     furnished to do so, subject to the following conditions:
-    
+
     The above copyright notice and this permission notice shall be included in
     all copies or substantial portions of the Software.
-    
+
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE

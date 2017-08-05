@@ -354,8 +354,6 @@ func printBanner() {
 	} else {
 		out.Println("{bold}{blue}Running marill (unknown version){c}")
 	}
-
-	out.Println("{black}{bold}\x1b[43m!! [WARNING] !!{c} {bold}{yellow}THIS IS AN ALPHA VERSION OF MARILL. NOTIFY IF ANYTHING IS BROKEN.{c}")
 }
 
 func updateCheck() {
@@ -688,7 +686,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:        "show-warnings",
-			Usage:       "Show warnings if any tests failed, even it isn't a failure",
+			Usage:       "Show a warning if one or more test failed, even if it didn't drop below min-score",
 			Destination: &conf.out.ShowWarnings,
 		},
 		cli.BoolFlag{
@@ -799,24 +797,24 @@ func main() {
 			Destination: &conf.scan.IgnoreRemote,
 		},
 		cli.StringFlag{
-			Name:        "domain-ignore",
+			Name:        "ignore-domains",
 			Usage:       "Ignore URLS during domain search that match `GLOB`, pipe separated list",
 			Destination: &conf.scan.IgnoreMatch,
 		},
 		cli.StringFlag{
-			Name:        "domain-match",
+			Name:        "match-domains",
 			Usage:       "Allow URLS during domain search that match `GLOB`, pipe separated list",
 			Destination: &conf.scan.MatchOnly,
 		},
 
 		// Test filtering.
 		cli.StringFlag{
-			Name:        "test-ignore",
+			Name:        "ignore-test",
 			Usage:       "Ignore tests that match `GLOB`, pipe separated list",
 			Destination: &conf.scan.IgnoreTest,
 		},
 		cli.StringFlag{
-			Name:        "test-match",
+			Name:        "match-test",
 			Usage:       "Allow tests that match `GLOB`, pipe separated list",
 			Destination: &conf.scan.MatchTest,
 		},
@@ -853,7 +851,7 @@ func main() {
 			Email: "me@liamstanley.io",
 		},
 	}
-	app.Copyright = fmt.Sprintf("(c) %d Liam Stanley", time.Now().Year())
+	app.Copyright = "(c) 2016 Liam Stanley"
 	app.Usage = "Automated website testing utility"
 	app.Action = run
 

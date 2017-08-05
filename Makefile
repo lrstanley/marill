@@ -1,5 +1,4 @@
 .DEFAULT_GOAL := all
-THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 GOPATH := $(shell go env | grep GOPATH | sed 's/GOPATH="\(.*\)"/\1/')
 PATH := $(GOPATH)/bin:$(PATH)
@@ -79,4 +78,3 @@ all: clean fetch generate
 
 	@echo -e "\n\033[0;36m [ Building ${BINARY} ]\033[0;m"
 	go build -ldflags "${LD_FLAGS}" -x -v -o ${BINARY}
-	@$(MAKE) -f $(THIS_FILE) clean
