@@ -209,6 +209,15 @@ func genTests() (tests []*Test) {
 	// Loop through each test and ensure that they match our criteria, and
 	// are safe to start testing against.
 	for _, test := range tmp {
+		// if they pass something via the command line, it should be
+		// explicitly whitelisted.
+		if test.Origin == "cli-args" {
+			// Generate matches.
+			test.generateMatches()
+			tests = append(tests, test)
+			continue
+		}
+
 		var matches bool
 
 		// Check to see if it matches our blacklist. if so, ignore it.
@@ -250,7 +259,6 @@ func genTests() (tests []*Test) {
 
 		// Generate matches.
 		test.generateMatches()
-
 		tests = append(tests, test)
 	}
 
