@@ -1,0 +1,8 @@
+title: Marill
+description: Marill -- Automated site testing utility
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-cayman
+
+gems:
+  - jekyll-mentions
