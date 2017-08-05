@@ -7,6 +7,7 @@ package procfinder
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"os/user"
 	"path"
@@ -17,12 +18,17 @@ import (
 
 func readNetTCP() ([]string, error) {
 	procTCP, err := ioutil.ReadFile("/proc/net/tcp")
-
 	if err != nil {
 		return nil, err
 	}
 
-	lines := strings.Split(string(procTCP), "\n")
+	lines := strings.Split(strings.Trim(string(procTCP), "\n"), "\n")
+
+	procTCP6, err := ioutil.ReadFile("/proc/net/tcp6")
+	// don't panic if we can't pull tcp6 data.
+	if err == nil {
+		lines = append(lines, strings.Split(strings.Trim(string(procTCP6), "\n"), "\n")...)
+	}
 
 	return lines[1 : len(lines)-1], nil
 }
@@ -138,14 +144,21 @@ func GetProcs() (pl []*Process, err error) {
 
 	for _, line := range tcp {
 		lineArray := removeEmpty(strings.Split(strings.TrimSpace(line), " "))
-		ipPort := strings.Split(lineArray[1], ":")
-		fipPort := strings.Split(lineArray[2], ":")
+		ipaddr, port, err := net.SplitHostPort(lineArray[1])
+		if err != nil {
+			continue
+		}
+
+		fipaddr, fport, err := net.SplitHostPort(lineArray[2])
+		if err != nil {
+			continue
+		}
 
 		proc := &Process{
-			IP:          ip(ipPort[0]),
-			Port:        hexToDec(ipPort[1]),
-			ForeignIP:   ip(fipPort[0]),
-			ForeignPort: hexToDec(fipPort[1]),
+			IP:          ip(ipaddr),
+			Port:        hexToDec(port),
+			ForeignIP:   ip(fipaddr),
+			ForeignPort: hexToDec(fport),
 			User:        getUser(lineArray[7]),
 			PID:         getPid(lineArray[9]),
 		}
