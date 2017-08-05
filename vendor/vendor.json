@@ -21,7 +21,7 @@
 			"revisionTime": "2016-10-12T01:35:12Z"
 		},
 		{
-			"checksumSHA1": "pqTEAm1W2tlmdHJ6b/J0no+cfso=",
+			"checksumSHA1": "OhhqqugAESOfq+EVTAOV5lZDhAI=",
 			"path": "github.com/nsf/termbox-go",
 			"revision": "b6acae516ace002cb8105a89024544a1480655a5",
 			"revisionTime": "2016-09-13T19:16:50Z"
@@ -99,7 +99,7 @@
 			"revisionTime": "2016-10-22T09:38:57Z"
 		},
 		{
-			"checksumSHA1": "00eQaGynDYrv3tL+C7l9xH0IDZg=",
+			"checksumSHA1": "z79z5msRzgU48FCZxSuxfU8b4rs=",
 			"path": "golang.org/x/net/html/atom",
 			"revision": "f11d7120b19ae21da5715f3e47621736de1b1da9",
 			"revisionTime": "2016-10-22T09:38:57Z"
