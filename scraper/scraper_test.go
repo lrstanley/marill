@@ -1,4 +1,4 @@
-// Author: Liam Stanley <me@liamstanley.io>
+// Author: Liam Stanley <me@liam.sh>
 // Docs: https://marill.liam.sh/
 // Repo: https://github.com/lrstanley/marill
 
@@ -42,11 +42,11 @@ func TestFetch(t *testing.T) {
 		{"https://test3.lw.liam.sh", "1.1.1.1.", true},      // invalid ip
 		{"https://google.com/", "", false},
 		{"htps://google.com", "", true}, // invalid schema
-		{"http://liamstanley.io", "", false},
-		{"http://1.liamstanley.io", "0.0.0.0", true},                            // invalid ip
-		{"http://2.liamstanley.io", "000.000.00.0", true},                       // invalid ip
-		{"http://3.liamstanley.io", "111.1111.11.1", true},                      // invalid ip
-		{"http://4.liamstanley.io", "1.1.1.1.", true},                           // invalid ip
+		{"http://liam.sh", "", false},
+		{"http://1.liam.sh", "0.0.0.0", true},                                   // invalid ip
+		{"http://2.liam.sh", "000.000.00.0", true},                              // invalid ip
+		{"http://3.liam.sh", "111.1111.11.1", true},                             // invalid ip
+		{"http://4.liam.sh", "1.1.1.1.", true},                                  // invalid ip
 		{"http://some-domains-that-doesnt-exist.com/x", "", true},               // invalid domain/path
 		{"https://some-domains-that-doesnt-exist.com/x", "", true},              // invalid domain/path
 		{"https://httpbin.org/redirect/15", "", true},                           // we allow max of 10 redirects
