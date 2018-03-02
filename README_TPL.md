@@ -127,21 +127,21 @@ there are more released versions on the releases page previously mentioned.
 ### Ubuntu/Debian
 
 ```console
-$ wget https://liam.sh/ghr/marill_0.1.1_linux_amd64.deb
-$ dpkg -i marill_0.1.1_linux_amd64.deb
+$ wget https://liam.sh/ghr/marill_[[tag]]_[[os]]_[[arch]].deb
+$ dpkg -i marill_[[tag]]_[[os]]_[[arch]].deb
 ```
 
 ### CentOS/Redhat
 
 ```console
-$ yum localinstall https://liam.sh/ghr/marill_0.1.1_linux_amd64.rpm
+$ yum localinstall https://liam.sh/ghr/marill_[[tag]]_[[os]]_[[arch]].rpm
 ```
 
 ### Manual Install
 
 ```console
-$ wget https://liam.sh/ghr/marill_0.1.1_linux_amd64.tar.gz
-$ tar -C /usr/bin/ -xzvf marill_0.1.1_linux_amd64.tar.gz marill
+$ wget https://liam.sh/ghr/marill_[[tag]]_[[os]]_[[arch]].tar.gz
+$ tar -C /usr/bin/ -xzvf marill_[[tag]]_[[os]]_[[arch]].tar.gz marill
 $ chmod +x /usr/bin/marill
 ```
 
