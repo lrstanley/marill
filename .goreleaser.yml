@@ -4,16 +4,14 @@ build:
   binary: marill
   goos:
     - linux
-    # - freebsd
   goarch:
     - amd64
-    - 386
   ldflags: -s -w -X main.version=v{{.Version}} -X main.commithash={{.Commit}} -X main.compiledate={{.Date}}
   hooks:
     post: make compress
 snapshot:
   name_template: SNAPSHOT-{{.Commit}}
-fpm:
+nfpm:
   homepage: https://marill.liam.sh/
   maintainer: Liam Stanley <me@liamstanley.io>
   description: Automated site testing utility.
@@ -21,5 +19,6 @@ fpm:
   formats:
     - deb
     - rpm
+  bindir: /usr/bin
 release:
   draft: true
