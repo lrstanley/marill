@@ -137,6 +137,13 @@ $ dpkg -i marill_0.1.1_linux_amd64.deb
 $ yum localinstall https://liam.sh/ghr/marill_0.1.1_linux_amd64.rpm
 ```
 
+Some older CentOS versions may require (if you get `Cannot open: <url>. Skipping.`):
+
+```console
+$ wget https://liam.sh/ghr/marill_0.1.1_linux_amd64.rpm
+$ yum localinstall marill_0.1.1_linux_amd64.rpm
+```
+
 ### Manual Install
 
 ```console
