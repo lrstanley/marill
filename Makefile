@@ -6,7 +6,6 @@ export $(PATH)
 
 BINARY = marill
 COMPRESS_CONC ?= $(shell nproc)
-LD_FLAGS += -s -w
 VERSION=$(shell git describe --tags --abbrev=0 2>/dev/null | sed -r "s:^v::g")
 RSRC=README_TPL.md
 ROUT=README.md
@@ -58,4 +57,4 @@ compress: ## Uses upx to compress release binaries (if installed, uses all cores
 	(which upx > /dev/null && find dist/*/* | xargs -I{} -n1 -P ${COMPRESS_CONC} upx --best "{}") || echo "not using upx for binary compression"
 
 build: clean fetch generate ## Multi-step build process.
-	go build -ldflags "${LD_FLAGS}" -x -v -o ${BINARY}
+	CGO_ENABLED=0 go build -ldflags '-d -s -w' -tags netgo -installsuffix netgo -v -o "${BINARY}"
